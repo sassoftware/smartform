@@ -1,0 +1,26 @@
+# use glob syntax.
+syntax: glob
+
+bin/
+bin-debug/
+bin-release/
+docs/
+*/generated/
+flexlibs-build/test/
+flexlibs-build/lib/
+.DS_Store
+#.svn/
+*.wip
+*~
+*.bak
+*.orig
+*.pyc
+*.pyo
+*.metadata/
+*.svn
+*.bz2
+*.cache
+.testerr
+*/junit.xml
+*/user.properties
+jirate/*.xml

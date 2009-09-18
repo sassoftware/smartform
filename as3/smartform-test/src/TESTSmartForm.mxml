@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+#
+# Copyright (c) 2009 rPath, Inc.
+#
+# This program is distributed under the terms of the MIT License as found 
+# in a file called LICENSE. If it is not present, the license
+# is always available at http://www.opensource.org/licenses/mit-license.php.
+#
+# This program is distributed in the hope that it will be useful, but
+# without any waranty; without even the implied warranty of merchantability
+# or fitness for a particular purpose. See the MIT License for full details.
+*/
+-->
+
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
+    xmlns:controllers="com.rpath.catalog.controllers.*"
+    xmlns:smartform="com.rpath.raf.smartform.*"
+    creationComplete="creationComplete()"
+    verticalAlign="top" borderColor="#DDDDDD" borderStyle="solid"
+    minWidth="500"
+    xmlns:views="com.rpath.raf.views.*">
+    
+<!--
+#
+# Copyright (c) 2005-2008 rPath, Inc.
+#
+# All rights reserved
+#
+-->
+
+    <mx:Script>
+    <![CDATA[
+        import com.rpath.xobj.XObjXMLEncoder;
+        import com.rpath.xobj.XObjXMLDecoder;
+        import mx.rpc.xml.SimpleXMLDecoder;
+        import mx.events.PropertyChangeEvent;
+        import mx.rpc.xml.SimpleXMLEncoder;
+        import mx.events.FlexEvent;
+        import mx.binding.utils.BindingUtils;
+    
+    [Bindable]    
+    public var metadata:XML;
+    
+    [Bindable]
+    public var testObject:TestObject;
+    
+    public function creationComplete():void
+    {
+        testObject = new TestObject();
+        testObject.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, getObjectXML);
+        setMetadata(tests[0].test);
+    }
+
+    
+    public function editMetadata(event:Event):void
+    {
+        try { metadata = new XML(mdInput.text); } catch (e:Error) {}
+        getObjectXML();
+    }
+    
+    private var _objectXML:String;
+    private var refreshingXML:Boolean;
+    
+    public var oldTestObject:*;
+    
+    [Bindable]
+    public function set objectXML(xml:String):void
+    {
+        _objectXML = xml;
+        
+        if (!refreshingXML)
+        {
+            try
+            {
+                var xmlNode:XMLNode = new XMLDocument(xml);
+                var xmlDecoder:XObjXMLDecoder = new XObjXMLDecoder({foo:TestObject});
+                var newObject:*;
+                
+                // force decoding
+                oldTestObject = testObject;
+                newObject = xmlDecoder.decodeXML(xmlNode).foo;
+                testObject = newObject;
+                testObject.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, getObjectXML);
+            }
+            catch (e:Error)
+            { }
+        }
+    }
+    
+    public function get objectXML():String
+    {
+        return _objectXML;
+    }
+    
+    public function getObjectXML(event:PropertyChangeEvent=null):void
+    {
+        refreshingXML = true;
+        
+        var myXML:XMLDocument = new XMLDocument();
+        var xmlEncoder:XObjXMLEncoder = new XObjXMLEncoder({foo:TestObject}, myXML);
+        var xmlNode:XMLNode;
+        var newXML:String;
+        
+        xmlNode = xmlEncoder.encodeValue(testObject,new QName("local","foo"),new XMLNode(5,"root"));
+        newXML = new XML(xmlNode.toString()).toString();
+        objectXML = newXML;
+        refreshingXML = false;
+    }
+        
+    [Bindable]
+    public var formIsValid:Boolean;
+    
+    private function setMetadata(name:String):void
+    {
+        metadata = this[name];
+    }
+    
+    public function handleTestChange(event:Event):void
+    {
+        var testId:String = testSelector.selectedItem.test;
+        setMetadata(testId);
+    }
+    
+    ]]>
+    </mx:Script>
+
+    <mx:XML id="conditional_metadata" source="/data/test/conditional.xml" />
+    <mx:XML id="large_metadata" source="/data/test/large.xml" />
+    <mx:XML id="simple_metadata" source="/data/test/simple.xml" />
+
+    <mx:ArrayCollection id="tests">
+        <mx:Object label="Simple" test="simple_metadata" />
+        <mx:Object label="Large" test="large_metadata" />
+        <mx:Object label="Conditional" test="conditional_metadata" />
+    </mx:ArrayCollection>
+    
+    <mx:HDividedBox width="100%" height="100%">
+        <mx:VDividedBox width="70%" height="100%">
+        
+            <mx:VBox width="100%" height="40%">
+                <mx:FormItem label="Field Set" >
+                    <mx:ComboBox id="testSelector"
+                        dataProvider="{tests}" change="handleTestChange(event)" />
+                </mx:FormItem>
+                <mx:CheckBox id="editableCheck" label="EDITABLE" selected="true"/>
+                <mx:CheckBox id="isValid" label="VALID?" selected="{infoForm.isValid}"/>
+                <mx:TextArea id="mdInput" width="100%" height="100%" text="{metadata}" change="editMetadata(event)" />
+            </mx:VBox>
+            
+            <views:SmartForm id="infoForm" editable="{editableCheck.selected}"
+                metadata="{metadata}" data="{testObject}"
+                width="100%" height="60%"
+                />
+        
+        </mx:VDividedBox>
+        <mx:TextArea id="objView" text="{objectXML}"  width="30%" height="100%" change="{objectXML = objView.text}"/>
+        <mx:Button label="REFRESH" click="getObjectXML()"/>
+    </mx:HDividedBox>
+</mx:Application>

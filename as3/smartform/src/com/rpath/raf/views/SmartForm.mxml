@@ -1,0 +1,660 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+#
+# Copyright (c) 2009 rPath, Inc.
+#
+# This program is distributed under the terms of the MIT License as found 
+# in a file called LICENSE. If it is not present, the license
+# is always available at http://www.opensource.org/licenses/mit-license.php.
+#
+# This program is distributed in the hope that it will be useful, but
+# without any waranty; without even the implied warranty of merchantability
+# or fitness for a particular purpose. See the MIT License for full details.
+*/
+-->
+
+<mx:Form xmlns:mx="http://www.adobe.com/2006/mxml"
+    creationComplete="onCreationComplete(event)"
+    >
+    <mx:Script>
+    <![CDATA[
+        import mx.utils.ArrayUtil;
+        import mx.collections.ArrayCollection;
+        import com.rpath.raf.util.DescriptorUtil;
+        import mx.events.ValidationResultEvent;
+        import mx.events.FlexEvent;
+        import mx.binding.utils.ChangeWatcher;
+        import mx.events.PropertyChangeEvent;
+        import mx.core.UIComponent;
+        import mx.binding.utils.BindingUtils;
+        import mx.containers.FormItem;
+    
+    /** metadata drives the SmartForm
+    * 
+    * metadata must be an XML object that declares <datafield>
+    * element that contains a set of <field> elements each of which defines
+    * a FormItem for the Form.
+    * 
+    * Each <field> entry looks something like:
+    * 
+    * <field>
+    *   <name>propertyName of resulting data object</name>
+    *   <descriptions>
+    *     <desc>Label form FormItem</desc>
+    *   </descriptions>
+    *   <type>str</type>
+    *   <required>true</required>
+    *   <constraints>
+    *     <descriptions>
+    *       <desc>Tooltip to be displayed on this constraint</desc>
+    *     </descriptions>
+    *     <legalValues>
+    *       <value>EC2</value>
+    *       <value>Globus</value>
+    *       <value>Citrix XenServer</value>
+    *       <value>VMware Infrastructure</value>
+    *     </legalValues>
+    *   </constraints>
+    *   <allowFileContent>true</allowFileContent>
+    * </field>
+    * 
+    * The specific constraints, etc. available are:
+    * 
+    * DOCUMENT CONSTRAINTS HERE?
+    * 
+    * The XML must also contain a <metadata> element 
+    * that provides a Form Heading
+    * 
+    * <metadata>
+    *   <displayName>CloudInfo</displayName>
+    *   <descriptions>
+    *     <desc>The Form Heading text you want</desc>
+    *   </descriptions>
+    * </metadata>
+    * 
+    */
+    
+    [Bindable]
+    public function get metadata():XML
+    {
+        return _metadata;
+    }
+
+    private var _metadata:XML;
+
+    public function set metadata(m:XML):void
+    {
+        if (_metadata != m)
+        {
+            //trace("metadata change " + this.uid);
+            _metadata = m;
+            needsRebuilding = true;
+            // make sure defaults are re-eval'd
+            firstTime = true;
+            invalidateProperties();
+        }
+    }
+    
+    public var itemsBefore:Array;
+    
+    public var itemsAfter:Array;
+    
+    /** make editable and enabled the same logical thing
+    * since I have no idea why one would want to allow editable disabled fields 
+    * in a form
+    */
+    
+    [Bindable]
+    public function set editable(v:Boolean):void
+    {
+        _formEditable = v;
+    }
+
+    private var _formEditable:Boolean = true;
+
+    public function get editable():Boolean
+    {
+        return _formEditable;
+    }        
+    
+    [Bindable]
+    public override function set enabled(v:Boolean):void
+    {
+        _formEnabled = v;
+    }
+
+    private var _formEnabled:Boolean = true;
+
+    
+    public override function get enabled():Boolean
+    {
+        return _formEnabled;
+    }
+    
+    /**
+     * Whether or not to allow defaults on items.  This may need to be turned
+     * off in scenarios where defaults are overriding pre-set values.
+     */ 
+    [Bindable]
+    public var allowItemDefaults:Boolean = true;
+    
+    [Bindable]
+    public var heading:String = "";
+
+    /** discreteControlThreshold controls when we switch from checkbox/radiobutton
+    * to a pulldown menu
+    */
+    [Bindable]
+    public var discreteControlThreshold:int = 4;
+    
+    /** menuControlThreshold controls when we switch from a pulldown menu to 
+    * to a listbox 
+    */    
+    [Bindable]
+    public var menuControlThreshold:int = 10;
+    
+    [Bindable]
+    public var longTextThreshold:int = 40;
+    
+    [Bindable]
+    public var multiCheckLabelLengthThreshold:int = 11;
+    
+    [Bindable]
+    public var labelLengthThreshold:int = 13;
+        
+    private var watchers:Array;
+    
+    [Bindable]
+    public override function set data(v:Object):void
+    {
+        if (super.data != v)
+        {
+            // unbind things, since we no longer want to change the old data object
+            // nor do we want the old data object changing us
+            unbindWatchers();
+            super.data = v;
+            needsRebinding = true;
+            invalidateProperties();
+        }
+    }
+    
+    public override function get data():Object
+    {
+        return super.data;
+    }
+
+    // set this true by default to ensure we get initial refresh
+    private var needsRebuilding:Boolean;
+    
+    private var needsRebinding:Boolean;
+    
+    
+    private function addWatcher(propName:String, item:*):void
+    {
+        var cw:ChangeWatcher;
+        
+        if (data)
+        {            
+            cw = BindingUtils.bindSetter(
+                function f(value:*):void
+                {
+                    setProperty(data, propName, value);
+                },
+                item, [ "data" ]);
+        }
+        
+        if (!watchers)
+            watchers = new Array();
+        watchers.push({prop:propName, item: item, watcher:cw});
+    }
+
+    private function unbindWatchers():void
+    {
+        if (watchers)
+        {
+            for each (var w:* in watchers)
+            {
+                if (w.watcher)
+                    w.watcher.unwatch();
+            }
+        }
+    }
+
+    private function rebindWatchers():void
+    {
+        if (watchers)
+        {
+            for each (var w:* in watchers)
+            {
+                w.watcher = BindingUtils.bindSetter(
+                    function f(value:*):void
+                    {
+                        setProperty(data, w.prop, value);
+                    },
+                    w.item, [ "data" ]);
+            }
+        }
+    }
+        
+    private function removeWatchers():void
+    {
+        if (watchers)
+        {
+            for each (var w:* in watchers)
+            {
+                if (w.watcher)
+                    w.watcher.unwatch();
+            }
+            watchers = new Array();
+        }
+    }
+    
+    private var idGen:int;
+    
+    public override function invalidateProperties():void
+    {
+        //trace("smartform invalidateProps " + this.uid);
+        super.invalidateProperties();
+    }
+    
+    protected override function commitProperties():void
+    {       
+        if (needsRebuilding)
+        {
+            //trace("smartform commit REBUILD" + this.uid);
+            needsRebuilding = false;
+            needsRebinding = false;
+            removeFormItems();
+            createFormItems();
+        }
+        else if (needsRebinding)
+        {
+            //trace("smartform commit REBIND" + this.uid);
+            needsRebinding = false;
+            rebindWatchers();
+        }
+        super.commitProperties();
+    }
+    
+    
+    private var conditions:Array;
+    
+    private function evalCondition(condition:Object):Boolean
+    {
+        var result:Boolean;
+        
+        if (data != null)
+        {
+            if (/eq.*/.exec(condition.operator.toLowerCase()))
+            {
+                result = (getProperty(data, condition.property) == condition.value);
+            }
+            else if (/noteq.*/.exec(condition.operator.toLowerCase()))
+            {
+                result = (getProperty(data, condition.property) != condition.value);
+            }
+        }
+        
+        // note the result for future comparison
+        condition.result = result;
+        
+        return result;
+    }
+    
+    private function clearConditions():void
+    {
+        conditions = new Array();
+    }
+    
+    private function addCondition(prop:String, op:String, val:String):Object
+    {
+        var condition:Object = {property: prop, operator: op, value: val, result:false};
+        conditions.push(condition);
+        
+        // we need to hear about changes to the data object for this property so 
+        // that we can trigger form rebuild on conditional change
+        // how to do this generically? we need to do it on the data not ont he UI
+        // since the data may change outside UI control
+        
+        // BindSetter only works with known properties - not truly dynamic ones
+        // need an object proxy here?
+        
+        //BindingUtils.bindSetter(revisitConditions, this, ["data", prop]);
+        
+        return condition;
+    }
+    
+    
+    private function revisitConditions():void
+    {
+        if (checkConditionChanged())
+        {
+            // one or more of the conditionals have changed result
+            // so rebuild everything
+            needsRebuilding = true;
+            invalidateProperties();
+        }
+    }
+    
+    private function removeCondition(prop:String, op:String, val:String):void
+    {
+        for each (var condition:Object in conditions)
+        {
+            if (condition.property == prop && condition.operator == op && condition.value == val)
+            {
+                conditions.splice(conditions.indexOf(condition), 1);
+            }
+        }
+    }
+    
+    private function checkConditionChanged():Boolean
+    {
+        for each (var condition:Object in conditions)
+        {
+            var oldResult:Boolean = condition.result;
+            if (oldResult != evalCondition(condition))
+            {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /** firstTime tracks whether we've created form items before
+    * This is important because we need to initialize the default
+    * values of the data object properties from the descriptor
+    * iff this is the first time we're doing so
+    */
+    private var firstTime:Boolean = true;
+
+    /** createFormItems iterates the descriptor and creates, binds and sets 
+    * initial default values for every form item described in the descriptor
+    */
+    
+    private function createFormItems():void
+    {
+
+        // now add any other children
+        for each (var item:* in itemsBefore)
+        {
+            addChild(item);
+        }
+        
+        
+        if (metadata)
+        {
+    
+            //trace("create form items " + this.uid);
+    
+            heading = DescriptorUtil.localeDescString(metadata.metadata.descriptions);
+    
+            var fields:XMLList = metadata.dataFields.field;
+            var meetsCondition:Boolean;
+            var condition:Object;
+            
+            // clear all conditions and start afresh
+            clearConditions();
+            
+            for each (var field:XML in fields)
+            {
+                var propName:String = field.name;
+                
+                condition = null;
+                
+                meetsCondition = true;
+                
+                if (field.conditional.length() > 0)
+                {
+                    // evaluate condition and queue condition on any change to the value object
+                    for each (var cond:XML in field.conditional)
+                    {
+                        condition = addCondition(cond.fieldName, cond.operator, cond.value);
+                        meetsCondition = meetsCondition && evalCondition(condition);
+                    }
+                    
+                }
+                
+                if (meetsCondition)
+                {
+                    /*
+                    Allow conditional, hidden fields with defaults to actually set the default value 
+                    on the data object even though they're hidden. However, if they're conditional
+                    is false, don't set the default value. Confused? I'm not.
+                    */
+                    
+                    if (firstTime && (field.default.length() > 0) && allowItemDefaults)
+                    {
+                        //TODO: handle the case where data is NULL by moving this
+                        // into the SmartFormItem so it can be deferred
+                        if (data)
+                        {
+                            var value:* = getProperty(data, propName);
+                            var newValue:*;
+                            
+                            // single or multi-valued default?
+                            if (field.default.length() == 1)
+                            {
+                                newValue = field.default.toString();
+                            }
+                            else
+                            {
+                                newValue = [];
+                                for each (var val:XML in field.default)
+                                {
+                                    var def:String = val.toString();
+                                    newValue.push(def);
+                                }
+                             }
+                            
+                            // now should we set the value at all?
+                            if (value is Array || value is ArrayCollection)
+                            {
+                                // only default if no current values
+                                if (value.length == 0)
+                                {
+                                    setProperty(data, propName, ArrayUtil.toArray(newValue));
+                                }
+                            }
+                            else if (value == undefined || value == null)
+                            {
+                                setProperty(data, propName, newValue);
+                            }
+                            
+                        }
+                    }
+                    
+                    // skip hidden fields
+                    if (field.hidden.toString().toLowerCase() == "true")
+                        continue;
+    
+                    var newItem:SmartFormItem = new SmartFormItem();
+                    newItem.smartForm = this;
+                                        
+                    // make sure changes to the data object propagate to the control
+                    var propChain:Array = propName.split('.');
+                    BindingUtils.bindProperty(newItem, "data", this, ["data"].concat(propChain));
+                    
+                    // make sure changes to the control propagate to the data object
+                    addWatcher(propName, newItem);
+                    
+                    newItem.metadata = field;
+                    newItem.id = "formItem" + (idGen++);
+                    BindingUtils.bindProperty(newItem, "editable", this, [ "editable"]);
+                    BindingUtils.bindProperty(newItem, "enabled", this, [ "enabled"]);
+                    
+                    newItem.addEventListener(ValidationResultEvent.VALID, handleValidationEvent);
+                    newItem.addEventListener(ValidationResultEvent.INVALID, handleValidationEvent);
+                    newItem.addEventListener(FlexEvent.DATA_CHANGE, handleDataChange);
+                            
+                    this.addChild(newItem);
+    
+                    // track the first item in the smartform for label computation 
+                    // see onCreationComplete()
+                    if (firstItem == null)
+                        firstItem = newItem;
+                }
+                else
+                {
+                    // we did not meet the condition, so REMOVE the property we represent 
+                    // from the underlying data object
+                    
+                    // TODO: THIS GETS HAIRY because it may be that there's multiple, duplicative fields
+                    // that have mutually exclusive conditions. We don't want to delete a property that 
+                    // is actually defined by another field in the descriptor
+                    
+                }
+            }
+
+            firstTime = false;
+        }
+        
+        // now add any other children
+        for each (var itemAfter:* in itemsAfter)
+        {
+            addChild(itemAfter);
+        }
+        
+        // force validate the whole lot
+        handleValidationEvent();
+    }
+    
+    protected function getProperty(obj:*, propName:String):*
+    {
+        var bits:Array = propName.split('.');
+        var o:*;
+        
+        o = obj;
+        for each (var prop:String in bits)
+        {
+            try
+            {
+                o = o[prop];
+            }
+            catch (e:Error)
+            {
+                return null;
+            }
+        }
+        return o;
+    }
+    
+    protected function setProperty(obj:*, propName:String, value:*):void
+    {
+        var bits:Array = propName.split('.');
+        var o:*;
+        var last:String = bits.pop();
+        
+        o = obj;
+        try
+        {
+            for each (var prop:String in bits)
+            {
+                o = o[prop];
+            }
+            
+            try
+            {
+                o[last] = value;
+            }
+            catch (e:Error)
+            {
+            }
+            
+        }
+        catch (e:Error)
+        {
+            
+        }
+    }
+    
+    private function handleDataChange(event:FlexEvent):void
+    {
+        revisitConditions();
+    }
+    
+    private function removeFormItems():void
+    {
+        removeWatchers();
+                
+        var length:int = this.numChildren;
+        for (var count:int = 1; count < length; count++)
+        {
+            removeChildAt(1);
+        }
+    }
+
+    [Bindable]
+    public var isValid:Boolean = true;;
+    
+    private var _directValid:Boolean = true;
+    
+    public override function validationResultHandler(event:ValidationResultEvent):void
+    {
+        _directValid = (event.type == ValidationResultEvent.VALID);
+        // check our children too
+        handleValidationEvent();
+        super.validationResultHandler(event);
+    }
+
+    private var invalidItems:int;
+    
+    public function handleValidationEvent(event:FlexEvent=null):void
+    {
+        var newValid:Boolean = true;
+        
+        for each (var child:* in this.getChildren())
+        {
+            if (child is SmartFormItem)
+                if (!child.isValid)
+                {
+                    newValid = false;
+                    break;
+                }
+        }
+        
+        isValid = newValid && _directValid;
+        
+        // rethrow the validation event should anyone else want it
+        // catch it regardless of location
+        this.dispatchEvent(new FlexEvent(isValid ? FlexEvent.VALID : FlexEvent.INVALID));
+    }
+
+    public override function setFocus():void
+    {
+        for each (var child:* in this.getChildren())
+        {
+            if (child is FormItem)
+            {
+               child.setFocus();
+               break;
+            }
+        }
+    }
+    
+    private var firstItem:FormItem;
+    
+    public function onCreationComplete(event:Event):void
+    {
+        // DISGUSTING HACK TO WORKAROUND ADOBE BUG
+        // Turns out, FormItems that have their labels computed
+        // fail to invalidate the Form's idea of labelWidth
+        // until AFTER the form is fully initialized.
+        // So we have to force the issue here
+        
+        if (firstItem)
+        {
+            var oldLabel:String = firstItem.label;
+            firstItem.label = "";
+            firstItem.label = oldLabel;
+        }
+    }
+    
+    ]]>
+    </mx:Script>
+
+    <mx:FormHeading label="{heading}"/>
+
+    
+</mx:Form>

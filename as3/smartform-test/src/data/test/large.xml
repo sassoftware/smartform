@@ -1,0 +1,29 @@
+<cloudDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.rpath.com/permanent/factorydef-1.0.xsd factorydef-1.0.xsd"
+>
+  <metadata>
+    <displayName>Large text</displayName>
+    <descriptions>
+      <desc>Large SmartForm</desc>
+    </descriptions>
+  </metadata>
+  <dataFields>
+    <field>
+      <name>certificate</name>
+      <descriptions>
+        <desc>Certificate</desc>
+      </descriptions>
+      <help href="http://www.rpath.com" />
+      <prompt>
+        <desc>Start with FOOBAR</desc>
+      </prompt>
+      <type>str</type>
+      <required>true</required>
+      <allowFileContent>true</allowFileContent>
+      <constraints>
+        <length>64</length>
+      </constraints>
+    </field>
+    
+  </dataFields>
+</cloudDescription>

@@ -1,0 +1,83 @@
+<cloudDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.rpath.com/permanent/factorydef-1.0.xsd factorydef-1.0.xsd"
+>
+  <metadata>
+    <displayName>Test Smartform</displayName>
+    <descriptions>
+      <desc>Test SmartForm</desc>
+    </descriptions>
+  </metadata>
+  <dataFields>
+    <field>
+      <name>name</name>
+      <descriptions>
+        <desc>Name</desc>
+      </descriptions>
+      <help href="http://www.rpath.com" />
+      <prompt>
+        <desc>Start with FOOBAR</desc>
+      </prompt>
+      <type>str</type>
+      <required>true</required>
+      <constraints>
+        <descriptions>
+          <desc>Pattern match required</desc>
+        </descriptions>
+        <regexp>FOOBAR</regexp>
+      </constraints>
+    </field>
+    <field>
+      <name>missing</name>
+      <descriptions>
+        <desc>Missing</desc>
+      </descriptions>
+      <help href="http://www.rpath.com" />
+      <prompt>
+        <desc>Missing values</desc>
+      </prompt>
+      <enumeratedType>
+      </enumeratedType>
+      <required>true</required>
+      <default>fooz</default>
+    </field>
+    <field>
+      <name>conditional</name>
+      <descriptions>
+        <desc>Conditional Field</desc>
+      </descriptions>
+      <help href="http://www.rpath.com" />
+      <prompt>
+        <desc>Something Extra</desc>
+      </prompt>
+      <type>str</type>
+      <required>true</required>
+      <conditional>
+        <fieldName>name</fieldName>
+        <operator>equals</operator>
+        <value>FOOBAR2</value>
+      </conditional>
+    </field>
+    <field>
+      <name>double_conditional</name>
+      <descriptions>
+        <desc>Doubly Conditional Field</desc>
+      </descriptions>
+      <help href="http://www.rpath.com" />
+      <prompt>
+        <desc>More Extra</desc>
+      </prompt>
+      <type>str</type>
+      <required>true</required>
+      <conditional>
+        <fieldName>name</fieldName>
+        <operator>equals</operator>
+        <value>FOOBAR2</value>
+      </conditional>
+      <conditional>
+        <fieldName>conditional</fieldName>
+        <operator>equals</operator>
+        <value>FOOBAR2</value>
+      </conditional>
+    </field>
+  </dataFields>
+</cloudDescription>

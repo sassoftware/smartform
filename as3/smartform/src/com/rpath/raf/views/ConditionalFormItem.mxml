@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+#
+# Copyright (c) 2009 rPath, Inc.
+#
+# This program is distributed under the terms of the MIT License as found 
+# in a file called LICENSE. If it is not present, the license
+# is always available at http://www.opensource.org/licenses/mit-license.php.
+#
+# This program is distributed in the hope that it will be useful, but
+# without any waranty; without even the implied warranty of merchantability
+# or fitness for a particular purpose. See the MIT License for full details.
+*/
+-->
+
+<mx:FormItem xmlns:mx="http://www.adobe.com/2006/mxml"
+    includeInLayout="false"
+    visible="false"
+    >
+    <mx:Script>
+    <![CDATA[
+    
+    
+    [Bindable]
+    public function set content(s:String):void
+    {
+        _content = s;
+        _contentChanged = true;
+        invalidateProperties();
+    }
+    
+    private var _content:String = "asd8907abjkln123asdf";
+    private var _contentChanged:Boolean;
+    
+    public function get content():String
+    {
+        return _content;
+    }
+    
+    [Bindable]
+    public var selectable:Boolean;
+    
+    protected override function commitProperties():void
+    {
+        if (_contentChanged)
+        {
+            _contentChanged = false;
+            if (content != null && content != "")
+            {
+                this.includeInLayout = true;
+                this.visible = true;
+            }
+            else
+            {
+                this.includeInLayout = false;
+                this.visible = false;
+            }
+        }
+        super.commitProperties();
+    }
+        
+    ]]>
+    </mx:Script>
+    <mx:Label id="lab" text="{content}" width="100%" selectable="{selectable}"/>
+</mx:FormItem>
