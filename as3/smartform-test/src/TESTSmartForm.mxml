@@ -126,11 +126,15 @@
     ]]>
     </mx:Script>
 
+    <mx:XML id="single_metadata" source="/data/test/single.xml" />
+    <mx:XML id="booltest_metadata" source="/data/test/booltest.xml" />
     <mx:XML id="conditional_metadata" source="/data/test/conditional.xml" />
     <mx:XML id="large_metadata" source="/data/test/large.xml" />
     <mx:XML id="simple_metadata" source="/data/test/simple.xml" />
 
     <mx:ArrayCollection id="tests">
+        <mx:Object label="Single" test="single_metadata" />
+        <mx:Object label="Booltest" test="booltest_metadata" />
         <mx:Object label="Simple" test="simple_metadata" />
         <mx:Object label="Large" test="large_metadata" />
         <mx:Object label="Conditional" test="conditional_metadata" />

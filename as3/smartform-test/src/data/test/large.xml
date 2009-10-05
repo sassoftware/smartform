@@ -15,7 +15,7 @@
       </descriptions>
       <help href="http://www.rpath.com" />
       <prompt>
-        <desc>Start with FOOBAR</desc>
+        <desc>Some large certificate file here</desc>
       </prompt>
       <type>str</type>
       <required>true</required>

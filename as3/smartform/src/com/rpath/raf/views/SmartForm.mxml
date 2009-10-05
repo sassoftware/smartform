@@ -165,7 +165,6 @@
         
     private var watchers:Array;
     
-    [Bindable]
     public override function set data(v:Object):void
     {
         if (super.data != v)
@@ -288,11 +287,11 @@
         {
             if (/eq.*/.exec(condition.operator.toLowerCase()))
             {
-                result = (getProperty(data, condition.property) == condition.value);
+                result = (getProperty(data, condition.property).toString() == condition.value);
             }
             else if (/noteq.*/.exec(condition.operator.toLowerCase()))
             {
-                result = (getProperty(data, condition.property) != condition.value);
+                result = (getProperty(data, condition.property).toString() != condition.value);
             }
         }
         

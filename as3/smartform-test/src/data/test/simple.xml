@@ -10,7 +10,7 @@
       <name>name</name>
       <descriptions><desc>Name</desc></descriptions>
       <help href="http://www.rpath.com"/>
-      <prompt><desc>Start with FOOBAR</desc></prompt>
+      <prompt><desc>Must contain FOOBAR</desc></prompt>
       <type>str</type>
       <required>true</required>
       <constraints>

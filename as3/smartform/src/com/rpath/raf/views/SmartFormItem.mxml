@@ -96,14 +96,19 @@
     private var initializingControls:Boolean;
     private var dataChanged:Boolean;
     
+    /* NOTE: Container declares this with a specified change event so we 
+    need to preserve that event type to avoid redundant change notifications
+    */
+    
     [Bindable]
     public override function set data(v:Object):void
     {
         dataChanged = true;
 
+        // this will dispatch the required dataChange event
         super.data = v;
         
-        // TODO: is this needed?
+        // trigger commitProperties so that we check validation flags
         invalidateProperties();
     }
 
@@ -118,20 +123,16 @@
         if (dataChanged)
         {
             dataChanged = false;
-            // refresh our control to display new data
-            // TODO: should this actually be deferred to commitProperties instead?
+            // refresh our controls to display new data
             if (!initializingControls)
                 initializeControls();
         }
 
-        //TODO: find out if this is really the right way to do this. I don't think it is
-        super.commitProperties();
-
-        // force form validation out of the gate to let user know 
-        // everything that needs fixing
-        // TODO: make this a selectable behavior
-        
+        // make sure form is marked valid/invalid at all times
         validate();
+
+        // now commit super to pick up changes to styles, etc.
+        super.commitProperties();
     }
     
     public function initializeControls():void
@@ -891,6 +892,7 @@
     <views:MagicFormItem id="magic" selectedIndex="{typeIndex}" creationPolicy="none" 
         valid="handleValidationEvent(event)"
         invalid="handleValidationEvent(event)"
+        isValid="{isValid}"
         width="100%"
         >
         <!--         

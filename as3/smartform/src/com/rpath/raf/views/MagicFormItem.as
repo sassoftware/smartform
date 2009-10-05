@@ -18,35 +18,33 @@ package com.rpath.raf.views
     import mx.core.UIComponent;
     import mx.events.ValidationResultEvent;
 
+    /**
+     *  On error, change the backgroundAlpha to this value
+     *
+     *  @default 0.25
+     */
+    [Style(name="errorBackgroundAlpha", type="Number", format="Length", inherit="yes")]
+
     public class MagicFormItem extends Canvas
     {
+        
+        public function MagicFormItem()
+        {
+            super();
+            this.setStyle("errorBackgroundAlpha", "0.25");
+            
+            // force initial setting of validation styles
+            _validChanged = true;
+        }
+        
+        private var _validChanged:Boolean;
         
         [Bindable]
         public function set isValid(v:Boolean):void
         {
-            var item:UIComponent;
-
             _isValid = v;
-            
-            item = this.getChildAt(0) as UIComponent;
-            
-            //TODO: make these proper style properties that can be set via
-            // MXML / CSS
-            if (_isValid)
-            {
-                if (item)
-                {
-                    item.setStyle("backgroundColor", "0xFFFFFF");
-                }
-            }
-            else
-            {
-                if (item)
-                {
-                    item.setStyle("backgroundColor", "0xFF0000");
-                    item.setStyle("backgroundAlpha", 0.25);
-                }
-            }
+            _validChanged = true;
+            invalidateProperties();
         }
         
         private var _isValid:Boolean;
@@ -108,10 +106,8 @@ package com.rpath.raf.views
         }
 
         
-        override public function createComponentsFromDescriptors(
-            recurse:Boolean = true ):void
+        override public function createComponentsFromDescriptors(recurse:Boolean = true ):void
         {
-                
             if ( childDescriptors.length == 0 )
                 return; // no children specified
             
@@ -136,6 +132,71 @@ package com.rpath.raf.views
                 }
             }
         }
-                
+
+        private var _origBackgroundColor:Number;
+        private var _origBackgroundColorChanged:Boolean;
+        private var _origBackgroundAlpha:Number;
+        private var _origBackgroundAlphaChanged:Boolean;
+        
+        private function setStylesFromValidStatus():void
+        {
+            var item:UIComponent;
+
+            try
+            {
+                item = this.getChildAt(0) as UIComponent;
+                // 
+                if (_isValid)
+                {
+                    if (item)
+                    {
+                        if (_origBackgroundAlphaChanged)
+                            item.setStyle("backgroundAlpha", _origBackgroundAlpha);
+                        if (_origBackgroundColorChanged)
+                            item.setStyle("backgroundColor", _origBackgroundColor);
+                    
+                        _origBackgroundAlphaChanged = false;
+                        _origBackgroundColorChanged = false;
+                    }
+                }
+                else
+                {
+                    if (item)
+                    {
+                        var errorAlpha:Number = this.getStyle("errorBackgroundAlpha");
+                        
+                        if (!isNaN(errorAlpha))
+                        {
+                            _origBackgroundAlpha = item.getStyle("backgroundAlpha");
+                            if (!isNaN(errorAlpha))
+                            {
+                                item.setStyle("backgroundAlpha", errorAlpha);
+                                _origBackgroundAlphaChanged = true;
+                            }
+                        }
+    
+                        _origBackgroundColor = item.getStyle("backgroundColor");
+                        item.setStyle("backgroundColor", getStyle("errorColor"));
+                        _origBackgroundColorChanged = true;
+                    }
+                }
+            }
+            catch (e:RangeError)
+            {
+                // if the children haven't been initialized yet
+            }
+        }
+        
+        override protected function commitProperties():void
+        {
+            super.commitProperties();
+
+            if (_validChanged)
+            {
+                _validChanged = false;
+                setStylesFromValidStatus();
+            }
+            
+        }
     }
 }
