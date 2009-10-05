@@ -1,0 +1,98 @@
+#
+# Copyright (c) 2008 rPath, Inc.
+#
+# This program is distributed under the terms of the MIT License as found 
+# in a file called LICENSE. If it is not present, the license
+# is always available at http://www.opensource.org/licenses/mit-license.php.
+#
+# This program is distributed in the hope that it will be useful, but
+# without any waranty; without even the implied warranty of merchantability
+# or fitness for a particular purpose. See the MIT License for full details.
+#
+
+.SILENT:
+
+export TOPDIR
+
+# Default rules
+default-build: subdirs-build
+	[ -n "$(DIR)" ] && \
+		echo Building in $(DIR) || \
+		echo Building in /
+
+default-install: subdirs-install
+	[ -n "$(DIR)" ] && \
+		echo Installing in $(DIR) || \
+		echo Installing in /
+
+default-clean: subdirs-clean
+	rm -f *~ *.pyo *.pyc *.orig *.o *.rej $(generated_files)
+
+default-test: subdirs-test
+
+
+# Subdirectory rules
+subdirs-build:
+ifdef SUBDIRS
+	for d in $(SUBDIRS); do make -C $$d DIR=$(DIR)/$$d build || exit 1; done
+endif
+
+subdirs-install:
+ifdef SUBDIRS
+	for d in $(SUBDIRS); do make -C $$d \
+		DIR=$(DIR)/$$d \
+		PYDEST=$(PYDIR)/$$d \
+		install || exit 1; done
+endif
+
+subdirs-clean:
+ifdef SUBDIRS
+	for d in $(SUBDIRS); do make -C $$d DIR=$(DIR)/$$d clean || exit 1; done
+endif
+
+subdirs-test:
+ifdef SUBDIRS
+	for d in $(SUBDIRS); do make -C $$d DIR=$(DIR)/$$d test || exit 1; done
+endif
+
+
+# Python rules
+PYTHON = $(shell [ -x /usr/bin/python ] && echo /usr/bin/python)
+PYVERSION = $(shell $(PYTHON) -c 'import os, sys; print sys.version[:3]')
+PYINCLUDE = $(shell $(PYTHON) -c 'import os, sys; print os.sep.join((sys.prefix, "include", "python" + sys.version[:3]))')
+
+python-build:
+
+python-install:
+	mkdir -p "$(DESTDIR)$(pydir)$(PYDEST)"
+	install -m0644 $(python_files) "$(DESTDIR)$(pydir)$(PYDEST)/"
+	$(PYTHON) -c "import compileall; compileall.compile_dir('$(DESTDIR)$(pydir)$(PYDEST)', maxlevels=0, ddir='$(pydir)$(PYDEST)', quiet=1)"
+	$(PYTHON) -OO -c "import compileall; compileall.compile_dir('$(DESTDIR)$(pydir)$(PYDEST)', maxlevels=0, ddir='$(pydir)$(PYDEST)', quiet=1)"
+
+python-clean:
+
+python-test:
+
+# Actionscript rules
+as-build:
+	ANT_OPTS=$(antopts) ant build
+
+as-install:
+
+as-clean:
+	ANT_OPTS=$(antopts) ant clean
+
+as-test:
+	ANT_OPTS=$(antopts) ant test
+
+
+# testutils rules
+testutils-build:
+
+testutils-install:
+
+testutils-clean:
+	rm -Rf .coverage .times annotate
+
+testutils-test:
+	XOBJ_PATH=$(TOPDIR)/py $(PYTHON) testsuite.py -v --coverage
