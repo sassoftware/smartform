@@ -893,6 +893,7 @@
         valid="handleValidationEvent(event)"
         invalid="handleValidationEvent(event)"
         isValid="{isValid}"
+        horizontalScrollPolicy="off"
         width="100%"
         >
         <!--         
@@ -1017,10 +1018,10 @@
             />
         
         <!-- radiochoice: 19 -->
-        <mx:HBox toolTip="{prompt}"
+        <mx:HBox toolTip="{prompt}" horizontalScrollPolicy="off"
             width="100%"
             >
-            <mx:RadioButtonGroup id="radiochoice" itemClick="handleRadioChoice(event)" />
+            <mx:RadioButtonGroup id="radiochoice" itemClick="handleRadioChoice(event)"/>
             <mx:Repeater id="rep1" dataProvider="{choices}">
                 <mx:RadioButton id="rb" label="{rep1.currentItem.label}" enabled="{editable &amp;&amp; enabled}" 
                     value="{rep1.currentItem.value}" groupName="radiochoice" />
