@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <flexLibProperties version="1">
   <includeClasses>
+    <classEntry path="com.rpath.raf.SmartformVersion"/>
     <classEntry path="com.rpath.raf.events.HelpEvent"/>
     <classEntry path="com.rpath.raf.util.DescriptorUtil"/>
     <classEntry path="com.rpath.raf.util.UIHelper"/>
