@@ -215,7 +215,10 @@
             for each (var w:* in watchers)
             {
                 if (w.watcher)
+                {
                     w.watcher.unwatch();
+                    w.watcher = null;
+                }
             }
         }
     }
@@ -226,16 +229,25 @@
         {
             for each (var w:* in watchers)
             {
-                w.watcher = BindingUtils.bindSetter(
-                    function f(value:*):void
-                    {
-                        setProperty(data, w.prop, value);
-                    },
-                    w.item, [ "data" ]);
+                w.watcher = binder(w);
             }
         }
     }
-        
+    
+    // we have to put this in a distinct function to ensure that the anon func
+    // gets a fresh variable ref for each invocation. If you just put this in
+    // the foreach loop above, all funcs when invoked will reference the same
+    // value of w. (i.e the last one visited in the loop) GOTCHA!
+    private function binder(w:Object):ChangeWatcher
+    {
+        return BindingUtils.bindSetter(
+            function f(value:*):void
+            {
+                setProperty(data, w.prop, value);
+            },
+            w.item, [ "data" ]);
+    }
+    
     private function removeWatchers():void
     {
         if (watchers)
@@ -285,13 +297,19 @@
         
         if (data != null)
         {
+            var dataVal:Object;
+            var stringVal:String;
+            
+            dataVal = getProperty(data, condition.property);
+            stringVal = dataVal == null ? null : dataVal.toString();
+            
             if (/eq.*/.exec(condition.operator.toLowerCase()))
             {
-                result = (getProperty(data, condition.property).toString() == condition.value);
+                result = (stringVal == condition.value);
             }
             else if (/noteq.*/.exec(condition.operator.toLowerCase()))
             {
-                result = (getProperty(data, condition.property).toString() != condition.value);
+                result = (stringVal != condition.value);
             }
         }
         
