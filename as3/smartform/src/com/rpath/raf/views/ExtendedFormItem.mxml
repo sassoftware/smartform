@@ -49,7 +49,7 @@
  
     public function onCreationComplete(event:FlexEvent):void
     {
-        if ((helpNode && helpNode.length() > 0) || helpKey || (helpLink && helpLink != ""))
+        if ((helpNode && helpNode.length() > 0) || helpKey || (helpLink && helpLink != "") || (helpText && helpText != ""))
         {
             var lbl:Label = FormItem(event.currentTarget).itemLabel as Label;
             lbl.selectable = true;
