@@ -93,8 +93,8 @@
     public var displayAsPassword:Boolean;
 
     
-    private var initializingControls:Boolean;
-    private var dataChanged:Boolean;
+    private var _initializingControls:Boolean;
+    private var _dataChanged:Boolean;
     
     /* NOTE: Container declares this with a specified change event so we 
     need to preserve that event type to avoid redundant change notifications
@@ -103,8 +103,8 @@
     [Bindable]
     public override function set data(v:Object):void
     {
-        dataChanged = true;
-
+        _dataChanged = true;
+        
         // this will dispatch the required dataChange event
         super.data = v;
         
@@ -112,20 +112,31 @@
         invalidateProperties();
     }
 
+    private var _origData:Object;
+    
     public override function get data():Object
     {
         return super.data;
     }
 
+    public function snapshotData():void
+    {
+        _origData = data;
+    }
+    
     protected override function commitProperties():void
     {
 
-        if (dataChanged)
+        if (_dataChanged)
         {
-            dataChanged = false;
+            _dataChanged = false;
             // refresh our controls to display new data
-            if (!initializingControls)
+            if (!_initializingControls)
+            {
                 initializeControls();
+            }
+            
+            isDirty = checkDirty();
         }
 
         // make sure form is marked valid/invalid at all times
@@ -135,9 +146,26 @@
         super.commitProperties();
     }
     
+    private function checkDirty():Boolean
+    {
+        var newData:Object = data;
+        
+        if ((_origData == "" || _origData == null)
+            && (newData == "" || newData == null))
+        {
+            return false;
+        }
+        else
+        {
+            return _origData != newData;
+        }
+        
+    }
+    
+    
     public function initializeControls():void
     {
-        initializingControls = true;
+        _initializingControls = true;
         // when the data changes, we need to refresh the current control
         switch (effectiveType)
         {
@@ -165,7 +193,7 @@
                 initIPAddress();
                 break;
         }
-        initializingControls = false;
+        _initializingControls = false;
     }
     
     [Bindable]
@@ -340,6 +368,12 @@
         magic.createComponentsFromDescriptors();
         
         initializeControls();
+        
+        // and make sure we start off clean
+        isDirty = false;
+        
+        // stash the original data value (if any)
+        _origData = data;
     }
    
     override public function onCreationComplete(event:FlexEvent):void
@@ -672,6 +706,24 @@
         super.validationResultHandler(event);
     }
     
+    
+    // --------------------------------------------------- DIRTY HANDLING
+    
+    [Bindable]
+    public function set isDirty(b:Boolean):void
+    {
+        _isDirty = b;
+        // rethrow the validation event so that our whole form can go invalid
+        this.dispatchEvent(new DynamicEvent("dirtyChanged"));
+    }
+    
+    private var _isDirty:Boolean = false;
+    
+    public function get isDirty():Boolean
+    {
+        return _isDirty;
+    }
+
     private function getDescription(value:String, defaultVal:String):String
     {
         return (value != "") ? value : defaultVal;

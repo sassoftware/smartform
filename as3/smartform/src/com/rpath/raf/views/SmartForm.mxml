@@ -230,6 +230,9 @@
             for each (var w:* in watchers)
             {
                 w.watcher = binder(w);
+                // give the item a chance to snapshot data
+                if (w.item.hasOwnProperty("snapshotData"))
+                    w.item.snapshotData();
             }
         }
     }
@@ -278,13 +281,33 @@
             needsRebinding = false;
             removeFormItems();
             createFormItems();
+            checkDirty();
         }
         else if (needsRebinding)
         {
             //trace("smartform commit REBIND" + this.uid);
             needsRebinding = false;
             rebindWatchers();
+            checkDirty();
         }
+
+        if (_dataChanged)
+        {
+            revisitConditions();
+            if (!_childDirtyChanged)
+            {
+                checkDirty();
+            }
+            
+            _dataChanged = false;
+        }
+        
+        if (_childDirtyChanged)
+        {
+            checkDirty();
+            _childDirtyChanged = false;
+        }
+
         super.commitProperties();
     }
     
@@ -504,7 +527,11 @@
                     newItem.addEventListener(ValidationResultEvent.VALID, handleValidationEvent);
                     newItem.addEventListener(ValidationResultEvent.INVALID, handleValidationEvent);
                     newItem.addEventListener(FlexEvent.DATA_CHANGE, handleDataChange);
-                            
+                    newItem.addEventListener("dirtyChanged", handleDirtyEvent);
+                    
+                    // give the item a chance to stash the orig data value for dirty detection
+                    newItem.snapshotData();
+                    
                     this.addChild(newItem);
     
                     // track the first item in the smartform for label computation 
@@ -586,9 +613,12 @@
         }
     }
     
+    private var _dataChanged:Boolean;
+    
     private function handleDataChange(event:FlexEvent):void
     {
-        revisitConditions();
+        _dataChanged = true;
+        invalidateProperties();
     }
     
     private function removeFormItems():void
@@ -602,6 +632,8 @@
         }
     }
 
+    // ------------------------------------------------ VALIDATION
+    
     [Bindable]
     public var isValid:Boolean = true;;
     
@@ -638,6 +670,43 @@
         this.dispatchEvent(new FlexEvent(isValid ? FlexEvent.VALID : FlexEvent.INVALID));
     }
 
+    // ---------------------------------------------------- DIRTY TRACKING
+    
+
+    [Bindable]
+    public var isDirty:Boolean = false;
+
+    public var _childDirtyChanged:Boolean;
+    
+    public function handleDirtyEvent(event:Event):void
+    {
+        _childDirtyChanged = true;
+        invalidateProperties();
+    }
+    
+    
+    public function checkDirty():void
+    {
+        var newDirty:Boolean = false;
+        
+        for each (var child:* in this.getChildren())
+        {
+            if (child.hasOwnProperty("isDirty"))
+            {
+                if (child.isDirty)
+                {
+                    newDirty = true;
+                    break;
+                }
+            }
+        }
+        
+        isDirty = newDirty;
+    }
+    
+    
+    // -----------------------------------------------------------------------
+    
     public override function setFocus():void
     {
         for each (var child:* in this.getChildren())
@@ -667,7 +736,7 @@
             firstItem.label = oldLabel;
         }
     }
-    
+
     ]]>
     </mx:Script>
 
