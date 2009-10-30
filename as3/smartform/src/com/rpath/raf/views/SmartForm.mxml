@@ -89,7 +89,7 @@
         {
             //trace("metadata change " + this.uid);
             _metadata = m;
-            needsRebuilding = true;
+            _needsRebuilding = true;
             // make sure defaults are re-eval'd
             firstTime = true;
             invalidateProperties();
@@ -173,7 +173,7 @@
             // nor do we want the old data object changing us
             unbindWatchers();
             super.data = v;
-            needsRebinding = true;
+            _needsRebinding = true;
             invalidateProperties();
         }
     }
@@ -184,9 +184,9 @@
     }
 
     // set this true by default to ensure we get initial refresh
-    private var needsRebuilding:Boolean;
+    private var _needsRebuilding:Boolean;
     
-    private var needsRebinding:Boolean;
+    private var _needsRebinding:Boolean;
     
     
     private function addWatcher(propName:String, item:*):void
@@ -274,23 +274,6 @@
     
     protected override function commitProperties():void
     {       
-        if (needsRebuilding)
-        {
-            //trace("smartform commit REBUILD" + this.uid);
-            needsRebuilding = false;
-            needsRebinding = false;
-            removeFormItems();
-            createFormItems();
-            checkDirty();
-        }
-        else if (needsRebinding)
-        {
-            //trace("smartform commit REBIND" + this.uid);
-            needsRebinding = false;
-            rebindWatchers();
-            checkDirty();
-        }
-
         if (_dataChanged)
         {
             revisitConditions();
@@ -306,6 +289,26 @@
         {
             checkDirty();
             _childDirtyChanged = false;
+        }
+
+        if (_needsRebuilding)
+        {
+            //trace("smartform commit REBUILD" + this.uid);
+            _needsRebuilding = false;
+            _needsRebinding = false;
+            removeFormItems();
+            createFormItems();
+            checkDirty();
+            
+            // after the rebuild, clear any change flag
+            _conditionsChanged = false;
+        }
+        else if (_needsRebinding)
+        {
+            //trace("smartform commit REBIND" + this.uid);
+            _needsRebinding = false;
+            rebindWatchers();
+            checkDirty();
         }
 
         super.commitProperties();
@@ -365,6 +368,7 @@
         return condition;
     }
     
+    private var _conditionsChanged:Boolean;
     
     private function revisitConditions():void
     {
@@ -372,7 +376,8 @@
         {
             // one or more of the conditionals have changed result
             // so rebuild everything
-            needsRebuilding = true;
+            _conditionsChanged= true;
+            _needsRebuilding = true;
             invalidateProperties();
         }
     }
@@ -530,7 +535,11 @@
                     newItem.addEventListener("dirtyChanged", handleDirtyEvent);
                     
                     // give the item a chance to stash the orig data value for dirty detection
-                    newItem.snapshotData();
+                    // unless this is a rebuild due to conditional values changing
+                    if (!_conditionsChanged)
+                    {
+                        newItem.snapshotData();
+                    }
                     
                     this.addChild(newItem);
     

@@ -16,7 +16,7 @@
 
 <mx:Application xmlns:mx="http://www.adobe.com/2006/mxml"
     xmlns:controllers="com.rpath.catalog.controllers.*"
-    xmlns:smartform="com.rpath.raf.smartform.*"
+    xmlns:smartform="http://www.rpath.com/raf/2009/smartform"
     creationComplete="creationComplete()"
     verticalAlign="top" borderColor="#DDDDDD" borderStyle="solid"
     minWidth="500"
