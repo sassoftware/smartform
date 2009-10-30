@@ -19,5 +19,7 @@
     <classEntry path="com.rpath.raf.views.SmartFormItem"/>
   </includeClasses>
   <includeResources/>
-  <namespaceManifests/>
+  <namespaceManifests>
+    <namespaceManifestEntry manifest="smartform-manifest.xml" namespace="http://www.rpath.com/smartform"/>
+  </namespaceManifests>
 </flexLibProperties>
