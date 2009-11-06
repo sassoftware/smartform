@@ -137,6 +137,11 @@ package com.rpath.raf.util
         
         public function clearErrorImmediately(target:UIComponent):void
         {
+            target.callLater(clearDeferred, [target]);
+        }
+        
+        private function clearDeferred(target:UIComponent):void
+        {
             var oldDelay:Number = ToolTipManager.hideDelay;
             ToolTipManager.hideDelay = 0;
             if (target.visible)
@@ -149,7 +154,7 @@ package com.rpath.raf.util
                 }
                 catch (e:Error)
                 {
-                    // sometimes things are initialized fully when we try that trick
+                    // sometimes things aren't initialized fully when we try that trick
                 }
             }
             ToolTipManager.hideDelay = oldDelay;
