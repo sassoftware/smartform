@@ -142,8 +142,15 @@ package com.rpath.raf.util
             if (target.visible)
             {
                 // clear the errorTip
-                target.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_OVER));
-                target.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_OUT));
+                try
+                {
+                    target.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_OVER));
+                    target.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_OUT));
+                }
+                catch (e:Error)
+                {
+                    // sometimes things are initialized fully when we try that trick
+                }
             }
             ToolTipManager.hideDelay = oldDelay;
         }

@@ -142,8 +142,18 @@
         // make sure form is marked valid/invalid at all times
         validate();
 
-        // now commit super to pick up changes to styles, etc.
-        super.commitProperties();
+        try
+        {
+            // now commit super to pick up changes to styles, etc.
+            super.commitProperties();
+        }
+        catch (e:TypeError)
+        {
+            // this is here because if label is set before createChildren 
+            // has created the private labelObj in FormItem, commit will 
+            // blow up
+        }
+        
     }
     
     private function checkDirty():Boolean
@@ -246,12 +256,21 @@
         choices = newChoices;
     }
     
+    
+    public function onInitialize(event:FlexEvent):void
+    
+    {
+        
+    }
+
     // The workhorse method. Unpacks metadata, decides what effective UI control
     // to use and then uses the underlying MagicFormItem to instantiate the
     // correct control type
     
-    public function onInitialize(event:FlexEvent):void
+    protected override function createChildren():void
     {        
+        super.createChildren();
+        
         // process the XML metadata, set our own props and create the appropriate items
         
         label = DescriptorUtil.localeDescString(metadata.descriptions);
