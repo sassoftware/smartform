@@ -17,8 +17,15 @@
 <mx:Form xmlns:mx="http://www.adobe.com/2006/mxml"
     creationComplete="onCreationComplete(event)"
     >
+
+    <mx:Metadata>
+        [Event(name="dirtyChanged", type="mx.events.DynamicEvent")]
+    </mx:Metadata>
+    
+    
     <mx:Script>
     <![CDATA[
+        import mx.events.DynamicEvent;
         import mx.utils.ArrayUtil;
         import mx.collections.ArrayCollection;
         import com.rpath.raf.util.DescriptorUtil;
@@ -519,7 +526,7 @@
                                         
                     // make sure changes to the data object propagate to the control
                     var propChain:Array = propName.split('.');
-                    BindingUtils.bindProperty(newItem, "data", this, ["data"].concat(propChain));
+                    BindingUtils.bindSetter(itemDataSetterWrapper(newItem), this, ["data"].concat(propChain));
                     
                     // make sure changes to the control propagate to the data object
                     addWatcher(propName, newItem);
@@ -571,6 +578,14 @@
         
         // force validate the whole lot
         handleValidationEvent();
+    }
+    
+    private function itemDataSetterWrapper(newItem:SmartFormItem):Function
+    {
+        return function setter(value:*):void
+            {
+                newItem.data = value;
+            }
     }
     
     protected function getProperty(obj:*, propName:String):*
@@ -683,7 +698,24 @@
     
 
     [Bindable]
-    public var isDirty:Boolean = false;
+    public function set isDirty(b:Boolean):void
+    {
+        _isDirty = b;
+        this.dispatchEvent(new DynamicEvent("dirtyChanged",true));
+        
+        // aslo mark the data object dirty if it has such a property
+        if (data.hasOwnProperty("isDirty"))
+        {
+            data.isDirty = b;
+        }
+    }
+    
+    private var _isDirty:Boolean = false;
+    
+    public function get isDirty():Boolean
+    {
+        return _isDirty;
+    }
 
     public var _childDirtyChanged:Boolean;
     

@@ -19,7 +19,11 @@
     initialize="onInitialize(event)"
     width="100%">
 
-
+    <mx:Metadata>
+        [Event(name="dirtyChanged", type="mx.events.DynamicEvent")]
+    </mx:Metadata>
+    
+    
     <mx:Script>
     <![CDATA[
         import com.rpath.raf.events.HelpEvent;
