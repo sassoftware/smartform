@@ -691,7 +691,7 @@
         
         // rethrow the validation event should anyone else want it
         // catch it regardless of location
-        this.dispatchEvent(new FlexEvent(isValid ? FlexEvent.VALID : FlexEvent.INVALID));
+        this.dispatchEvent(new FlexEvent(isValid ? FlexEvent.VALID : FlexEvent.INVALID, true));
     }
 
     // ---------------------------------------------------- DIRTY TRACKING
