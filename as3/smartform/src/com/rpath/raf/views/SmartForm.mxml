@@ -536,10 +536,10 @@
                     BindingUtils.bindProperty(newItem, "editable", this, [ "editable"]);
                     BindingUtils.bindProperty(newItem, "enabled", this, [ "enabled"]);
                     
-                    newItem.addEventListener(ValidationResultEvent.VALID, handleValidationEvent);
-                    newItem.addEventListener(ValidationResultEvent.INVALID, handleValidationEvent);
-                    newItem.addEventListener(FlexEvent.DATA_CHANGE, handleDataChange);
-                    newItem.addEventListener("dirtyChanged", handleDirtyEvent);
+                    newItem.addEventListener(ValidationResultEvent.VALID, handleValidationEvent,false,0,true);
+                    newItem.addEventListener(ValidationResultEvent.INVALID, handleValidationEvent,false,0,true);
+                    newItem.addEventListener(FlexEvent.DATA_CHANGE, handleDataChange,false,0,true);
+                    newItem.addEventListener("dirtyChanged", handleDirtyEvent,false,0,true);
                     
                     // give the item a chance to stash the orig data value for dirty detection
                     // unless this is a rebuild due to conditional values changing
