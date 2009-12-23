@@ -105,8 +105,8 @@ package com.rpath.raf.util
         
         protected function setupListeners(v:IEventDispatcher):void
         {
-            v.addEventListener(ValidationResultEvent.VALID, validateNow);
-            v.addEventListener(ValidationResultEvent.INVALID, validateNow);
+            v.addEventListener(ValidationResultEvent.VALID, validateNow,false,0,true);
+            v.addEventListener(ValidationResultEvent.INVALID, validateNow,false,0,true);
         }
 
         /**
