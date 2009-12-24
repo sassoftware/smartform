@@ -25,6 +25,7 @@
     
     <mx:Script>
     <![CDATA[
+        import mx.binding.utils.BindingUtils;
         import mx.events.DynamicEvent;
         import mx.utils.ArrayUtil;
         import mx.collections.ArrayCollection;
@@ -34,7 +35,6 @@
         import mx.binding.utils.ChangeWatcher;
         import mx.events.PropertyChangeEvent;
         import mx.core.UIComponent;
-        import mx.binding.utils.BindingUtils;
         import mx.containers.FormItem;
     
     /** metadata drives the SmartForm
@@ -207,7 +207,7 @@
                 {
                     setProperty(data, propName, value);
                 },
-                item, [ "data" ]);
+                item, [ "data" ], true, true);
         }
         
         if (!watchers)
@@ -255,7 +255,7 @@
             {
                 setProperty(data, w.prop, value);
             },
-            w.item, [ "data" ]);
+            w.item, [ "data" ], true, true);
     }
     
     private function removeWatchers():void
@@ -370,7 +370,7 @@
         // BindSetter only works with known properties - not truly dynamic ones
         // need an object proxy here?
         
-        //BindingUtils.bindSetter(revisitConditions, this, ["data", prop]);
+        //RAFBindingUtils.bindSetter(revisitConditions, this, ["data", prop]);
         
         return condition;
     }
@@ -526,15 +526,15 @@
                                         
                     // make sure changes to the data object propagate to the control
                     var propChain:Array = propName.split('.');
-                    BindingUtils.bindSetter(itemDataSetterWrapper(newItem), this, ["data"].concat(propChain));
+                    BindingUtils.bindSetter(itemDataSetterWrapper(newItem), this, ["data"].concat(propChain), true, true);
                     
                     // make sure changes to the control propagate to the data object
                     addWatcher(propName, newItem);
                     
                     newItem.metadata = field;
                     newItem.id = "formItem" + (idGen++);
-                    BindingUtils.bindProperty(newItem, "editable", this, [ "editable"]);
-                    BindingUtils.bindProperty(newItem, "enabled", this, [ "enabled"]);
+                    BindingUtils.bindProperty(newItem, "editable", this, [ "editable"], true, true);
+                    BindingUtils.bindProperty(newItem, "enabled", this, [ "enabled"], true, true);
                     
                     newItem.addEventListener(ValidationResultEvent.VALID, handleValidationEvent,false,0,true);
                     newItem.addEventListener(ValidationResultEvent.INVALID, handleValidationEvent,false,0,true);
