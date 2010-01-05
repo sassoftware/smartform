@@ -16,69 +16,68 @@
     
     <!-- Load user's property file to override settings -->
     <property file="user.properties"/>
+	
+	<!-- See if there is an OS property file to load -->
+    <condition property="osPropertyFile" value="mac.properties">
+       <os family="mac"/>
+    </condition>
+   
+    <!-- Load OS property file -->
+    <property file="${osPropertyFile}"/>
     
     <!-- Load our property file -->
     <property file="build.properties"/>
     
     <!-- Include support for Flex ant tasks -->
-    <taskdef resource="flexTasks.tasks" classpath="${flex.sdk.ant.flextasks.jar}"/>
+	<taskdef resource="flexTasks.tasks" classpath="${flex.sdk.ant.lib}/${flex.sdk.ant.flextasks.jar}" />
 	
 	<!-- Macro to build a flex library -->	
 	<macrodef name="flexlib-build" description="Builds a flex library">
-	   
-		<!-- The title of the lib for logging purposes -->
-		<attribute name="title"/>
-		
-		<!-- The path/name of the lib we are creating -->
-	    <attribute name="outputLib"/>
-		
-		<!-- The source dir for the lib -->
-		<attribute name="srcDir"/>
-		
-		<!-- The namespace for the lib -->
-		<attribute name="namespace"/>
-		
-		<!-- The manifest file to use -->
-		<attribute name="manifest"/>
-		
-		<!-- Additional compc elements -->
-		<element name="compc-elements" optional="true"/>
-		
-		<sequential>			
-			<!-- Build the lib -->
-			<echo>Building @{title} flex lib...</echo>
-			
-    		<compc output="@{outputLib}">
-    			
-    			<source-path path-element="@{srcDir}"/>
-    			
-    			<!-- Include libraries we need to link to -->
-    			<include-libraries dir="${flex.sdk.frameworks.libs}">
-    				<!--
-    				    Do not include the Flash lib here as we don't need to
-    				    link to it.  We just need it for compiling, so it
-    				    will be added via external-library-path below.
-    				    Do not include AIR libraries.
-    				-->
-                    <include name="**/*.swc" />
-                    <exclude name="**/${flex.sdk.flashlib.name}"/>
-                    <exclude name="**/air/*"/>
-                </include-libraries>
-    			
-    			<!-- Add libs required only for compilitaion -->
-    			<external-library-path file="${flex.sdk.flashlib}"/>
-    			
-    			<!-- Add any custom compc elements -->
-    			<compc-elements/>
-    			
-    			<!-- Register the namespace -->
+	       
+        <!-- The title of the lib for logging purposes -->
+        <attribute name="title"/>
+        
+        <!-- The path/name of the lib we are creating -->
+        <attribute name="outputLib"/>
+        
+        <!-- The source dir for the lib -->
+        <attribute name="srcDir"/>
+        
+        <!-- The config file to load -->
+        <attribute name="config"/>
+        
+        <!-- The namespace for the lib -->
+        <attribute name="namespace"/>
+        
+        <!-- The name of the manifest file to create -->
+        <attribute name="manifest"/>
+        
+        <!-- Additional compc elements -->
+        <element name="compc-elements" optional="true"/>
+        
+        <sequential>
+            <!-- Build the lib -->
+            <echo>Building @{title} flex lib...</echo>
+            <compc output="@{outputLib}" dump-config="config.xml">
+                <load-config filename="@{config}"/>
+                <source-path path-element="@{srcDir}"/>
+                <compc-elements/>
+            	
                 <namespace uri="@{namespace}" manifest="@{manifest}" />
+            	<namespace uri="http://ns.adobe.com/mxml/2009" manifest="${flex.sdk.frameworks.dir}/mxml-2009-manifest.xml" />
+                <namespace uri="library://ns.adobe.com/flex/spark" manifest="${flex.sdk.frameworks.dir}/spark-manifest.xml" />
+                <namespace uri="library://ns.adobe.com/flex/halo" manifest="${flex.sdk.frameworks.dir}/halo-manifest.xml" />
+                <namespace uri="http://www.adobe.com/2006/mxml" manifest="${flex.sdk.frameworks.dir}/halo-manifest.xml" />
+            	
                 <include-namespaces uri="@{namespace}"/>
+                
+                <!-- AS3 metadata to keep -->
+                <keep-as3-metadata name="ArrayElementType"/>
+                <keep-as3-metadata name="RAFMessage"/>
             </compc>
-			
-            <echo>Build completed</echo>
-		</sequential>
-	</macrodef>
+            <echo>@{title} flex lib build completed</echo>
+        </sequential>
+    </macrodef>
     
     <target name="clean" description="Initialization for building">
     	<echo>Cleaning smartform</echo>
@@ -94,7 +93,9 @@
         <echo>Obtaining build version for ${ant.project.name}...</echo>
         
         <!-- Write the version from mercurial -->
-        <exec executable="${smartform.hg-version.cmd}" outputproperty="build.version"/>
+        <exec executable="${smartform.hg-version.cmd}" outputproperty="build.version">
+        	<arg line="${smartform.top.dir}"/>
+        </exec>
         <echo file="${smartform.build.dir.version.file}" message="${build.version}"/>
         <loadfile property="build.info.version" srcFile="${smartform.build.dir.version.file}"/>
         <echo>Current build version is ${build.info.version}</echo>
@@ -133,7 +134,8 @@
         <replace file="${smartform.temp.src.dir}/${smartform.package.path}/SmartformVersion.as" token="@@SMARTFORM-BUILDVERSION@@" value="${fullVersion}"/>
 
     	<flexlib-build 
-    		title="smartform" 
+    		title="smartform"
+    		config="${flex.config.file}"
     		outputlib="${smartform.lib}"
     		srcdir="${smartform.temp.src.dir}"
     		namespace="${smartform.namespace}"
