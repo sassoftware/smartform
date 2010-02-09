@@ -902,8 +902,8 @@
     public function handleReadFileContent(event:Event):void
     {
         fileRef = new FileReference();
-        fileRef.addEventListener( Event.SELECT, onFileSelect );
-        fileRef.addEventListener( Event.COMPLETE, onFileComplete );
+        fileRef.addEventListener( Event.SELECT, onFileSelect ,false,0,true);
+        fileRef.addEventListener( Event.COMPLETE, onFileComplete ,false,0,true);
         fileRef.browse();
     }
     

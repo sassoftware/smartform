@@ -25,6 +25,7 @@ package com.rpath.raf.util
     
     import mx.collections.ArrayCollection;
     import mx.core.Application;
+    import mx.core.FlexGlobals;
     import mx.core.IFlexDisplayObject;
     import mx.formatters.NumberBaseRoundType;
     import mx.formatters.NumberFormatter;
@@ -116,7 +117,7 @@ package com.rpath.raf.util
         
         public static function createPopup(clazz:Class):*
         {
-            var popup:Object = PopUpManager.createPopUp(Application.application as Application,
+            var popup:Object = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as Application,
                 clazz, false, PopUpManagerChildList.APPLICATION) as clazz;
             return popup as IFlexDisplayObject;
         }
@@ -128,7 +129,7 @@ package com.rpath.raf.util
             popup = popupForModel(model);
             if (popup == null)
             {
-                popup = PopUpManager.createPopUp(Application.application as Application,
+                popup = PopUpManager.createPopUp(FlexGlobals.topLevelApplication as Application,
                     clazz, false, PopUpManagerChildList.APPLICATION) as clazz;
                 
                 popupModelMap[model] = popup;
