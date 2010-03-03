@@ -60,7 +60,7 @@
             lbl.useHandCursor = true;
             lbl.buttonMode = true;
             lbl.mouseChildren = false;
-            lbl.addEventListener(MouseEvent.CLICK, handleHelp);
+            lbl.addEventListener(MouseEvent.CLICK, handleHelp,false,0,true);
         }
     }
 
