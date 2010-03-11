@@ -7,4 +7,4 @@ TESTS = testsuite.py
 test:
 	python $(TESTS)
 
-install:
+build install:

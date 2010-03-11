@@ -12,7 +12,7 @@
 # full details.
 #
 
-all: default-subdirs default-all
+all build: default-subdirs default-all
 
 .PHONY: clean dist install html docs
 
