@@ -30,14 +30,19 @@ package com.rpath.raf.util
     import mx.managers.ToolTipManager;
     import mx.validators.Validator;
     import mx.binding.utils.BindingUtils;
+    import mx.binding.utils.ChangeWatcher;
     
     [Bindable]
     public class ValidationHelper
     {
+        public var target:*;
+        private var cw:ChangeWatcher;
+        
         public function ValidationHelper(vals:Array=null, target:*=null, property:String=null)
         {
-            if (target && property)
-                BindingUtils.bindProperty(target, property, this, ["isValid"], true, true);
+            this.target = target;
+            if (this.target && property)
+                cw = BindingUtils.bindProperty(this.target, property, this, ["isValid"], true, true);
             
             validators = vals;
         }
