@@ -11,6 +11,7 @@
 #
 
 .SILENT:
+.PHONY: test install
 
 export TOPDIR
 

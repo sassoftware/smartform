@@ -51,6 +51,8 @@ doc: html
 html: default-subdirs
 	scripts/generate_docs.sh
 
+test:
+
 forcetag:
 	hg tag -f product-definition-$(VERSION)
 tag:
