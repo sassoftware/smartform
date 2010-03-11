@@ -178,20 +178,20 @@ legalValuesTypeMethods = MethodSpec(name = 'legalValuesTypeMethods',
 regexpTypeMethods = MethodSpec(name = 'regexpTypeMethods',
     source = '''
     def presentation(self):
-        return dict(constraintName = 'regexp', value = self.value)
+        return dict(constraintName = 'regexp', value = self.valueOf_)
 
     def fromData(self, data):
-        self.value = data.get('value')
+        self.setValueOf_(data.get('value'))
     ''',
     class_names = r'^regexpType$')
 
 lengthTypeMethods = MethodSpec(name = 'lengthTypeMethods',
     source = '''
     def presentation(self):
-        return dict(constraintName = 'length', value = self.value)
+        return dict(constraintName = 'length', value = int(self.valueOf_))
 
     def fromData(self, data):
-        self.value = data.get('value')
+        self.setValueOf_(str(data.get('value')))
     ''',
     class_names = r'^lengthType$')
 

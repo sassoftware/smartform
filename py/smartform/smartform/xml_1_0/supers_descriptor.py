@@ -151,15 +151,15 @@ class MixedContainer:
     def exportLiteral(self, outfile, level, name):
         if self.category == MixedContainer.CategoryText:
             showIndent(outfile, level)
-            outfile.write('MixedContainer(%d, %d, "%s", "%s"),\n' % \
+            outfile.write('model_.MixedContainer(%d, %d, "%s", "%s"),\n' % \
                 (self.category, self.content_type, self.name, self.value))
         elif self.category == MixedContainer.CategorySimple:
             showIndent(outfile, level)
-            outfile.write('MixedContainer(%d, %d, "%s", "%s"),\n' % \
+            outfile.write('model_.MixedContainer(%d, %d, "%s", "%s"),\n' % \
                 (self.category, self.content_type, self.name, self.value))
         else:    # category == MixedContainer.CategoryComplex
             showIndent(outfile, level)
-            outfile.write('MixedContainer(%d, %d, "%s",\n' % \
+            outfile.write('model_.MixedContainer(%d, %d, "%s",\n' % \
                 (self.category, self.content_type, self.name,))
             self.value.exportLiteral(outfile, level + 1)
             showIndent(outfile, level)
@@ -260,18 +260,18 @@ class descriptorType(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, name_):
         if self.version is not None:
             showIndent(outfile, level)
-            outfile.write('version = %s,\n' % (self.version,))
+            outfile.write('version = "%s",\n' % (self.version,))
         if self.id is not None:
             showIndent(outfile, level)
-            outfile.write('id = %s,\n' % (self.id,))
+            outfile.write('id = "%s",\n' % (self.id,))
     def exportLiteralChildren(self, outfile, level, name_):
-        if self.metadata:
+        if self.metadata is not None:
             showIndent(outfile, level)
             outfile.write('metadata=model_.metadataType(\n')
             self.metadata.exportLiteral(outfile, level, name_='metadata')
             showIndent(outfile, level)
             outfile.write('),\n')
-        if self.dataFields:
+        if self.dataFields is not None:
             showIndent(outfile, level)
             outfile.write('dataFields=model_.dataFieldsType(\n')
             self.dataFields.exportLiteral(outfile, level, name_='dataFields')
@@ -365,11 +365,13 @@ class metadataType(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
-        showIndent(outfile, level)
-        outfile.write('displayName=%s,\n' % quote_python(self.displayName).encode(ExternalEncoding))
-        showIndent(outfile, level)
-        outfile.write('rootElement=%s,\n' % quote_python(self.rootElement).encode(ExternalEncoding))
-        if self.descriptions:
+        if self.displayName is not None:
+            showIndent(outfile, level)
+            outfile.write('displayName=%s,\n' % quote_python(self.displayName).encode(ExternalEncoding))
+        if self.rootElement is not None:
+            showIndent(outfile, level)
+            outfile.write('rootElement=%s,\n' % quote_python(self.rootElement).encode(ExternalEncoding))
+        if self.descriptions is not None:
             showIndent(outfile, level)
             outfile.write('descriptions=model_.descriptionsType(\n')
             self.descriptions.exportLiteral(outfile, level, name_='descriptions')
@@ -459,10 +461,10 @@ class descriptionsType(GeneratedsSuper):
         showIndent(outfile, level)
         outfile.write('desc=[\n')
         level += 1
-        for desc in self.desc:
+        for desc_ in self.desc:
             showIndent(outfile, level)
-            outfile.write('model_.desc(\n')
-            desc.exportLiteral(outfile, level, name_='desc')
+            outfile.write('model_.descType(\n')
+            desc_.exportLiteral(outfile, level, name_='descType')
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
@@ -526,9 +528,9 @@ class descType(GeneratedsSuper):
             value=quote_xml('%s' % self.valueOf_)
             value=value.replace('![CDATA','<![CDATA')
             value=value.replace(']]',']]>')
-            outfile.write(value)
+            outfile.write(value.encode(ExternalEncoding))
         else:
-            outfile.write(quote_xml('%s' % self.valueOf_))
+            outfile.write(quote_xml('%s' % self.valueOf_.encode(ExternalEncoding)))
     def hasContent_(self):
         if (
             self.valueOf_
@@ -544,10 +546,10 @@ class descType(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, name_):
         if self.lang is not None:
             showIndent(outfile, level)
-            outfile.write('lang = %s,\n' % (self.lang,))
+            outfile.write('lang = "%s",\n' % (self.lang,))
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
-        outfile.write('valueOf_ = "%s",\n' % (self.valueOf_,))
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node_):
         attrs = node_.attributes
         self.buildAttributes(attrs)
@@ -621,10 +623,10 @@ class dataFieldsType(GeneratedsSuper):
         showIndent(outfile, level)
         outfile.write('field=[\n')
         level += 1
-        for field in self.field:
+        for field_ in self.field:
             showIndent(outfile, level)
-            outfile.write('model_.field(\n')
-            field.exportLiteral(outfile, level, name_='field')
+            outfile.write('model_.dataFieldType(\n')
+            field_.exportLiteral(outfile, level, name_='dataFieldType')
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
@@ -691,9 +693,9 @@ class helpType(GeneratedsSuper):
             value=quote_xml('%s' % self.valueOf_)
             value=value.replace('![CDATA','<![CDATA')
             value=value.replace(']]',']]>')
-            outfile.write(value)
+            outfile.write(value.encode(ExternalEncoding))
         else:
-            outfile.write(quote_xml('%s' % self.valueOf_))
+            outfile.write(quote_xml('%s' % self.valueOf_.encode(ExternalEncoding)))
     def hasContent_(self):
         if (
             self.valueOf_
@@ -709,13 +711,13 @@ class helpType(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, name_):
         if self.lang is not None:
             showIndent(outfile, level)
-            outfile.write('lang = %s,\n' % (self.lang,))
+            outfile.write('lang = "%s",\n' % (self.lang,))
         if self.href is not None:
             showIndent(outfile, level)
-            outfile.write('href = %s,\n' % (self.href,))
+            outfile.write('href = "%s",\n' % (self.href,))
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
-        outfile.write('valueOf_ = "%s",\n' % (self.valueOf_,))
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node_):
         attrs = node_.attributes
         self.buildAttributes(attrs)
@@ -885,9 +887,10 @@ class dataFieldType(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
-        showIndent(outfile, level)
-        outfile.write('name=%s,\n' % quote_python(self.name).encode(ExternalEncoding))
-        if self.descriptions:
+        if self.name is not None:
+            showIndent(outfile, level)
+            outfile.write('name=%s,\n' % quote_python(self.name).encode(ExternalEncoding))
+        if self.descriptions is not None:
             showIndent(outfile, level)
             outfile.write('descriptions=model_.descriptionsType(\n')
             self.descriptions.exportLiteral(outfile, level, name_='descriptions')
@@ -896,49 +899,55 @@ class dataFieldType(GeneratedsSuper):
         showIndent(outfile, level)
         outfile.write('help=[\n')
         level += 1
-        for help in self.help:
+        for help_ in self.help:
             showIndent(outfile, level)
-            outfile.write('model_.help(\n')
-            help.exportLiteral(outfile, level, name_='help')
+            outfile.write('model_.helpType(\n')
+            help_.exportLiteral(outfile, level, name_='helpType')
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
-        showIndent(outfile, level)
-        outfile.write('type_=%s,\n' % quote_python(self.type_).encode(ExternalEncoding))
-        if self.enumeratedType:
+        if self.type_ is not None:
+            showIndent(outfile, level)
+            outfile.write('type_=%s,\n' % quote_python(self.type_).encode(ExternalEncoding))
+        if self.enumeratedType is not None:
             showIndent(outfile, level)
             outfile.write('enumeratedType=model_.enumeratedTypeType(\n')
             self.enumeratedType.exportLiteral(outfile, level, name_='enumeratedType')
             showIndent(outfile, level)
             outfile.write('),\n')
-        showIndent(outfile, level)
-        outfile.write('multiple=%s,\n' % self.multiple)
+        if self.multiple is not None:
+            showIndent(outfile, level)
+            outfile.write('multiple=%s,\n' % self.multiple)
         showIndent(outfile, level)
         outfile.write('default=[\n')
         level += 1
-        for default in self.default:
+        for default_ in self.default:
             showIndent(outfile, level)
-            outfile.write('%s,\n' % quote_python(default).encode(ExternalEncoding))
+            outfile.write('%s,\n' % quote_python(default_).encode(ExternalEncoding))
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
-        if self.constraints:
+        if self.constraints is not None:
             showIndent(outfile, level)
             outfile.write('constraints=model_.constraintsType(\n')
             self.constraints.exportLiteral(outfile, level, name_='constraints')
             showIndent(outfile, level)
             outfile.write('),\n')
-        showIndent(outfile, level)
-        outfile.write('required=%s,\n' % self.required)
-        showIndent(outfile, level)
-        outfile.write('allowFileContent=%s,\n' % self.allowFileContent)
-        showIndent(outfile, level)
-        outfile.write('hidden=%s,\n' % self.hidden)
-        showIndent(outfile, level)
-        outfile.write('password=%s,\n' % self.password)
-        if self.conditional:
+        if self.required is not None:
+            showIndent(outfile, level)
+            outfile.write('required=%s,\n' % self.required)
+        if self.allowFileContent is not None:
+            showIndent(outfile, level)
+            outfile.write('allowFileContent=%s,\n' % self.allowFileContent)
+        if self.hidden is not None:
+            showIndent(outfile, level)
+            outfile.write('hidden=%s,\n' % self.hidden)
+        if self.password is not None:
+            showIndent(outfile, level)
+            outfile.write('password=%s,\n' % self.password)
+        if self.conditional is not None:
             showIndent(outfile, level)
             outfile.write('conditional=model_.conditionalType(\n')
             self.conditional.exportLiteral(outfile, level, name_='conditional')
@@ -1131,10 +1140,10 @@ class enumeratedTypeType(GeneratedsSuper):
         showIndent(outfile, level)
         outfile.write('describedValue=[\n')
         level += 1
-        for describedValue in self.describedValue:
+        for describedValue_ in self.describedValue:
             showIndent(outfile, level)
-            outfile.write('model_.describedValue(\n')
-            describedValue.exportLiteral(outfile, level, name_='describedValue')
+            outfile.write('model_.describedValueType(\n')
+            describedValue_.exportLiteral(outfile, level, name_='describedValueType')
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
@@ -1212,14 +1221,15 @@ class describedValueType(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
-        if self.descriptions:
+        if self.descriptions is not None:
             showIndent(outfile, level)
             outfile.write('descriptions=model_.descriptionsType(\n')
             self.descriptions.exportLiteral(outfile, level, name_='descriptions')
             showIndent(outfile, level)
             outfile.write('),\n')
-        showIndent(outfile, level)
-        outfile.write('key=%s,\n' % quote_python(self.key).encode(ExternalEncoding))
+        if self.key is not None:
+            showIndent(outfile, level)
+            outfile.write('key=%s,\n' % quote_python(self.key).encode(ExternalEncoding))
     def build(self, node_):
         attrs = node_.attributes
         self.buildAttributes(attrs)
@@ -1338,7 +1348,7 @@ class constraintsType(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
-        if self.descriptions:
+        if self.descriptions is not None:
             showIndent(outfile, level)
             outfile.write('descriptions=model_.descriptionsType(\n')
             self.descriptions.exportLiteral(outfile, level, name_='descriptions')
@@ -1347,10 +1357,10 @@ class constraintsType(GeneratedsSuper):
         showIndent(outfile, level)
         outfile.write('range=[\n')
         level += 1
-        for range in self.range:
+        for range_ in self.range:
             showIndent(outfile, level)
-            outfile.write('model_.range(\n')
-            range.exportLiteral(outfile, level, name_='range')
+            outfile.write('model_.rangeType(\n')
+            range_.exportLiteral(outfile, level, name_='rangeType')
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
@@ -1359,10 +1369,10 @@ class constraintsType(GeneratedsSuper):
         showIndent(outfile, level)
         outfile.write('legalValues=[\n')
         level += 1
-        for legalValues in self.legalValues:
+        for legalValues_ in self.legalValues:
             showIndent(outfile, level)
-            outfile.write('model_.legalValues(\n')
-            legalValues.exportLiteral(outfile, level, name_='legalValues')
+            outfile.write('model_.legalValuesType(\n')
+            legalValues_.exportLiteral(outfile, level, name_='legalValuesType')
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
@@ -1371,10 +1381,10 @@ class constraintsType(GeneratedsSuper):
         showIndent(outfile, level)
         outfile.write('regexp=[\n')
         level += 1
-        for regexp in self.regexp:
+        for regexp_ in self.regexp:
             showIndent(outfile, level)
-            outfile.write('model_.regexp(\n')
-            regexp.exportLiteral(outfile, level, name_='regexp')
+            outfile.write('model_.regexpType(\n')
+            regexp_.exportLiteral(outfile, level, name_='regexpType')
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
@@ -1383,10 +1393,10 @@ class constraintsType(GeneratedsSuper):
         showIndent(outfile, level)
         outfile.write('length=[\n')
         level += 1
-        for length in self.length:
+        for length_ in self.length:
             showIndent(outfile, level)
-            outfile.write('model_.length(\n')
-            length.exportLiteral(outfile, level, name_='length')
+            outfile.write('model_.lengthType(\n')
+            length_.exportLiteral(outfile, level, name_='lengthType')
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
@@ -1514,10 +1524,12 @@ class rangeType(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
-        showIndent(outfile, level)
-        outfile.write('min=%d,\n' % self.min)
-        showIndent(outfile, level)
-        outfile.write('max=%d,\n' % self.max)
+        if self.min is not None:
+            showIndent(outfile, level)
+            outfile.write('min=%d,\n' % self.min)
+        if self.max is not None:
+            showIndent(outfile, level)
+            outfile.write('max=%d,\n' % self.max)
     def build(self, node_):
         attrs = node_.attributes
         self.buildAttributes(attrs)
@@ -1620,9 +1632,9 @@ class legalValuesType(GeneratedsSuper):
         showIndent(outfile, level)
         outfile.write('item=[\n')
         level += 1
-        for item in self.item:
+        for item_ in self.item:
             showIndent(outfile, level)
-            outfile.write('%s,\n' % quote_python(item).encode(ExternalEncoding))
+            outfile.write('%s,\n' % quote_python(item_).encode(ExternalEncoding))
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
@@ -1653,40 +1665,43 @@ class legalValuesType(GeneratedsSuper):
 
 class regexpType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('value', 'xsd:string', 0),
+        MemberSpec_('valueOf_', 'xsd:string', 0),
         ]
     subclass = None
     superclass = None
-    def __init__(self, value=None):
-        self.value = value
+    def __init__(self, valueOf_=''):
+        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if regexpType.subclass:
             return regexpType.subclass(*args_, **kwargs_)
         else:
             return regexpType(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_value(self): return self.value
-    def set_value(self, value): self.value = value
+    def getValueOf_(self): return self.valueOf_
+    def setValueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='dsc:', name_='regexpType', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='regexpType')
         if self.hasContent_():
-            outfile.write('>\n')
+            outfile.write('>')
             self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
     def exportAttributes(self, outfile, level, namespace_='dsc:', name_='regexpType'):
         pass
     def exportChildren(self, outfile, level, namespace_='dsc:', name_='regexpType'):
-        if self.value is not None:
-            showIndent(outfile, level)
-            outfile.write('<%svalue>%s</%svalue>\n' % (namespace_, self.format_string(quote_xml(self.value).encode(ExternalEncoding), input_name='value'), namespace_))
+        if self.valueOf_.find('![CDATA') > -1:
+            value=quote_xml('%s' % self.valueOf_)
+            value=value.replace('![CDATA','<![CDATA')
+            value=value.replace(']]',']]>')
+            outfile.write(value.encode(ExternalEncoding))
+        else:
+            outfile.write(quote_xml('%s' % self.valueOf_.encode(ExternalEncoding)))
     def hasContent_(self):
         if (
-            self.value is not None
+            self.valueOf_
             ):
             return True
         else:
@@ -1700,67 +1715,69 @@ class regexpType(GeneratedsSuper):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
-        outfile.write('value=%s,\n' % quote_python(self.value).encode(ExternalEncoding))
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node_):
         attrs = node_.attributes
         self.buildAttributes(attrs)
+        self.valueOf_ = ''
         for child_ in node_.childNodes:
             nodeName_ = child_.nodeName.split(':')[-1]
             self.buildChildren(child_, nodeName_)
     def buildAttributes(self, attrs):
         pass
     def buildChildren(self, child_, nodeName_):
-        if child_.nodeType == Node.ELEMENT_NODE and \
-            nodeName_ == 'value':
-            value_ = ''
-            for text__content_ in child_.childNodes:
-                value_ += text__content_.nodeValue
-            self.value = value_
+        if child_.nodeType == Node.TEXT_NODE:
+            self.valueOf_ += child_.nodeValue
+        elif child_.nodeType == Node.CDATA_SECTION_NODE:
+            self.valueOf_ += '![CDATA['+child_.nodeValue+']]'
 
     def presentation(self):
-        return dict(constraintName = 'regexp', value = self.value)
+        return dict(constraintName = 'regexp', value = self.valueOf_)
 
     def fromData(self, data):
-        self.value = data.get('value')
+        self.setValueOf_(data.get('value'))
     # end class regexpType
 
 
 class lengthType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('value', 'xsd:string', 0),
+        MemberSpec_('valueOf_', 'xsd:unsignedInt', 0),
         ]
     subclass = None
     superclass = None
-    def __init__(self, value=None):
-        self.value = value
+    def __init__(self, valueOf_=''):
+        self.valueOf_ = valueOf_
     def factory(*args_, **kwargs_):
         if lengthType.subclass:
             return lengthType.subclass(*args_, **kwargs_)
         else:
             return lengthType(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_value(self): return self.value
-    def set_value(self, value): self.value = value
+    def getValueOf_(self): return self.valueOf_
+    def setValueOf_(self, valueOf_): self.valueOf_ = valueOf_
     def export(self, outfile, level, namespace_='dsc:', name_='lengthType', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         self.exportAttributes(outfile, level, namespace_, name_='lengthType')
         if self.hasContent_():
-            outfile.write('>\n')
+            outfile.write('>')
             self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
     def exportAttributes(self, outfile, level, namespace_='dsc:', name_='lengthType'):
         pass
     def exportChildren(self, outfile, level, namespace_='dsc:', name_='lengthType'):
-        if self.value is not None:
-            showIndent(outfile, level)
-            outfile.write('<%svalue>%s</%svalue>\n' % (namespace_, self.format_string(quote_xml(self.value).encode(ExternalEncoding), input_name='value'), namespace_))
+        if self.valueOf_.find('![CDATA') > -1:
+            value=quote_xml('%s' % self.valueOf_)
+            value=value.replace('![CDATA','<![CDATA')
+            value=value.replace(']]',']]>')
+            outfile.write(value.encode(ExternalEncoding))
+        else:
+            outfile.write(quote_xml('%s' % self.valueOf_.encode(ExternalEncoding)))
     def hasContent_(self):
         if (
-            self.value is not None
+            self.valueOf_
             ):
             return True
         else:
@@ -1774,28 +1791,27 @@ class lengthType(GeneratedsSuper):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
-        outfile.write('value=%s,\n' % quote_python(self.value).encode(ExternalEncoding))
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node_):
         attrs = node_.attributes
         self.buildAttributes(attrs)
+        self.valueOf_ = ''
         for child_ in node_.childNodes:
             nodeName_ = child_.nodeName.split(':')[-1]
             self.buildChildren(child_, nodeName_)
     def buildAttributes(self, attrs):
         pass
     def buildChildren(self, child_, nodeName_):
-        if child_.nodeType == Node.ELEMENT_NODE and \
-            nodeName_ == 'value':
-            value_ = ''
-            for text__content_ in child_.childNodes:
-                value_ += text__content_.nodeValue
-            self.value = value_
+        if child_.nodeType == Node.TEXT_NODE:
+            self.valueOf_ += child_.nodeValue
+        elif child_.nodeType == Node.CDATA_SECTION_NODE:
+            self.valueOf_ += '![CDATA['+child_.nodeValue+']]'
 
     def presentation(self):
-        return dict(constraintName = 'length', value = self.value)
+        return dict(constraintName = 'length', value = int(self.valueOf_))
 
     def fromData(self, data):
-        self.value = data.get('value')
+        self.setValueOf_(str(data.get('value')))
     # end class lengthType
 
 
@@ -1866,12 +1882,15 @@ class conditionalType(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
-        showIndent(outfile, level)
-        outfile.write('fieldName=%s,\n' % quote_python(self.fieldName).encode(ExternalEncoding))
-        showIndent(outfile, level)
-        outfile.write('operator=%s,\n' % quote_python(self.operator).encode(ExternalEncoding))
-        showIndent(outfile, level)
-        outfile.write('value=%s,\n' % quote_python(self.value).encode(ExternalEncoding))
+        if self.fieldName is not None:
+            showIndent(outfile, level)
+            outfile.write('fieldName=%s,\n' % quote_python(self.fieldName).encode(ExternalEncoding))
+        if self.operator is not None:
+            showIndent(outfile, level)
+            outfile.write('operator=%s,\n' % quote_python(self.operator).encode(ExternalEncoding))
+        if self.value is not None:
+            showIndent(outfile, level)
+            outfile.write('value=%s,\n' % quote_python(self.value).encode(ExternalEncoding))
     def build(self, node_):
         attrs = node_.attributes
         self.buildAttributes(attrs)
@@ -1936,9 +1955,9 @@ class operator(GeneratedsSuper):
             value=quote_xml('%s' % self.valueOf_)
             value=value.replace('![CDATA','<![CDATA')
             value=value.replace(']]',']]>')
-            outfile.write(value)
+            outfile.write(value.encode(ExternalEncoding))
         else:
-            outfile.write(quote_xml('%s' % self.valueOf_))
+            outfile.write(quote_xml('%s' % self.valueOf_.encode(ExternalEncoding)))
     def hasContent_(self):
         if (
             self.valueOf_
@@ -1955,7 +1974,7 @@ class operator(GeneratedsSuper):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
-        outfile.write('valueOf_ = "%s",\n' % (self.valueOf_,))
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node_):
         attrs = node_.attributes
         self.buildAttributes(attrs)
@@ -2015,8 +2034,9 @@ def parseLiteral(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     sys.stdout.write('from supers_descriptor import *\n\n')
-##     sys.stdout.write('rootObj = descriptor(\n')
+##     sys.stdout.write('#from supers_descriptor import *\n\n')
+##     sys.stdout.write('import supers_descriptor as model_\n\n')
+##     sys.stdout.write('rootObj = model_.descriptor(\n')
 ##     rootObj.exportLiteral(sys.stdout, 0, name_="descriptor")
 ##     sys.stdout.write(')\n')
     return rootObj

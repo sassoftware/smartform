@@ -105,15 +105,15 @@ supermod.legalValuesType.subclass = legalValuesTypeSub
 
 
 class regexpTypeSub(supermod.regexpType):
-    def __init__(self, value=None):
-        supermod.regexpType.__init__(self, value)
+    def __init__(self, valueOf_=''):
+        supermod.regexpType.__init__(self, valueOf_)
 supermod.regexpType.subclass = regexpTypeSub
 # end class regexpTypeSub
 
 
 class lengthTypeSub(supermod.lengthType):
-    def __init__(self, value=None):
-        supermod.lengthType.__init__(self, value)
+    def __init__(self, valueOf_=''):
+        supermod.lengthType.__init__(self, valueOf_)
 supermod.lengthType.subclass = lengthTypeSub
 # end class lengthTypeSub
 
@@ -160,8 +160,9 @@ def parseLiteral(inFilename):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     sys.stdout.write('from supers_descriptor import *\n\n')
-##     sys.stdout.write('rootObj = descriptor(\n')
+##     sys.stdout.write('#from supers_descriptor import *\n\n')
+##     sys.stdout.write('import supers_descriptor as model_\n\n')
+##     sys.stdout.write('rootObj = model_.descriptor(\n')
 ##     rootObj.exportLiteral(sys.stdout, 0, name_="descriptor")
 ##     sys.stdout.write(')\n')
     return rootObj

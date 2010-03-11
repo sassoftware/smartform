@@ -4,6 +4,7 @@
 #
 
 import os
+import sys
 import StringIO
 from lxml import etree
 
@@ -48,7 +49,10 @@ class _BaseClass(object):
             func = minidom.parseString
         else:
             func = minidom.parse
-        doc = func(fromStream)
+        try:
+            doc = func(fromStream)
+        except Exception, e:
+            raise errors.InvalidXML(e), None, sys.exc_info()[2]
         rootNode = doc.documentElement
         if rootNode.attributes.has_key('version'):
             version = rootNode.attributes['version'].value.encode('ascii')
@@ -191,8 +195,6 @@ class BaseDescriptor(_BaseClass):
         nodeType = kwargs.get('type')
         constraints = kwargs.get('constraints', [])
         descriptions = kwargs.get('descriptions', [])
-        if not isinstance(descriptions, list):
-            descriptions = [ descriptions ]
         help = kwargs.get('help', [])
         if not isinstance(help, list):
             help = [ help ]
@@ -228,6 +230,8 @@ class BaseDescriptor(_BaseClass):
             h = self.Help(h)
             df.add_help(h)
         if constraints:
+            if not isinstance(constraints, list):
+                constraints = [ constraints ]
             df.constraints = xmlsubs.constraintsTypeSub.factory()
             df.constraints.fromData(constraints)
         df.required = kwargs.get('required')
@@ -253,12 +257,16 @@ class BaseDescriptor(_BaseClass):
         return ret
 
     def Descriptions(self, values):
+        if values is None:
+            return None
         ret = self.xmlFactory().descriptionsTypeSub.factory()
         if not isinstance(values, list):
             values = [ values ]
         for val in values:
             if isinstance(val, (str, unicode)):
                 val = self.Description(val)
+            elif isinstance(val, tuple):
+                val = self.Description(val[0], val[1])
             ret.add_desc(val)
         return ret
 
@@ -310,7 +318,7 @@ class BaseDescriptor(_BaseClass):
             description = self.Descriptions([ d ])
             metadata.set_descriptions(description)
             return
-        descripts.add_desc(d)
+        descriptions.add_desc(d)
 
     def Conditional(self, fieldName, fieldValue, operator = "eq"):
         node = self.xmlFactory().conditionalTypeSub.factory(

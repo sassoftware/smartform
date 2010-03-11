@@ -62,8 +62,9 @@ def parseLiteral(inFilename):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     sys.stdout.write('from supers_descriptordata import *\n\n')
-##     sys.stdout.write('rootObj = descriptorData(\n')
+##     sys.stdout.write('#from supers_descriptordata import *\n\n')
+##     sys.stdout.write('import supers_descriptordata as model_\n\n')
+##     sys.stdout.write('rootObj = model_.descriptorData(\n')
 ##     rootObj.exportLiteral(sys.stdout, 0, name_="descriptorData")
 ##     sys.stdout.write(')\n')
     return rootObj

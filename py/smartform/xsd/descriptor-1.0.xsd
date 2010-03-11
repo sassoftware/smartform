@@ -125,15 +125,15 @@
     </xsd:complexType>
 
     <xsd:complexType name="regexpType">
-      <xsd:sequence>
-        <xsd:element name="value" type="xsd:string"/>
-      </xsd:sequence>
+      <xsd:simpleContent>
+        <xsd:extension base="xsd:string" />
+      </xsd:simpleContent>
     </xsd:complexType>
 
     <xsd:complexType name="lengthType">
-      <xsd:sequence>
-        <xsd:element name="value" type="xsd:string"/>
-      </xsd:sequence>
+      <xsd:simpleContent>
+        <xsd:extension base="xsd:unsignedInt" />
+      </xsd:simpleContent>
     </xsd:complexType>
 
     <xsd:complexType name="conditionalType">

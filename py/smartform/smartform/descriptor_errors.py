@@ -6,6 +6,9 @@
 class Error(Exception):
     "Base error class"
 
+class InvalidXML(Error):
+    pass
+
 class InvalidSchemaVersionError(Error):
     ""
 

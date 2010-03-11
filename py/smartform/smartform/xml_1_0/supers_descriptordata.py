@@ -151,15 +151,15 @@ class MixedContainer:
     def exportLiteral(self, outfile, level, name):
         if self.category == MixedContainer.CategoryText:
             showIndent(outfile, level)
-            outfile.write('MixedContainer(%d, %d, "%s", "%s"),\n' % \
+            outfile.write('model_.MixedContainer(%d, %d, "%s", "%s"),\n' % \
                 (self.category, self.content_type, self.name, self.value))
         elif self.category == MixedContainer.CategorySimple:
             showIndent(outfile, level)
-            outfile.write('MixedContainer(%d, %d, "%s", "%s"),\n' % \
+            outfile.write('model_.MixedContainer(%d, %d, "%s", "%s"),\n' % \
                 (self.category, self.content_type, self.name, self.value))
         else:    # category == MixedContainer.CategoryComplex
             showIndent(outfile, level)
-            outfile.write('MixedContainer(%d, %d, "%s",\n' % \
+            outfile.write('model_.MixedContainer(%d, %d, "%s",\n' % \
                 (self.category, self.content_type, self.name,))
             self.value.exportLiteral(outfile, level + 1)
             showIndent(outfile, level)
@@ -233,9 +233,9 @@ class descriptorDataType(GeneratedsSuper):
             value=quote_xml('%s' % self.valueOf_)
             value=value.replace('![CDATA','<![CDATA')
             value=value.replace(']]',']]>')
-            outfile.write(value)
+            outfile.write(value.encode(ExternalEncoding))
         else:
-            outfile.write(quote_xml('%s' % self.valueOf_))
+            outfile.write(quote_xml('%s' % self.valueOf_.encode(ExternalEncoding)))
     def hasContent_(self):
         if (
             self.valueOf_
@@ -254,7 +254,7 @@ class descriptorDataType(GeneratedsSuper):
             outfile.write('%s = "%s",\n' % (name, value,))
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
-        outfile.write('valueOf_ = "%s",\n' % (self.valueOf_,))
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
     def build(self, node_):
         attrs = node_.attributes
         self.buildAttributes(attrs)
@@ -316,8 +316,9 @@ def parseLiteral(inFileName):
     rootObj.build(rootNode)
     # Enable Python to collect the space used by the DOM.
     doc = None
-##     sys.stdout.write('from supers_descriptordata import *\n\n')
-##     sys.stdout.write('rootObj = descriptorData(\n')
+##     sys.stdout.write('#from supers_descriptordata import *\n\n')
+##     sys.stdout.write('import supers_descriptordata as model_\n\n')
+##     sys.stdout.write('rootObj = model_.descriptorData(\n')
 ##     rootObj.exportLiteral(sys.stdout, 0, name_="descriptorData")
 ##     sys.stdout.write(')\n')
     return rootObj

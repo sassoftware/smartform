@@ -95,6 +95,43 @@ class DescriptorTest(BaseTest):
         dsc.serialize(sio)
         self.assertXMLEquals(sio.getvalue(), xmlDescriptor1)
 
+    def testUseTupleForDescriptions(self):
+        dsc = descriptor.ConfigurationDescriptor()
+        dsc.setId("Some-ID")
+        dsc.setDisplayName('Cloud Information')
+        #dsc.addDescription([('msg in lang 1', 'lang1'),
+        #    ('msg in lang 2', 'lang2'), 'Default lang'])
+        dsc.addDescription("Description in default lang")
+        dsc.addDescription("Description in lang 1", "lang1")
+
+        dsc.addDataField('cloudType', type = 'str',
+            descriptions = [('field msg in lang 1', 'lang1'),
+                ('field msg in lang 2', 'lang2'), 'Default lang'])
+        sio = StringIO.StringIO()
+        dsc.serialize(sio)
+        self.assertXMLEquals(sio.getvalue(), """
+<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd" id="Some-ID">
+    <metadata>
+        <displayName>Cloud Information</displayName>
+        <descriptions>
+            <desc>Description in default lang</desc>
+            <desc lang="lang1">Description in lang 1</desc>
+        </descriptions>
+    </metadata>
+    <dataFields>
+        <field>
+            <name>cloudType</name>
+            <descriptions>
+                <desc lang="lang1">field msg in lang 1</desc>
+                <desc lang="lang2">field msg in lang 2</desc>
+                <desc>Default lang</desc>
+            </descriptions>
+            <type>str</type>
+        </field>
+    </dataFields>
+</descriptor>
+""")
+
     def testParseDescriptor1(self):
         dsc = descriptor.ConfigurationDescriptor(fromStream = xmlDescriptor1)
         self.failUnlessEqual(dsc.getId(), 'Some-ID')
@@ -423,6 +460,59 @@ class DescriptorConstraintTest(BaseTest):
         fData = descriptor.DescriptorData(descriptor = fDef)
         fData.addField('foo', value = 'True')
 
+    def testConstraintsParsing(self):
+        # only a partial factory def for the pieces we care about
+        dsc = descriptor.ConfigurationDescriptor()
+        dsc.setId("Some-ID")
+        dsc.setDisplayName('Cloud Information')
+        dsc.addDescription('Configure Super Cloud')
+        constraints = [
+                    dict(constraintName = 'length', value = 10),
+                    dict(constraintName = 'regexp', value = '^a'),
+        ]
+        dsc.addDataField('foo', type = 'str',
+            descriptions = [dsc.Description("foo")],
+            constraints = constraints
+            )
+
+        sio = StringIO.StringIO()
+        dsc.serialize(sio)
+        self.assertXMLEquals(sio.getvalue(), """
+<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd" id="Some-ID">
+    <metadata>
+        <displayName>Cloud Information</displayName>
+        <descriptions>
+            <desc>Configure Super Cloud</desc>
+        </descriptions>
+    </metadata>
+    <dataFields>
+        <field>
+            <name>foo</name>
+            <descriptions>
+                <desc>foo</desc>
+            </descriptions>
+            <type>str</type>
+            <constraints>
+                <regexp>^a</regexp>
+                <length>10</length>
+            </constraints>
+        </field>
+    </dataFields>
+</descriptor>
+""")
+        sio.seek(0)
+        dsc = descriptor.ConfigurationDescriptor(fromStream = sio)
+        self.failUnlessEqual([ x.constraints.presentation()
+                for x in dsc.getDataFields() ],
+            [
+                [{'constraintName': 'regexp', 'value': '^a'},
+                 {'constraintName': 'length', 'value': 10}]
+            ])
+
+    def testInvalidXML(self):
+        data = "<data"
+        e = self.failUnlessRaises(descriptor.errors.InvalidXML,
+            descriptor.ConfigurationDescriptor, fromStream = data)
 
     def testConstraints(self):
         # only a partial factory def for the pieces we care about
