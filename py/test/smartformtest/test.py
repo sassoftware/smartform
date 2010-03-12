@@ -95,6 +95,10 @@ class DescriptorTest(BaseTest):
         dsc.serialize(sio)
         self.assertXMLEquals(sio.getvalue(), xmlDescriptor1)
 
+        self.failUnlessEqual([ x.helpAsDict
+                for x in dsc.getDataFields() ],
+            [{None: 'http://url1/en', 'en_LOL': 'http://url1/lol'}, {}])
+
     def testUseTupleForDescriptions(self):
         dsc = descriptor.ConfigurationDescriptor()
         dsc.setId("Some-ID")
@@ -502,12 +506,18 @@ class DescriptorConstraintTest(BaseTest):
 """)
         sio.seek(0)
         dsc = descriptor.ConfigurationDescriptor(fromStream = sio)
-        self.failUnlessEqual([ x.constraints.presentation()
-                for x in dsc.getDataFields() ],
-            [
+        exp =  [
                 [{'constraintName': 'regexp', 'value': '^a'},
                  {'constraintName': 'length', 'value': 10}]
-            ])
+            ]
+        self.failUnlessEqual([ x.constraints.presentation()
+                for x in dsc.getDataFields() ],
+            exp)
+        self.failUnlessEqual([ x.constraintsPresentation
+                for x in dsc.getDataFields() ],
+            exp)
+        self.failUnlessEqual([ x.helpAsDict
+                for x in dsc.getDataFields() ], [{}])
 
     def testInvalidXML(self):
         data = "<data"

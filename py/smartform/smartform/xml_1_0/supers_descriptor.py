@@ -1082,6 +1082,18 @@ class dataFieldType(GeneratedsSuper):
         if self.multiple:
             return [ _cast(x, typ) for x in self.default ]
         return _cast(self.default[0], typ)
+
+    @property
+    def helpAsDict(self):
+        if self.help is None:
+            return {}
+        return dict((x.lang, x.href) for x in self.help)
+
+    @property
+    def constraintsPresentation(self):
+        if self.constraints is None:
+            return None
+        return self.constraints.presentation()
     # end class dataFieldType
 
 

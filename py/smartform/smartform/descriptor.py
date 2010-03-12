@@ -167,6 +167,7 @@ class _BaseClass(object):
 
 class BaseDescriptor(_BaseClass):
     ClassFactoryName = 'descriptorTypeSub'
+    RootNode = 'descriptor'
 
     def getDisplayName(self):
         metadata = self._rootObj.get_metadata()
@@ -470,4 +471,3 @@ class DescriptorData(_BaseClass):
 
 class ConfigurationDescriptor(BaseDescriptor):
     "Class for representing the configuration descriptor definition"
-    RootNode = 'descriptor'
