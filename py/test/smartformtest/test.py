@@ -478,6 +478,9 @@ class DescriptorConstraintTest(BaseTest):
             descriptions = [dsc.Description("foo")],
             constraints = constraints
             )
+        dsc.addDataField('bar', type = 'str',
+            descriptions = ['bar', ('barre', 'fr')],
+            )
 
         sio = StringIO.StringIO()
         dsc.serialize(sio)
@@ -501,6 +504,14 @@ class DescriptorConstraintTest(BaseTest):
                 <length>10</length>
             </constraints>
         </field>
+        <field>
+            <name>bar</name>
+            <descriptions>
+                <desc>bar</desc>
+                <desc lang="fr">barre</desc>
+            </descriptions>
+            <type>str</type>
+        </field>
     </dataFields>
 </descriptor>
 """)
@@ -508,16 +519,18 @@ class DescriptorConstraintTest(BaseTest):
         dsc = descriptor.ConfigurationDescriptor(fromStream = sio)
         exp =  [
                 [{'constraintName': 'regexp', 'value': '^a'},
-                 {'constraintName': 'length', 'value': 10}]
+                 {'constraintName': 'length', 'value': 10}],
+                [],
             ]
-        self.failUnlessEqual([ x.constraints.presentation()
-                for x in dsc.getDataFields() ],
-            exp)
+        self.failUnlessEqual(dsc.getDataFields()[0].constraints.presentation(),
+            exp[0])
+        self.failUnlessEqual(dsc.getDataFields()[1].constraints,
+            None)
         self.failUnlessEqual([ x.constraintsPresentation
                 for x in dsc.getDataFields() ],
             exp)
         self.failUnlessEqual([ x.helpAsDict
-                for x in dsc.getDataFields() ], [{}])
+                for x in dsc.getDataFields() ], [{}, {}])
 
     def testInvalidXML(self):
         data = "<data"

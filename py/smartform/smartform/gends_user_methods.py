@@ -121,7 +121,7 @@ dataFieldMethods = MethodSpec(name = 'dataFieldMethods',
     @property
     def constraintsPresentation(self):
         if self.constraints is None:
-            return None
+            return []
         return self.constraints.presentation()
     ''',
     class_names = r'^dataFieldType$',)

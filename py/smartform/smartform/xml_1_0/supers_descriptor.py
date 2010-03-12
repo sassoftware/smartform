@@ -1092,7 +1092,7 @@ class dataFieldType(GeneratedsSuper):
     @property
     def constraintsPresentation(self):
         if self.constraints is None:
-            return None
+            return []
         return self.constraints.presentation()
     # end class dataFieldType
 
