@@ -5,6 +5,8 @@
 TESTS = testsuite.py
 
 test:
-	python $(TESTS)
+	install -d $(TESTOUTPUTDIR) $(TESTCOVERAGEDIR)
+	python $(TESTS) --xml-dir=$(TESTOUTPUTDIR) --always-succeed --coverage
+	$(COVERAGEDUMP) -o $(TESTCOVERAGEDIR)/coverage.dat -t testsuite.py .  ../smartform
 
 build install:
