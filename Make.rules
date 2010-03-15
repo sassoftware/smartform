@@ -96,4 +96,5 @@ testutils-clean:
 	rm -Rf .coverage .times annotate
 
 testutils-test:
-	XOBJ_PATH=$(TOPDIR)/py $(PYTHON) testsuite.py -v --coverage
+	SMARTFORM_PATH=$(TOPDIR)/py $(PYTHON) testsuite.py -v --coverage --xml-dir=$(TESTOUTPUTDIR) --always-succeed
+	$(COVERAGEDUMP) -o $(TESTCOVERAGEDIR)/coverage.dat -t testsuite.py .  ../smartform
