@@ -12,7 +12,7 @@
 
 default: test
 
-test: default-test testutils-test
+build: default-build testutils-build
 
 install: default-install testutils-install
 
