@@ -21,3 +21,7 @@ export datadir = $(prefix)/share
 export mandir = $(datadir)/man
 export pydir = $(libdir)/python$(PYVERSION)/site-packages
 export antopts="-Xmx1024m -XX:PermSize=128M -XX:MaxPermSize=256M"
+
+export COVERAGEDUMP=coverage_dump
+export TESTOUTPUTDIR=./tests
+export TESTCOVERAGEDIR=.
