@@ -15,9 +15,9 @@
 export TOPDIR=$(shell pwd)/../..
 python_files =	$(wildcard *.py)
 
-dist_files = Makefile constants.py.in $(python_files)
+SUBDIRS = xml_1_0
 
-all: default-all constants.py
+dist_files = Makefile constants.py.in $(python_files)
 
 build: constants.py default-build python-build
 
@@ -29,10 +29,7 @@ constants.py: constants.py.in $(TOPDIR)/Make.defs Makefile
 	sed -e s,@version@,$(VERSION),g \
 	$< > $@
 
-install: all pyfiles-install default-install install-generate
-	install constants.py $(DESTDIR)$(pydir)/constants.py
-	$(PYTHON) -c "import compileall; compileall.compile_dir('$(DESTDIR)$(pydir)', ddir='$(pydir)', quiet=1)"
-	$(PYTHON) -OO -c "import compileall; compileall.compile_dir('$(DESTDIR)$(pydir)', ddir='$(pydir)', quiet=1)"
+install: constants.py default-install python-install
 
 dist: default-dist
 
@@ -68,12 +65,6 @@ rule-%:
                 -s $(call xmlDir,$@)/subs_descriptordata.py \
                 --user-methods=gends_user_methods \
                 ../xsd/descriptordata-$(call xmlVer,$@).xsd
-
-install-generate: $(addprefix install-rule-,$(wildcard xml_*))
-
-install-rule-%: %
-	install -d $(DESTDIR)$(pydir)$<
-	install $</*.py $(DESTDIR)$(pydir)$</
 
 include $(TOPDIR)/Make.rules
 include $(TOPDIR)/Make.defs

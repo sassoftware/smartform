@@ -65,10 +65,10 @@ PYINCLUDE = $(shell $(PYTHON) -c 'import os, sys; print os.sep.join((sys.prefix,
 python-build:
 
 python-install:
-	mkdir -p "$(DESTDIR)$(pydir)$(PYDEST)"
-	install -m0644 $(python_files) "$(DESTDIR)$(pydir)$(PYDEST)/"
-	$(PYTHON) -c "import compileall; compileall.compile_dir('$(DESTDIR)$(pydir)$(PYDEST)', maxlevels=0, ddir='$(pydir)$(PYDEST)', quiet=1)"
-	$(PYTHON) -OO -c "import compileall; compileall.compile_dir('$(DESTDIR)$(pydir)$(PYDEST)', maxlevels=0, ddir='$(pydir)$(PYDEST)', quiet=1)"
+	mkdir -p "$(DESTDIR)$(sitedir)$(DIR)"
+	install -m0644 $(python_files) "$(DESTDIR)$(sitedir)$(DIR)/"
+	$(PYTHON) -c "import compileall; compileall.compile_dir('$(DESTDIR)$(sitedir)$(DIR)', maxlevels=0, ddir='$(sitedir)$(DIR)', quiet=1)"
+	$(PYTHON) -OO -c "import compileall; compileall.compile_dir('$(DESTDIR)$(sitedir)$(DIR)', maxlevels=0, ddir='$(sitedir)$(DIR)', quiet=1)"
 
 python-clean:
 
