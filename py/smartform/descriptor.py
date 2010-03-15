@@ -18,7 +18,7 @@ class _BaseClass(object):
     xmlSchemaNamespace = constants.xmlSchemaNamespace
     xmlSchemaLocation = constants.xmlSchemaLocation
 
-    schemaDir = "/usr/share/descriptor"
+    schemaDir = "/usr/share/smartform"
 
     _SchemaName = 'descriptor'
 
