@@ -14,6 +14,7 @@
 
 export TOPDIR=$(shell pwd)/../..
 python_files =	$(wildcard *.py)
+override DIR=/smartform
 
 SUBDIRS = xml_1_0
 

@@ -15,9 +15,9 @@
 dist_files = Makefile $(SCHEMA_FILES)
 SCHEMA_FILES = $(wildcard *.xsd)
 
-all: default-all
+build: default-build
 
-install: all default-install $(DESTDIR)$(datadir)/smartform
+install: default-install $(DESTDIR)$(datadir)/smartform
 	install $(SCHEMA_FILES) $(DESTDIR)$(datadir)/smartform/
 
 $(DESTDIR)$(datadir)/smartform:
@@ -30,5 +30,6 @@ dist: default-dist
 
 clean: default-clean
 
-include ../Make.rules
-include ../Make.defs
+export TOPDIR=$(shell pwd)/../..
+include $(TOPDIR)/Make.rules
+include $(TOPDIR)/Make.defs

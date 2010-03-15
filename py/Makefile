@@ -9,7 +9,7 @@
 # without any waranty; without even the implied warranty of merchantability
 # or fitness for a particular purpose. See the MIT License for full details.
 #
-SUBDIRS = smartform test
+SUBDIRS = smartform test xsd
 
 build: default-build
 
