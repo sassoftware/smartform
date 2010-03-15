@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2006-2009 rPath, Inc.
+# Copyright (c) 2009 rPath, Inc.
 #
 # This program is distributed under the terms of the Common Public License,
 # version 1.0. A copy of this license should have been distributed with this
@@ -12,56 +12,68 @@
 # full details.
 #
 
-all build: default-subdirs default-all
+export TOPDIR=$(shell pwd)/../..
+python_files =	$(wildcard *.py)
 
-.PHONY: clean dist install html docs
+dist_files = Makefile constants.py.in $(python_files)
 
-export TOPDIR = $(shell pwd)
-# DISTDIR is not a typo: "rpath-product-definition" is the name
-# of the package that contains the code; "product-definition" is
-# the name of packages containing a product definition
-export DISTDIR = $(TOPDIR)/rpath-product-definition-$(VERSION)
+all: default-all constants.py
 
-SUBDIRS=smartform xsd
+build: constants.py default-build python-build
 
-dist_files = $(extra_files)
+clean: python-clean python-clean
 
-.PHONY: clean dist install subdirs
+test: default-test python-test
 
-subdirs: default-subdirs
+constants.py: constants.py.in $(TOPDIR)/Make.defs Makefile
+	sed -e s,@version@,$(VERSION),g \
+	$< > $@
 
-install: install-subdirs
+install: all pyfiles-install default-install install-generate
+	install constants.py $(DESTDIR)$(pydir)/constants.py
+	$(PYTHON) -c "import compileall; compileall.compile_dir('$(DESTDIR)$(pydir)', ddir='$(pydir)', quiet=1)"
+	$(PYTHON) -OO -c "import compileall; compileall.compile_dir('$(DESTDIR)$(pydir)', ddir='$(pydir)', quiet=1)"
 
-clean: clean-subdirs default-clean
+dist: default-dist
 
-dist:
-	if ! grep "^Changes in $(VERSION)" NEWS > /dev/null 2>&1; then \
-		echo "no NEWS entry"; \
-		exit 1; \
-	fi
-	$(MAKE) forcedist
+clean: default-clean
+	rm -f proddef_constants.py
 
+GENERATE_DS=~/hg/generateDS/generateDS.py
+xmlDir = $(subst .,_,$(patsubst rule-%,xml_%,$(1)))
+xmlVer = $(patsubst rule-%,%,$(1))
 
-archive:
-	hg archive --exclude .hgignore -t tbz2 $(DISTDIR).tar.bz2
+generate: $(patsubst ../xsd/descriptor-%.xsd,rule-%,$(wildcard ../xsd/descriptor-*.xsd))
 
-forcedist: archive
+rule-%:
+	mkdir -p $(call xmlDir,$@)
+	touch $(call xmlDir,$@)/__init__.py
+	$(GENERATE_DS) -f --silence \
+                --no-dates \
+                --no-versions \
+                --member-specs=list \
+                --super=supers_descriptor \
+                --external-encoding=utf-8 \
+                -o $(call xmlDir,$@)/supers_descriptor.py \
+                -s $(call xmlDir,$@)/subs_descriptor.py \
+                --user-methods=gends_user_methods \
+                ../xsd/descriptor-$(call xmlVer,$@).xsd
+	$(GENERATE_DS) -f --silence \
+                --no-dates \
+                --no-versions \
+                --member-specs=list \
+                --super=supers_descriptordata \
+                --external-encoding=utf-8 \
+                -o $(call xmlDir,$@)/supers_descriptordata.py \
+                -s $(call xmlDir,$@)/subs_descriptordata.py \
+                --user-methods=gends_user_methods \
+                ../xsd/descriptordata-$(call xmlVer,$@).xsd
 
-doc: html
-html: default-subdirs
-	scripts/generate_docs.sh
+install-generate: $(addprefix install-rule-,$(wildcard xml_*))
 
-test:
+install-rule-%: %
+	install -d $(DESTDIR)$(pydir)$<
+	install $</*.py $(DESTDIR)$(pydir)$</
 
-forcetag:
-	hg tag -f product-definition-$(VERSION)
-tag:
-	hg tag product-definition-$(VERSION)
-
-clean: clean-subdirs default-clean
-	@rm -rf $(DISTDIR).tar.bz2
-
-include Make.rules
-include Make.defs
- 
-# vim: set sts=8 sw=8 noexpandtab :
+include $(TOPDIR)/Make.rules
+include $(TOPDIR)/Make.defs

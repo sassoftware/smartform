@@ -10,7 +10,7 @@
 # or fitness for a particular purpose. See the MIT License for full details.
 #
 
-VERSION=0.1
+VERSION=1.0
 
 export prefix = /usr
 export bindir = $(prefix)/bin
