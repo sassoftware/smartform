@@ -25,17 +25,24 @@
     
     <mx:Script>
     <![CDATA[
+        import com.rpath.raf.util.DescriptorUtil;
+
         import mx.binding.utils.BindingUtils;
+        import mx.binding.utils.ChangeWatcher;
         import mx.events.DynamicEvent;
         import mx.utils.ArrayUtil;
         import mx.collections.ArrayCollection;
         import com.rpath.raf.util.DescriptorUtil;
+        import mx.events.FlexEvent;
         import mx.events.ValidationResultEvent;
         import mx.events.FlexEvent;
         import mx.binding.utils.ChangeWatcher;
         import mx.events.PropertyChangeEvent;
         import mx.core.UIComponent;
         import mx.containers.FormItem;
+
+
+
     
     /** metadata drives the SmartForm
     * 
@@ -89,6 +96,11 @@
     }
 
     private var _metadata:XML;
+    private var metadataList:XMLList;
+    private var descriptionsList:XMLList;
+    private var fieldsList:XMLList;
+    private var metadataNS:Namespace;
+    private var metadataChanged:Boolean;
 
     public function set metadata(m:XML):void
     {
@@ -96,6 +108,8 @@
         {
             //trace("metadata change " + this.uid);
             _metadata = m;
+            
+            metadataChanged = true;
             _needsRebuilding = true;
             // make sure defaults are re-eval'd
             firstTime = true;
@@ -281,6 +295,28 @@
     
     protected override function commitProperties():void
     {       
+        if (metadataChanged)
+        {
+            metadataChanged = false;
+            
+            if (metadata)
+            {
+                metadataNS = _metadata.namespace();
+                metadataList = metadata.metadataNS::metadata;
+                descriptionsList = metadata.metadataNS::metadata.metadataNS::descriptions;
+                if (descriptionsList)
+                    fieldsList = metadata.metadataNS::dataFields.metadataNS::field;
+                else
+                    fieldsList = null;
+            }
+            else
+            {
+                metadataNS = new Namespace();
+                metadataList = null;
+                descriptionsList = null;
+            }
+        }
+        
         if (_dataChanged)
         {
             revisitConditions();
@@ -439,30 +475,30 @@
         {
     
             //trace("create form items " + this.uid);
+            heading = DescriptorUtil.localeDescString(descriptionsList, metadataNS);
     
-            heading = DescriptorUtil.localeDescString(metadata.metadata.descriptions);
-    
-            var fields:XMLList = metadata.dataFields.field;
             var meetsCondition:Boolean;
             var condition:Object;
             
             // clear all conditions and start afresh
             clearConditions();
             
-            for each (var field:XML in fields)
+            var conditionalList:XMLList;
+            for each (var field:XML in fieldsList)
             {
-                var propName:String = field.name;
+                var propName:String = field.metadataNS::name;
                 
                 condition = null;
                 
                 meetsCondition = true;
                 
-                if (field.conditional.length() > 0)
+                conditionalList = field.metadataNS::conditional;
+                if (conditionalList.length() > 0)
                 {
                     // evaluate condition and queue condition on any change to the value object
-                    for each (var cond:XML in field.conditional)
+                    for each (var cond:XML in conditionalList)
                     {
-                        condition = addCondition(cond.fieldName, cond.operator, cond.value);
+                        condition = addCondition(cond.metadataNS::fieldName, cond.metadataNS::operator, cond.metadataNS::value);
                         meetsCondition = meetsCondition && evalCondition(condition);
                     }
                     
@@ -476,7 +512,7 @@
                     is false, don't set the default value. Confused? I'm not.
                     */
                     
-                    if (firstTime && (field.default.length() > 0) && allowItemDefaults)
+                    if (firstTime && (field.metadataNS::default.length() > 0) && allowItemDefaults)
                     {
                         //TODO: handle the case where data is NULL by moving this
                         // into the SmartFormItem so it can be deferred
@@ -486,14 +522,14 @@
                             var newValue:*;
                             
                             // single or multi-valued default?
-                            if (field.default.length() == 1)
+                            if (field.metadataNS::default.length() == 1)
                             {
-                                newValue = field.default.toString();
+                                newValue = field.metadataNS::default.toString();
                             }
                             else
                             {
                                 newValue = [];
-                                for each (var val:XML in field.default)
+                                for each (var val:XML in field.metadataNS::default)
                                 {
                                     var def:String = val.toString();
                                     newValue.push(def);
@@ -518,10 +554,11 @@
                     }
                     
                     // skip hidden fields
-                    if (field.hidden.toString().toLowerCase() == "true")
+                    if (field.metadataNS::hidden.toString().toLowerCase() == "true")
                         continue;
     
-                    var newItem:SmartFormItem = new SmartFormItem();
+                    var newItem:SmartFormItem = new SmartFormItem()
+                    newItem.metadataNS = metadataNS;
                     newItem.smartForm = this;
                                         
                     // make sure changes to the data object propagate to the control

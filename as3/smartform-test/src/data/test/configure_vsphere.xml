@@ -1,0 +1,66 @@
+
+<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd">
+<metadata>
+<displayName>
+VMware Configuration
+</displayName>
+<descriptions>
+<desc>
+Configure VMware
+</desc>
+</descriptions>
+</metadata>
+<dataFields>
+<field>
+<name>
+name
+</name>
+<descriptions>
+<desc>
+Server Name
+</desc>
+</descriptions>
+<help href="https://rbanext-eng.eng.rpath.com/catalog/clouds/vmware/help/configuration/serverName.html" />
+<type>
+str
+</type>
+<required>
+true
+</required>
+</field>
+<field>
+<name>
+alias
+</name>
+<descriptions>
+<desc>
+Cloud Alias
+</desc>
+</descriptions>
+<help href="https://rbanext-eng.eng.rpath.com/catalog/clouds/vmware/help/configuration/alias.html" />
+<type>
+str
+</type>
+<required>
+true
+</required>
+</field>
+<field>
+<name>
+description
+</name>
+<descriptions>
+<desc>
+Full Description
+</desc>
+</descriptions>
+<help href="https://rbanext-eng.eng.rpath.com/catalog/clouds/vmware/help/configuration/description.html" />
+<type>
+str
+</type>
+<required>
+true
+</required>
+</field>
+</dataFields>
+</descriptor>

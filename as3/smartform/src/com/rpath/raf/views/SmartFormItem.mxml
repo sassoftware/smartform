@@ -26,30 +26,19 @@
     
     <mx:Script>
     <![CDATA[
-        import com.rpath.raf.events.HelpEvent;
-        import mx.events.DynamicEvent;
-        import com.rpath.raf.util.ValidationHelper;
-        import mx.collections.SortField;
-        import mx.collections.Sort;
         import com.rpath.raf.util.DescriptorUtil;
-        import mx.managers.PopUpManagerChildList;
-        import mx.managers.PopUpManager;
-        import mx.core.IFlexDisplayObject;
-        import mx.events.FlexMouseEvent;
-        import mx.collections.ArrayCollection;
-        import mx.validators.Validator;
-        import mx.validators.ValidationResult;
-        import mx.core.UIComponent;
-        import mx.events.ValidationResultEvent;
-        import mx.events.PropertyChangeEventKind;
-        import mx.events.PropertyChangeEvent;
-        import mx.events.ListEvent;
-        import mx.events.DropdownEvent;
-        import mx.events.ItemClickEvent;
-        import mx.events.FlexEvent;
+        import com.rpath.raf.util.ValidationHelper;
         
-        import flash.net.URLRequest;
-        import flash.net.navigateToURL;
+        import mx.collections.ArrayCollection;
+        import mx.collections.Sort;
+        import mx.collections.SortField;
+        import mx.core.UIComponent;
+        import mx.events.DynamicEvent;
+        import mx.events.FlexEvent;
+        import mx.events.ItemClickEvent;
+        import mx.events.ListEvent;
+        import mx.events.ValidationResultEvent;
+        import mx.validators.Validator;
     
     /** SmartFormItems are used exclusively within a SmartForm and rely on the
     * metadata structure supported by SmartForm for their behaviour.
@@ -62,6 +51,25 @@
     
     [Bindable]
     public var metadata:XML;
+
+
+    public function get metadataNS():Namespace
+    {
+        if (!_metadataNS)
+        {
+            _metadataNS = new Namespace();
+        }
+        
+        return _metadataNS;
+    }
+        
+    private var _metadataNS:Namespace;
+
+    public function set metadataNS(value:Namespace):void
+    {
+        _metadataNS = value;
+    }
+
 
     /** smartForm points to the form we're included in
     */
@@ -221,7 +229,7 @@
     public function get editable():Boolean
     {
         // only enable fields that the metadata says should be enabled
-        if (metadata && !(metadata..readonly == true))
+        if (metadata && !(metadata..metadataNS::readonly == true))
             return _itemEditable;
         else
             return false;
@@ -245,8 +253,8 @@
         for each (var v:* in describedValues)
         {
             newChoice = new SmartFormChoice();
-            newChoice.label = DescriptorUtil.localeDescString(v.descriptions);
-            newChoice.value = v.key.toString();
+            newChoice.label = DescriptorUtil.localeDescString(v.metadataNS::descriptions, metadataNS);
+            newChoice.value = v.metadataNS::key.toString();
             newChoices.addItem(newChoice);
         }
         
@@ -277,33 +285,33 @@
         
         // process the XML metadata, set our own props and create the appropriate items
         
-        label = DescriptorUtil.localeDescString(metadata.descriptions);
-        prompt = DescriptorUtil.localeDescString(metadata.prompt);
+        label = DescriptorUtil.localeDescString(metadata.metadataNS::descriptions, metadataNS);
+        prompt = DescriptorUtil.localeDescString(metadata.metadataNS::prompt, metadataNS);
         
         // make the formitem itself show the same tooltip as the control 
         toolTip = prompt;
         
-        helpLink = DescriptorUtil.localHelpHref(metadata.help);
-        helpNode = DescriptorUtil.localHelpNode(metadata.help);
+        helpLink = DescriptorUtil.localHelpHref(metadata.metadataNS::help, metadataNS);
+        helpNode = DescriptorUtil.localHelpNode(metadata.metadataNS::help, metadataNS);
         
-        required = metadata.required.toString().toLowerCase() == "true";
-        allowFileContent = metadata.allowFileContent.toString().toLowerCase() == "true";
-        displayAsPassword = metadata.password.toString().toLowerCase() == "true";
+        required = metadata.metadataNS::required.toString().toLowerCase() == "true";
+        allowFileContent = metadata.metadataNS::allowFileContent.toString().toLowerCase() == "true";
+        displayAsPassword = metadata.metadataNS::password.toString().toLowerCase() == "true";
         
-        var lengthConstraint:int = metadata..constraints.length;
+        var lengthConstraint:int = metadata..metadataNS::constraints.length;
         
-        var enumerated:Boolean = metadata..enumeratedType.length() > 0;
-        var count:int = metadata..enumeratedType.describedValue.length();
+        var enumerated:Boolean = metadata..metadataNS::enumeratedType.length() > 0;
+        var count:int = metadata..metadataNS::enumeratedType.metadataNS::describedValue.length();
         
-        defaultValue = metadata.default;
+        defaultValue = metadata.metadataNS::default;
 
-        effectiveType = metadata.type;
+        effectiveType = metadata.metadataNS::type;
         
         // is this an enumerated type?
         if (enumerated)
         {
             // populate the choices array
-            extractChoices(metadata..describedValue);
+            extractChoices(metadata..metadataNS::describedValue);
             
             // edge case: enumerated type with no valid choices
             if (choices.length == 0)
@@ -314,7 +322,7 @@
                 return;
             }
             
-            if (metadata.multiple.toString().toLowerCase() == "true" )
+            if (metadata.metadataNS::multiple.toString().toLowerCase() == "true" )
             {
                 if (count < smartForm.discreteControlThreshold)
                 {
@@ -375,7 +383,7 @@
             // and have NEITHER selected to start with
             effectiveType = "radiobool";
         }
-        else if (effectiveType == "str" && metadata..constraints.length)
+        else if (effectiveType == "str" && metadata..metadataNS::constraints.length)
         {
             if (lengthConstraint > smartForm.longTextThreshold)
             {
@@ -754,14 +762,15 @@
 
     public function initializeValidators():void
     {
-        var constraints:XMLList = metadata.constraints;
+        var constraints:XMLList = metadata.metadataNS::constraints;
+        var descriptions:XMLList = constraints.metadataNS::descriptions;
         
         var x:XMLList;
         
         if (required)
         {
             requiredV.enabled = true;
-            requiredV.requiredFieldError = getDescription(DescriptorUtil.localeDescString(constraints.descriptions), requiredV.requiredFieldError)
+            requiredV.requiredFieldError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), requiredV.requiredFieldError)
         }
         else
             requiredV.enabled = false;
@@ -771,7 +780,7 @@
         {
             maxLengthV.enabled = true;
             maxLengthV.maxLength = x;
-            maxLengthV.tooLongError = getDescription(DescriptorUtil.localeDescString(constraints.descriptions), maxLengthV.tooLongError);
+            maxLengthV.tooLongError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), maxLengthV.tooLongError);
         }
         else
             maxLengthV.enabled = false;
@@ -782,8 +791,8 @@
             rangeV.enabled = true;
             rangeV.minValue = x.min;
             rangeV.maxValue = x.max;
-            rangeV.exceedsMaxError = getDescription(DescriptorUtil.localeDescString(constraints.descriptions), rangeV.exceedsMaxError);
-            rangeV.lowerThanMinError = getDescription(DescriptorUtil.localeDescString(constraints.descriptions), rangeV.lowerThanMinError);
+            rangeV.exceedsMaxError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), rangeV.exceedsMaxError);
+            rangeV.lowerThanMinError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), rangeV.lowerThanMinError);
         }
         else
             rangeV.enabled = false;
@@ -793,7 +802,7 @@
         {
             regExpV.enabled = true;
             regExpV.expression = x.toString();
-            regExpV.noMatchError = getDescription(DescriptorUtil.localeDescString(constraints.descriptions), regExpV.noMatchError);
+            regExpV.noMatchError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), regExpV.noMatchError);
         }
         else
             regExpV.enabled = false;

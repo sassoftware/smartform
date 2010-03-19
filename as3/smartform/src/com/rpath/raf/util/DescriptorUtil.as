@@ -26,7 +26,7 @@ package com.rpath.raf.util
     public class DescriptorUtil
     {
 
-    public static function localeDescString(node:XMLList):String
+    public static function localeDescString(node:XMLList, ns:Namespace):String
     {
         var desc:XMLList;
         var localeChain:Array = ResourceManager.getInstance().localeChain;
@@ -34,7 +34,8 @@ package com.rpath.raf.util
         
         for each (var locale:String in localeChain)
         {
-            desc = node..desc.(attribute('lang') == locale);
+            desc = node..ns::desc.(attribute('lang') == locale);
+            
             if (desc.length() > 0)
             {
                 foundIt = true;
@@ -45,19 +46,19 @@ package com.rpath.raf.util
         if (!foundIt)
         {
             // go with the unlang'd entry
-            desc = node..desc.(attribute('lang') == undefined);
+            desc = node..ns::desc.(attribute('lang') == undefined);
         }
                         
         return desc.toString();
     }
 
 
-    public static function localHelpHref(node:XMLList):String
+    public static function localHelpHref(node:XMLList, ns:Namespace):String
     {
-        return localHelpNode(node).@href.toString();
+        return localHelpNode(node, ns).@ns::href.toString();
     }
     
-    public static function localHelpNode(node:XMLList):XMLList
+    public static function localHelpNode(node:XMLList, ns:Namespace):XMLList
     {
         var help:XMLList;
         var localeChain:Array = ResourceManager.getInstance().localeChain;
