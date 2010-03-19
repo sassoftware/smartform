@@ -115,10 +115,12 @@ class _BaseClass(object):
         @type stream: C{file}
         """
         attrs = [
-            ('xmlns', self.defaultNamespace),
             ('xmlns:xsi', self.xmlSchemaNamespace),
             ("xsi:schemaLocation", self.xmlSchemaLocation),
         ]
+        # Allow for no default namespace
+        if self.defaultNamespace is not None:
+            attrs.append(('xmlns', self.defaultNamespace))
         sio = self._writeToStream(attrs)
         if validate and os.path.exists(self.schemaDir):
             tree = self.validate(sio, self.schemaDir,
