@@ -66,8 +66,8 @@
                 <namespace uri="@{namespace}" manifest="@{manifest}" />
             	<namespace uri="http://ns.adobe.com/mxml/2009" manifest="${flex.sdk.frameworks.dir}/mxml-2009-manifest.xml" />
                 <namespace uri="library://ns.adobe.com/flex/spark" manifest="${flex.sdk.frameworks.dir}/spark-manifest.xml" />
-                <namespace uri="library://ns.adobe.com/flex/mx" manifest="${flex.sdk.frameworks.dir}/halo-manifest.xml" />
-                <namespace uri="http://www.adobe.com/2006/mxml" manifest="${flex.sdk.frameworks.dir}/halo-manifest.xml" />
+                <namespace uri="library://ns.adobe.com/flex/halo" manifest="${flex.sdk.frameworks.dir}/mx-manifest.xml" />
+                <namespace uri="http://www.adobe.com/2006/mxml" manifest="${flex.sdk.frameworks.dir}/mxml-manifest.xml" />
             	
                 <include-namespaces uri="@{namespace}"/>
                 
