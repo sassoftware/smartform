@@ -24,7 +24,7 @@ package com.rpath.raf.util
     import flash.utils.Dictionary;
     
     import mx.collections.ArrayCollection;
-    import mx.core.Application;
+    import spark.components.Application;
     import mx.core.FlexGlobals;
     import mx.core.IFlexDisplayObject;
     import mx.formatters.NumberBaseRoundType;
