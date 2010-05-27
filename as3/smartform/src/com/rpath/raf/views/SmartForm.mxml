@@ -741,7 +741,7 @@
         this.dispatchEvent(new DynamicEvent("dirtyChanged",true));
         
         // aslo mark the data object dirty if it has such a property
-        if (data.hasOwnProperty("isDirty"))
+        if (data && data.hasOwnProperty("isDirty"))
         {
             data.isDirty = b;
         }
