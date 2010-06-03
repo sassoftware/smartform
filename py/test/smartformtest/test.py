@@ -455,6 +455,45 @@ class DescriptorConstraintTest(BaseTest):
                 'lotsaValues', value = 'one')
         self.failUnlessEqual(str(e), "Expected multi-value")
 
+    def testEnumeratedType2(self):
+        # only a partial factory def for the pieces we care about
+        fDef = descriptor.ConfigurationDescriptor()
+        fDef.setDisplayName("display name")
+        fDef.setRootElement("newInstance")
+        fDef.addDescription("text description")
+        fDef.addDataField('enumNoDefault',
+            descriptions = [ "foo" ],
+            type = fDef.EnumeratedType([
+                fDef.ValueWithDescription('one',
+                    descriptions = [fDef.Description("One")]),
+                fDef.ValueWithDescription('two',
+                    descriptions = [fDef.Description("Two")]),
+            ]))
+
+        xml = "<newInstance><enumNoDefault/></newInstance>"
+        fData = descriptor.DescriptorData(fromStream=xml, descriptor = fDef)
+
+    def testEnumeratedType3(self):
+        # only a partial factory def for the pieces we care about
+        fDef = descriptor.ConfigurationDescriptor()
+        fDef.setDisplayName("display name")
+        fDef.setRootElement("newInstance")
+        fDef.addDescription("text description")
+        fDef.addDataField('enumNoDefault',
+            descriptions = [ "foo" ],
+            required = True,
+            type = fDef.EnumeratedType([
+                fDef.ValueWithDescription('one',
+                    descriptions = [fDef.Description("One")]),
+                fDef.ValueWithDescription('two',
+                    descriptions = [fDef.Description("Two")]),
+            ]))
+
+        xml = "<newInstance><enumNoDefault/></newInstance>"
+        err = self.failUnlessRaises(errors.ConstraintsValidationError,
+            descriptor.DescriptorData, fromStream=xml, descriptor = fDef)
+        self.failUnlessEqual(err.args[0], ["'foo': a value is required"])
+
     def testStringType(self):
         # only a partial factory def for the pieces we care about
         fDef = descriptor.ConfigurationDescriptor()

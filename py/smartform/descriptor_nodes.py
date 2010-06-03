@@ -43,7 +43,8 @@ class _DescriptorDataField(object):
             errorList.extend(_validateSingleValue(value,
                              self._nodeDescriptor.type,
                              descriptions.asDict().get(None),
-                             constraints))
+                             constraints,
+                             required = self._nodeDescriptor.required))
         if errorList:
             raise errors.ConstraintsValidationError(errorList)
 
@@ -104,9 +105,16 @@ def _validateMultiValue(values, valueType, description, constraints):
                          constraints))
     return errorList
 
-def _validateSingleValue(value, valueType, description, constraints):
+def _validateSingleValue(value, valueType, description, constraints,
+        required=False):
+    if value is None and required:
+        return [ "'%s': a value is required" % description ]
     if isinstance(valueType, list):
-        return _validateEnumeratedValue([value], valueType, description)
+        if value is None:
+            value = []
+        else:
+            value = [ value ]
+        return _validateEnumeratedValue(value, valueType, description)
 
     errorList = []
     try:
