@@ -495,15 +495,6 @@ class DescriptorConstraintTest(BaseTest):
             descriptor.DescriptorData, fromStream=xml, descriptor = fDef)
         self.failUnlessEqual(err.args[0], ["'foo': a value is required"])
 
-    def testStringType(self):
-        # only a partial factory def for the pieces we care about
-        fDef = descriptor.ConfigurationDescriptor()
-        fDef.addDataField('foo', type = 'str',
-            descriptions = [fDef.Description("foo")])
-
-        fData = descriptor.DescriptorData(descriptor = fDef)
-        fData.addField('foo', value = 'True')
-
     def testConstraintsParsing(self):
         # only a partial factory def for the pieces we care about
         dsc = descriptor.ConfigurationDescriptor()
