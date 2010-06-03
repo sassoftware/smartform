@@ -472,6 +472,7 @@ class DescriptorConstraintTest(BaseTest):
 
         xml = "<newInstance><enumNoDefault/></newInstance>"
         fData = descriptor.DescriptorData(fromStream=xml, descriptor = fDef)
+        self.failUnlessEqual(fData.getField("enunNoDefault"), None)
 
     def testEnumeratedType3(self):
         # only a partial factory def for the pieces we care about
