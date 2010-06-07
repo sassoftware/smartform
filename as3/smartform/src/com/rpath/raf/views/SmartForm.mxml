@@ -106,7 +106,7 @@
     {
         if (_metadata != m)
         {
-            //trace("metadata change " + this.uid);
+            trace("metadata change " + this.uid);
             _metadata = m;
             
             metadataChanged = true;
@@ -221,7 +221,7 @@
                 {
                     setProperty(data, propName, value);
                 },
-                item, [ "data" ], true, true);
+                item, [ "data" ], false, true);
         }
         
         if (!watchers)
@@ -269,7 +269,7 @@
             {
                 setProperty(data, w.prop, value);
             },
-            w.item, [ "data" ], true, true);
+            w.item, [ "data" ], false, true);
     }
     
     private function removeWatchers():void
@@ -289,7 +289,7 @@
     
     public override function invalidateProperties():void
     {
-        //trace("smartform invalidateProps " + this.uid);
+        trace("smartform invalidateProps " + this.uid);
         super.invalidateProperties();
     }
     
@@ -336,7 +336,7 @@
 
         if (_needsRebuilding)
         {
-            //trace("smartform commit REBUILD" + this.uid);
+            trace("smartform commit REBUILD" + this.uid);
             _needsRebuilding = false;
             _needsRebinding = false;
             removeFormItems();
@@ -348,7 +348,7 @@
         }
         else if (_needsRebinding)
         {
-            //trace("smartform commit REBIND" + this.uid);
+            trace("smartform commit REBIND" + this.uid);
             _needsRebinding = false;
             rebindWatchers();
             checkDirty();
@@ -474,7 +474,7 @@
         if (metadata)
         {
     
-            //trace("create form items " + this.uid);
+            trace("create form items " + this.uid);
             heading = DescriptorUtil.localeDescString(descriptionsList, metadataNS);
     
             var meetsCondition:Boolean;
@@ -563,15 +563,15 @@
                                         
                     // make sure changes to the data object propagate to the control
                     var propChain:Array = propName.split('.');
-                    BindingUtils.bindSetter(itemDataSetterWrapper(newItem), this, ["data"].concat(propChain), true, true);
+                    BindingUtils.bindSetter(itemDataSetterWrapper(newItem), this, ["data"].concat(propChain), false, true);
                     
                     // make sure changes to the control propagate to the data object
                     addWatcher(propName, newItem);
                     
                     newItem.metadata = field;
                     newItem.id = "formItem" + (idGen++);
-                    BindingUtils.bindProperty(newItem, "editable", this, [ "editable"], true, true);
-                    BindingUtils.bindProperty(newItem, "enabled", this, [ "enabled"], true, true);
+                    BindingUtils.bindProperty(newItem, "editable", this, [ "editable"], false, true);
+                    BindingUtils.bindProperty(newItem, "enabled", this, [ "enabled"], false, true);
                     
                     newItem.addEventListener(ValidationResultEvent.VALID, handleValidationEvent,false,0,true);
                     newItem.addEventListener(ValidationResultEvent.INVALID, handleValidationEvent,false,0,true);
