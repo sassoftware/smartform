@@ -30,26 +30,44 @@
 #
 -->
 
-    <mx:Script>
-    <![CDATA[
-        import com.rpath.xobj.XObjXMLEncoder;
-        import com.rpath.xobj.XObjXMLDecoder;
-        import mx.rpc.xml.SimpleXMLDecoder;
-        import mx.events.PropertyChangeEvent;
-        import mx.rpc.xml.SimpleXMLEncoder;
-        import mx.events.FlexEvent;
-        import mx.binding.utils.BindingUtils;
+<mx:Script>
+<![CDATA[
+    import com.rpath.xobj.XObjXMLDecoder;
+    import com.rpath.xobj.XObjXMLEncoder;
+    
+    import mx.events.PropertyChangeEvent;
     
     [Bindable]    
     public var metadata:XML;
     
     [Bindable]
-    public var testObject:TestObject;
+    public function get testObject():TestObject
+    {
+        return _testObject;
+    }
+    
+    private var _testObject:TestObject;
+
+    public function set testObject(s:TestObject):void
+    {
+        if (_testObject)
+        {
+            _testObject.removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, getObjectXML);
+        }
+        
+        _testObject = s;
+        
+        if (_testObject)
+        {
+            _testObject.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, getObjectXML);
+        }
+    }
+    
     
     public function creationComplete():void
     {
+        // start with a fresh testObject
         testObject = new TestObject();
-        testObject.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, getObjectXML);
         setMetadata(tests[0].test);
     }
 
@@ -83,6 +101,8 @@
                 newObject = xmlDecoder.decodeXML(xmlNode).foo;
                 testObject = newObject;
                 testObject.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, getObjectXML);
+                // force a refresh now
+                getObjectXML();
             }
             catch (e:Error)
             { }
@@ -121,6 +141,9 @@
     {
         var testId:String = testSelector.selectedItem.test;
         setMetadata(testId);
+        
+        // start with a fresh testObject
+        testObject = new TestObject();
     }
     
     ]]>

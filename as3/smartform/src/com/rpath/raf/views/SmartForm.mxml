@@ -106,7 +106,7 @@
     {
         if (_metadata != m)
         {
-            trace("metadata change " + this.uid);
+            //trace("metadata change " + this.uid);
             _metadata = m;
             
             metadataChanged = true;
@@ -186,10 +186,12 @@
         
     private var watchers:Array;
     
+    [Bindable("dataChange")]
     public override function set data(v:Object):void
     {
         if (super.data != v)
         {
+            //trace("data change " + this.uid);
             // unbind things, since we no longer want to change the old data object
             // nor do we want the old data object changing us
             unbindWatchers();
@@ -250,6 +252,9 @@
         {
             for each (var w:* in watchers)
             {
+                // NOTE: we need to pull any data from the data object
+                // into the form FIRST, since the data object has changed in
+                // this case (that's what led to the rebind requirement)
                 w.watcher = binder(w);
                 // give the item a chance to snapshot data
                 if (w.item.hasOwnProperty("snapshotData"))
@@ -289,12 +294,13 @@
     
     public override function invalidateProperties():void
     {
-        trace("smartform invalidateProps " + this.uid);
+        ////trace("smartform invalidateProps " + this.uid);
         super.invalidateProperties();
     }
     
     protected override function commitProperties():void
     {       
+
         if (metadataChanged)
         {
             metadataChanged = false;
@@ -336,7 +342,7 @@
 
         if (_needsRebuilding)
         {
-            trace("smartform commit REBUILD" + this.uid);
+            //trace("smartform commit REBUILD" + this.uid);
             _needsRebuilding = false;
             _needsRebinding = false;
             removeFormItems();
@@ -348,13 +354,15 @@
         }
         else if (_needsRebinding)
         {
-            trace("smartform commit REBIND" + this.uid);
+            //trace("smartform commit REBIND" + this.uid);
             _needsRebinding = false;
             rebindWatchers();
             checkDirty();
         }
 
+        
         super.commitProperties();
+
     }
     
     
@@ -474,7 +482,7 @@
         if (metadata)
         {
     
-            trace("create form items " + this.uid);
+            //trace("create form items " + this.uid);
             heading = DescriptorUtil.localeDescString(descriptionsList, metadataNS);
     
             var meetsCondition:Boolean;
@@ -563,15 +571,15 @@
                                         
                     // make sure changes to the data object propagate to the control
                     var propChain:Array = propName.split('.');
-                    BindingUtils.bindSetter(itemDataSetterWrapper(newItem), this, ["data"].concat(propChain), false, true);
+                    BindingUtils.bindSetter(itemDataSetterWrapper(newItem), this, ["data"].concat(propChain), false, false);
                     
                     // make sure changes to the control propagate to the data object
                     addWatcher(propName, newItem);
                     
                     newItem.metadata = field;
                     newItem.id = "formItem" + (idGen++);
-                    BindingUtils.bindProperty(newItem, "editable", this, [ "editable"], false, true);
-                    BindingUtils.bindProperty(newItem, "enabled", this, [ "enabled"], false, true);
+                    BindingUtils.bindProperty(newItem, "editable", this, [ "editable"], false, false);
+                    BindingUtils.bindProperty(newItem, "enabled", this, [ "enabled"], false, false);
                     
                     newItem.addEventListener(ValidationResultEvent.VALID, handleValidationEvent,false,0,true);
                     newItem.addEventListener(ValidationResultEvent.INVALID, handleValidationEvent,false,0,true);
