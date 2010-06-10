@@ -298,7 +298,7 @@
         allowFileContent = metadata.metadataNS::allowFileContent.toString().toLowerCase() == "true";
         displayAsPassword = metadata.metadataNS::password.toString().toLowerCase() == "true";
         
-        var lengthConstraint:int = metadata..metadataNS::constraints.length;
+        var lengthConstraint:int = metadata..metadataNS::constraints.metadataNS::length;
         
         var enumerated:Boolean = metadata..metadataNS::enumeratedType.length() > 0;
         var count:int = metadata..metadataNS::enumeratedType.metadataNS::describedValue.length();
