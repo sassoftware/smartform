@@ -300,6 +300,8 @@
     
     protected override function commitProperties():void
     {       
+        // necessary hack to get the form to scrollbar properly
+        minHeight=0;
 
         if (metadataChanged)
         {

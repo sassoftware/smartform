@@ -20,15 +20,8 @@
     creationComplete="creationComplete()"
     verticalAlign="top" borderColor="#DDDDDD" borderStyle="solid"
     minWidth="500"
-    xmlns:views="com.rpath.raf.views.*">
-    
-<!--
-#
-# Copyright (c) 2005-2008 rPath, Inc.
-#
-# All rights reserved
-#
--->
+    xmlns:views="com.rpath.raf.views.*"
+    >
 
 <mx:Script>
 <![CDATA[
@@ -172,7 +165,7 @@
     </mx:ArrayCollection>
     
     <mx:HDividedBox width="100%" height="100%">
-        <mx:VDividedBox width="70%" height="100%">
+        <mx:VDividedBox width="70%" height="100%" verticalScrollPolicy="off">
         
             <mx:VBox width="100%" height="40%">
                 <mx:FormItem label="Field Set" >
@@ -185,11 +178,18 @@
                 <mx:TextArea id="mdInput" width="100%" height="100%" text="{metadata}" change="editMetadata(event)" />
             </mx:VBox>
             
-            <views:SmartForm id="infoForm" editable="{editableCheck.selected}"
+            <!--<mx:VBox width="100%" height="60%" verticalScrollPolicy="off" >
+                <mx:Box width="50" height="50" borderStyle="solid">
+                    
+                </mx:Box>           -->
+                
+                <views:SmartForm id="infoForm" editable="{editableCheck.selected}"
                 metadata="{metadata}" data="{testObject}"
                 width="100%" height="60%"
+                verticalScrollPolicy="on"
                 />
-        
+<!--            </mx:VBox>
+-->
         </mx:VDividedBox>
         <mx:TextArea id="objView" text="{objectXML}"  width="30%" height="100%" change="{objectXML = objView.text}"/>
         <mx:Button label="REFRESH" click="getObjectXML()"/>
