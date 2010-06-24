@@ -177,19 +177,12 @@
                 <mx:CheckBox id="isDirty" label="DIRTY?" selected="{infoForm.isDirty}"/>
                 <mx:TextArea id="mdInput" width="100%" height="100%" text="{metadata}" change="editMetadata(event)" />
             </mx:VBox>
-            
-            <!--<mx:VBox width="100%" height="60%" verticalScrollPolicy="off" >
-                <mx:Box width="50" height="50" borderStyle="solid">
-                    
-                </mx:Box>           -->
-                
-                <views:SmartForm id="infoForm" editable="{editableCheck.selected}"
-                metadata="{metadata}" data="{testObject}"
-                width="100%" height="60%"
-                verticalScrollPolicy="on"
-                />
-<!--            </mx:VBox>
--->
+
+            <views:SmartForm id="infoForm" editable="{editableCheck.selected}"
+            metadata="{metadata}" data="{testObject}"
+            width="100%" height="60%"
+            />
+
         </mx:VDividedBox>
         <mx:TextArea id="objView" text="{objectXML}"  width="30%" height="100%" change="{objectXML = objView.text}"/>
         <mx:Button label="REFRESH" click="getObjectXML()"/>
