@@ -17,6 +17,8 @@ package com.rpath.raf.views
     import mx.containers.Canvas;
     import mx.core.UIComponent;
     import mx.events.ValidationResultEvent;
+    import spark.components.Group;
+    import mx.core.IVisualElement;
 
     /**
      *  On error, change the backgroundAlpha to this value
@@ -25,7 +27,7 @@ package com.rpath.raf.views
      */
     [Style(name="errorBackgroundAlpha", type="Number", format="Length", inherit="yes")]
 
-    public class MagicFormItem extends Canvas
+    public class MagicFormItem extends Group
     {
         
         public function MagicFormItem()
@@ -105,26 +107,12 @@ package com.rpath.raf.views
             return _itemEnabled;
         }
 
-        
-        override public function createComponentsFromDescriptors(recurse:Boolean = true ):void
-        {
-            if ( childDescriptors.length == 0 )
-                return; // no children specified
-            
-            // remove current children
-            if ( selectedIndex != -1 && childDescriptors[selectedIndex] )
-            {
-                createComponentFromDescriptor( childDescriptors[ selectedIndex ], recurse );
-            }
-            
-            validateNow();
-        }
-
         public override function setFocus():void
         {
             super.setFocus();
-            for each (var item:* in getChildren())
+            for (var i:int; i < numElements; i++)
             {
+                var item:IVisualElement = getElementAt(i);
                 if (item is UIComponent)
                 {
                     (item as UIComponent).setFocus();
