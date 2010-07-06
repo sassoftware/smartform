@@ -25,19 +25,24 @@ package com.rpath.raf.util
     import flash.events.MouseEvent;
     import flash.utils.Dictionary;
     
-    import mx.binding.utils.BindingUtils;
     import mx.core.UIComponent;
     import mx.events.ValidationResultEvent;
     import mx.managers.ToolTipManager;
     import mx.validators.Validator;
+    import mx.binding.utils.BindingUtils;
+    import mx.binding.utils.ChangeWatcher;
     
     [Bindable]
     public class ValidationHelper
     {
+        public var target:*;
+        private var cw:ChangeWatcher;
+        
         public function ValidationHelper(vals:Array=null, target:*=null, property:String=null)
         {
-            if (target && property)
-                BindingUtils.bindProperty(target, property, this, ["isValid"]);
+            this.target = target;
+            if (this.target && property)
+                cw = BindingUtils.bindProperty(this.target, property, this, ["isValid"], true, true);
             
             validators = vals;
         }
@@ -105,8 +110,8 @@ package com.rpath.raf.util
         
         protected function setupListeners(v:IEventDispatcher):void
         {
-            v.addEventListener(ValidationResultEvent.VALID, validateNow);
-            v.addEventListener(ValidationResultEvent.INVALID, validateNow);
+            v.addEventListener(ValidationResultEvent.VALID, validateNow,false,0,true);
+            v.addEventListener(ValidationResultEvent.INVALID, validateNow,false,0,true);
         }
 
         /**
