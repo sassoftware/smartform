@@ -41,8 +41,8 @@ import flash.events.Event;
 import flash.events.FocusEvent;
 import flash.text.TextField;
 
-import mx.controls.TextInput;
 import mx.events.FlexEvent;
+import spark.components.TextInput;
 
 /**
  * The <code>PromptingTextInput</code> component is a small enhancement to
@@ -207,7 +207,7 @@ public class PromptingTextInput extends TextInput
             }
             else
             {
-                super.htmlText = _promptFormat.replace( /\[prompt\]/g, _prompt );
+                super.text = _promptFormat.replace( /\[prompt\]/g, _prompt );
             }
 
             if(super.displayAsPassword) {
@@ -252,7 +252,7 @@ public class PromptingTextInput extends TextInput
         // If the text is empty, clear the prompt
         if ( _textEmpty )
         {
-            super.htmlText = "";
+            super.text = "";
             // KLUDGE: Have to validate now to avoid a bug where the format
             // gets "stuck" even though the text gets cleared.
             validateNow();

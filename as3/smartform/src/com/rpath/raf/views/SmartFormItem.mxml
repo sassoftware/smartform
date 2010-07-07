@@ -14,18 +14,25 @@
 */
 -->
 
-<views:ExtendedFormItem xmlns:mx="http://www.adobe.com/2006/mxml"
+<views:ExtendedFormItem 
+    xmlns:fx="http://ns.adobe.com/mxml/2009" 
+    xmlns:s="library://ns.adobe.com/flex/spark" 
+    xmlns:mx="library://ns.adobe.com/flex/mx"
     xmlns:views="com.rpath.raf.views.*"
     initialize="onInitialize(event)"
     width="100%">
-
-    <mx:Metadata>
+    
+    <fx:Metadata>
         [Event(name="dirtyChanged", type="mx.events.DynamicEvent")]
-    </mx:Metadata>
+    </fx:Metadata>
     
+    <fx:Declarations>
+        <s:RadioButtonGroup id="radiochoice" itemClick="handleRadioChoice(event)"/>
+    </fx:Declarations>
     
-    <mx:Script>
+    <fx:Script>
     <![CDATA[
+        import spark.events.IndexChangeEvent;
         import com.rpath.raf.util.DescriptorUtil;
         import com.rpath.raf.util.ValidationHelper;
         
@@ -76,13 +83,6 @@
     
     [Bindable]
     public var smartForm:SmartForm;
-    
-    /** typeIndex is an internal reference to the specific formitem subtype 
-    * to be used based on the metadata provided
-    */
-    
-    [Bindable]
-    protected var typeIndex:int;
     
     /** choices is an Array holding the set of enumeratedType values allowed for this 
     * SmartFormItem
@@ -138,6 +138,18 @@
     
     protected override function commitProperties():void
     {
+
+        try
+        {
+            // now commit super to pick up changes to styles, etc.
+            super.commitProperties();
+        }
+        catch (e:TypeError)
+        {
+            // this is here because if label is set before createChildren 
+            // has created the private labelObj in FormItem, commit will 
+            // blow up
+        }
 
         if (_dataChanged)
         {
@@ -392,13 +404,15 @@
         }
 
         initializeValidators();
-                
-        typeIndex = typeMap[editable ? effectiveType : effectiveType+"Disabled" ];
+        
+        var typeString:String = editable ? effectiveType : effectiveType+"Disabled";
+        currentState = typeString;
         
         // now kick the Magic item to create it's children
-        magic.createComponentsFromDescriptors();
+        //magic.createComponentsFromDescriptors();
         
-        initializeControls();
+        _dataChanged = true;
+        invalidateProperties();
         
         // and make sure we start off clean
         isDirty = false;
@@ -419,9 +433,9 @@
         types that the SmartFormItem supports
     */
     
-    private function initListSelection(list:List):void
+    private function initListSelection(list:spark.components.List):void
     {
-        var newList:Array = new Array();
+        var newList:Vector.<Object> = new Vector.<Object>();
         
         for each (var v:SmartFormChoice in choices)
         {
@@ -441,8 +455,12 @@
         
         for (var i:int=0; i<choices.length; i++)
         {
-            var b:Boolean = isChoiceInData(choiceForLabel(cb[i].label).value);
-            cb[i].selected = b;
+            var checkbox:spark.components.CheckBox = multiCheckDG.getElementAt(i) as spark.components.CheckBox;
+            if (checkbox)
+            {
+                var b:Boolean = isChoiceInData(choiceForLabel(checkbox.label).value);
+                checkbox.selected = b;
+            }
         }
         
     }
@@ -453,8 +471,12 @@
         
         for (var i:int=0; i<choices.length; i++)
         {
-            var b:Boolean = isChoiceInData(rb[i].value);
-            rb[i].selected = b;
+            var radioButton:spark.components.RadioButton = radioChoiceDG.getElementAt(i) as spark.components.RadioButton;
+            if (radioButton)
+            {
+                var b:Boolean = isChoiceInData(radioButton.value as String);
+                radioButton.selected = b;
+            }
         }
         
     }
@@ -528,7 +550,7 @@
 
     }
 
-    private function handleMulticheck(e:Event):void
+    public function handleMulticheck(e:Event):void
     {
         var newData:Array = new Array();
         var bFoundIt:Boolean = false;
@@ -618,7 +640,7 @@
         data = e.item;
     }
 
-    private function handleCombobox(e:ListEvent):void
+    private function handleCombobox(e:IndexChangeEvent):void
     {
         var newData:*;
         
@@ -627,7 +649,7 @@
     }
 
 
-    private function handleList(e:ListEvent):void
+    private function handleList(e:IndexChangeEvent):void
     {
         var newData:*;
         
@@ -645,7 +667,7 @@
     private function deferredHandleMultiList(e:MouseEvent=null):void
     {
         var newData:Array = [];
-        var newSelection:Array = [];
+        var newSelection:Vector.<Object> = new Vector.<Object>();
         
         for each (var i:SmartFormChoice in choices)
         {
@@ -827,55 +849,6 @@
         magic.setFocus();
     }
 
-    
-    /** figure out which kind of form item we really want
-    */
-    
-    /* mapping of particular UI control types to typeIndex value */
-    
-    private var typeMap:Object =
-        {
-        // primitives we will see in the metadata
-        str: 0,
-        strDisabled: 1,
-        int: 2,
-        intDisabled: 3,
-        bool: 4,
-        boolDisabled: 4,
-        date: 5,
-        dateDisabled: 6,
-        time: 7,
-        timeDisabled: 8,
-        datetime: 9,
-        datetimeDisabled: 10,
-        timeDelta: 11,
-        timeDeltaDisabled: 12,
-        ipAddress: 13,
-        ipAddressDisabled: 14,
-        currency: 15,
-        currencyDisabled: 16,
-        file: 17,
-        fileDisabled: 18,
-        
-        // user interaction based effective types here
-        radiochoice: 19,
-        radiochoiceDisabled: 19,
-        pulldownchoice: 20,
-        pulldownchoiceDisabled: 20,
-        listbox: 21,
-        listboxDisabled: 21,
-        
-        multicheck: 22,
-        multicheckDisabled: 22,
-        multilist: 23,
-        multilistDisabled: 23,
-
-        longtext: 24,
-        longtextDisabled: 25,
-        radiobool: 26,
-        radioboolDisabled: 26
-        };
-    
     private var errorStyleMap:Object = 
     {
 // primitives we will see in the metadata
@@ -930,58 +903,96 @@
 
     
     ]]>
-    </mx:Script>
+    </fx:Script>
     
     <!-- Validators here. Note that we turn on the ones needed dynamically -->
-
-    <mx:Array id="validators">
+    <fx:Declarations>
+        <fx:Array id="validators">
+            
+            <mx:Validator id="requiredV" 
+                          source="{this}" property="data"
+                          listener="{magic}"
+                          enabled="false"
+                          required="{required}"
+                          />
+            
+            <!-- the dotall flag (s) *must* be on for ec2 cert/key validation, should not matter for anything else -->
+            <mx:RegExpValidator id="regExpV" 
+                                source="{this}" property="data"
+                                expression=""
+                                flags="s"
+                                listener="{magic}"
+                                enabled="false"
+                                required="{required}"
+                                />
+            
+            <mx:StringValidator id="maxLengthV" 
+                                source="{this}" property="data"
+                                minLength="0" maxLength="0"
+                                listener="{magic}"
+                                enabled="false"
+                                required="{required}"
+                                />
+            
+            <mx:NumberValidator id="rangeV"
+                                source="{this}" property="data"
+                                minValue="0" maxValue="0"
+                                listener="{magic}"
+                                enabled="false"
+                                required="{required}"
+                                />
+        </fx:Array>
+    </fx:Declarations>
         
-        <mx:Validator id="requiredV" 
-            source="{this}" property="data"
-            listener="{magic}"
-            enabled="false"
-            required="{required}"
-            />
-        
-        <!-- the dotall flag (s) *must* be on for ec2 cert/key validation, should not matter for anything else -->
-        <mx:RegExpValidator id="regExpV" 
-            source="{this}" property="data"
-            expression=""
-            flags="s"
-            listener="{magic}"
-            enabled="false"
-            required="{required}"
-            />
-    
-        <mx:StringValidator id="maxLengthV" 
-            source="{this}" property="data"
-            minLength="0" maxLength="0"
-            listener="{magic}"
-            enabled="false"
-            required="{required}"
-            />
-    
-        <mx:NumberValidator id="rangeV"
-            source="{this}" property="data"
-            minValue="0" maxValue="0"
-            listener="{magic}"
-            enabled="false"
-            required="{required}"
-            />
-    </mx:Array>
+    <views:states>
+        <s:State name="UNKNOWN" />
+        <s:State name="str" />
+        <s:State name="strDisabled" />
+        <s:State name="int" />
+        <s:State name="intDisabled" />
+        <s:State name="bool" />
+        <s:State name="boolDisabled" />
+        <s:State name="date" />
+        <s:State name="dateDisabled" />
+        <s:State name="time" />
+        <s:State name="timeDisabled" />
+        <s:State name="datetime" />
+        <s:State name="datetimeDisabled" />
+        <s:State name="timeDelta" />
+        <s:State name="timeDeltaDisabled" />
+        <s:State name="ipAddress" />
+        <s:State name="ipAddressDisabled" />
+        <s:State name="currency" />
+        <s:State name="currencyDisabled" />
+        <s:State name="file" />
+        <s:State name="fileDisabled" />
+        <s:State name="radiochoice" />
+        <s:State name="radiochoiceDisabled" />
+        <s:State name="pulldownchoice" />
+        <s:State name="pulldownchoiceDisabled" />
+        <s:State name="listbox" />
+        <s:State name="listboxDisabled" />
+        <s:State name="multicheck" />
+        <s:State name="multicheckDisabled" />
+        <s:State name="multilist" />
+        <s:State name="multilistDisabled" />
+        <s:State name="longtext" />
+        <s:State name="longtextDisabled" />
+        <s:State name="radiobool" />
+        <s:State name="radioboolDisabled" />
+ 
+    </views:states>
 
     <!--<mx:NumberValidator id="intValidation" source="{intField}">
     </mx:NumberValidator>-->
     
-    <views:MagicFormItem id="magic" selectedIndex="{typeIndex}" creationPolicy="none" 
+    <views:MagicFormItem id="magic"
         valid="handleValidationEvent(event)"
         invalid="handleValidationEvent(event)"
         isValid="{isValid}"
-        horizontalScrollPolicy="off"
         width="100%"
         >
-        <!--         
-        -->
+
         <!-- str: 0 -->
         <views:ExtendedTextInput id="strField" text="{data}" 
             editable="{editable}" enabled="{enabled}"
@@ -989,6 +1000,7 @@
             change="handleStrField(event)"
             displayAsPassword="{displayAsPassword}"
             width="100%"
+            includeIn="str"
             />
         <mx:TextInput text="{data}" 
             selectable="true"
@@ -997,6 +1009,7 @@
             displayAsPassword="{displayAsPassword}"
             toolTip="{prompt}" 
             width="100%"
+            includeIn="strDisabled"
             />
 
         <!-- int: 2 -->
@@ -1005,15 +1018,18 @@
             prompt="{prompt}"
             change="handleIntField(event)"
             displayAsPassword="{displayAsPassword}"
+            includeIn="int"
            />
         <mx:Label text="{data}" 
             selectable="true"
             toolTip="{prompt}" 
+            includeIn="intDisabled"
             />
 
         <!-- bool: 4 -->
-        <mx:CheckBox id="checkbox" selected="{data}" enabled="{editable &amp;&amp; enabled}"
+        <s:CheckBox id="checkbox" selected="{data}" enabled="{editable &amp;&amp; enabled}"
             width="100%"
+            includeIn="bool,boolDisabled"
             toolTip="{prompt}"  change="handleCheckbox(event)" />
         
         <!-- TODO: Date, Time, ITmeDelta all need to be implemented -->
@@ -1021,45 +1037,53 @@
         <!-- date: 5 -->
         <mx:Label text="date"
             width="100%"
+            includeIn="date"
             />
         <mx:Label text="{data}" 
             selectable="true"
             toolTip="{prompt}" 
             width="100%"
+            includeIn="dateDisabled"
             />
 
         <!-- time: 7 -->
         <mx:Label text="time"
             width="100%"
+            includeIn="time"
             />
         <mx:Label text="{data}" 
             selectable="true"
             toolTip="{prompt}" 
             width="100%"
+            includeIn="timeDisabled"
             />
 
         <!-- datetime: 9 -->
         <mx:Label text="datetime"
             width="100%"
+            includeIn="datetime"
             />
         <mx:Label text="{data}" 
             selectable="true"
             toolTip="{prompt}" 
             width="100%"
+            includeIn="datetimeDisabled"
             />
 
         <!-- timeDelta: 11 -->
         <mx:Label text="timeDelta"
             width="100%"
+            includeIn="timeDelta"
             />
         <mx:Label text="{data}" 
             selectable="true"
             toolTip="{prompt}" 
             width="100%"
+            includeIn="timeDeltaDisabled"
             />
 
         <!-- ipAddress: 13 -->
-        <mx:HBox  toolTip="{prompt}">
+        <s:HGroup  toolTip="{prompt}" includeIn="ipAddress">
             <views:ExtendedTextInput maxChars="3" id="A" editable="{editable}" enabled="{enabled}"
                 change="handleIPAddress(event)" />
             <mx:Label text="."/>
@@ -1071,10 +1095,11 @@
             <mx:Label text="."/>
             <views:ExtendedTextInput maxChars="3" id="D" editable="{editable}" enabled="{enabled}"
                 change="handleIPAddress(event)" />
-        </mx:HBox>
+        </s:HGroup>
         <mx:Label text="{data}" 
             selectable="true"
-            toolTip="{prompt}" 
+            toolTip="{prompt}"
+            includeIn="ipAddressDisabled"
             />
 
         <!-- currency: 15 -->
@@ -1082,11 +1107,13 @@
             prompt="{prompt}"
             change="handleCurrency(event)"
             width="100%"
+            includeIn="currency"
             />
         <mx:Label text="{data}" 
             selectable="true"
             toolTip="{prompt}" 
             width="100%"
+            includeIn="currencyDisabled"
             />
 
         <!-- file: 17 -->
@@ -1094,72 +1121,111 @@
             prompt="{prompt}"
             change="handleFile(event)"
             width="100%"
+            includeIn="file"
             />
         <mx:Label text="{data}" 
             selectable="true"
             toolTip="{prompt}" 
             width="100%"
+            includeIn="fileDisabled"
             />
         
         <!-- radiochoice: 19 -->
-        <mx:HBox toolTip="{prompt}" horizontalScrollPolicy="off"
-            width="100%"
-            >
-            <mx:RadioButtonGroup id="radiochoice" itemClick="handleRadioChoice(event)"/>
-            <mx:Repeater id="rep1" dataProvider="{choices}">
-                <mx:RadioButton id="rb" label="{rep1.currentItem.label}" enabled="{editable &amp;&amp; enabled}" 
-                    value="{rep1.currentItem.value}" groupName="radiochoice" />
-            </mx:Repeater>
-        </mx:HBox>
+        <s:DataGroup id="radioChoiceDG" dataProvider="{choices}"
+                     toolTip="{prompt}"
+                     width="100%"
+                     includeIn="radiochoice, radiochoiceDisabled">
+            <s:layout>
+                <s:HorizontalLayout />
+            </s:layout>
+            <s:itemRenderer>
+                <fx:Component>
+                    <s:ItemRenderer width="100%">
+                        <s:states>
+                            <s:State name="normal" />
+                            <s:State name="hovered" />
+                        </s:states>
+                        <s:RadioButton label="{data.label}" enabled="{parentDocument.editable &amp;&amp; parentDocument.enabled}" 
+                                       value="{data.value}" groupName="radiochoice" />
+                    </s:ItemRenderer>
+                </fx:Component>
+            </s:itemRenderer>
+        </s:DataGroup>
         
         <!-- pulldownchoice: 20 -->
-        <mx:ComboBox id="pulldownchoice" toolTip="{prompt}" enabled="{editable &amp;&amp; enabled}"
-            dataProvider="{choices}" change="handleCombobox(event)" />
+        <s:ComboBox id="pulldownchoice" toolTip="{prompt}" enabled="{editable &amp;&amp; enabled}"
+                    dataProvider="{choices}" change="handleCombobox(event)" 
+                    includeIn="pulldownchoice,pulldownchoiceDisabled"
+                    />
 
         
         <!-- listbox: 21 -->
-        <mx:List id="listbox"  dataProvider="{choices}" toolTip="{prompt}"
-            width="100%"
-            change="handleList(event)" selectable="{editable &amp;&amp; enabled}" />
+        <s:List id="listbox"  dataProvider="{choices}" toolTip="{prompt}"
+            width="100%" 
+            change="handleList(event)" enabled="{editable &amp;&amp; enabled}" 
+            includeIn="listbox,listboxDisabled">
+            <s:itemRenderer>
+                <fx:Component>
+                    <s:ItemRenderer width="100%">
+                        <s:states>
+                            <s:State name="normal" />
+                            <s:State name="hovered" />
+                        </s:states>
+                        <s:Label text="{data.label}"/>
+                    </s:ItemRenderer>
+                </fx:Component>
+            </s:itemRenderer>
+            
+        </s:List>
         
         <!-- multicheck: 22 -->
-        <mx:HBox toolTip="{prompt}"
-            width="100%"
-            >
-            <mx:Repeater id="rep2" dataProvider="{choices}" >
-                <mx:CheckBox id="cb" label="{rep2.currentItem.label}" enabled="{editable &amp;&amp; enabled}"
-                    change="handleMulticheck(event)"/>
-            </mx:Repeater>
-        </mx:HBox>
-
+        <s:DataGroup id="multiCheckDG" dataProvider="{choices}" toolTip="{prompt}"
+                     width="100%"
+                     includeIn="multicheck,multicheckDisabled">
+            <s:layout>
+                <s:HorizontalLayout />
+            </s:layout>
+            <s:itemRenderer>
+                <fx:Component>
+                    <s:ItemRenderer width="100%">
+                        <s:states>
+                            <s:State name="normal" />
+                            <s:State name="hovered" />
+                        </s:states>
+                        <s:CheckBox label="{data.label}" enabled="{parentDocument.editable &amp;&amp; parentDocument.enabled}"
+                                    change="parentDocument.handleMulticheck(event)"/>
+                    </s:ItemRenderer>
+                </fx:Component>
+            </s:itemRenderer>
+        </s:DataGroup>
+        
         <!-- multilist: 23 -->
-        <mx:List id="multilist"  dataProvider="{choices}" toolTip="{prompt}"
+        <s:List id="multilist"  dataProvider="{choices}" toolTip="{prompt}"
             width="100%"
-            selectable="{editable &amp;&amp; enabled}"
+            enabled="{editable &amp;&amp; enabled}"
             allowMultipleSelection="true"
             selectionColor="0xFFFFFF"
             click="handleMultiList(event)"
-            maxHeight="150">
-            <mx:itemRenderer>
-                <mx:Component>
-                    <mx:CheckBox selectedField="selected"
-                            change="onChange(event)"
-                            paddingBottom="0" paddingTop="0">
-                        <mx:Script>
-                            <![CDATA[
-                                private function onChange(evt:Event):void
-                                {
-                                    data.selected = !data.selected;
-                                }
-                            ]]>
-                        </mx:Script>
-                    </mx:CheckBox>
-                </mx:Component>
-            </mx:itemRenderer>
-        </mx:List>
+            maxHeight="150"
+            includeIn="multilist,multilistDisabled"
+            >
+            <s:itemRenderer>
+                <fx:Component>
+                    <s:ItemRenderer width="100%">
+                        <s:states>
+                            <s:State name="normal" />
+                            <s:State name="hovered" />
+                        </s:states>
+                        <s:CheckBox label="{data.label}" selected="{data.selected}"
+                                    change="data.selected = !data.selected">
+                        </s:CheckBox>
+                    </s:ItemRenderer>
+                </fx:Component>
+            </s:itemRenderer>
+        </s:List>
 
         <!-- longtext: 24 -->
-        <mx:HBox width="100%">
+        <s:HGroup width="100%" includeIn="longtext">
             <views:ExtendedTextArea id="longtext" text="{data}"  
                 editable="{editable}" enabled="{enabled}"
                 prompt="{prompt}"
@@ -1172,20 +1238,21 @@
                 includeInLayout="{allowFileContent}"
                 visible="{allowFileContent}"
                 click="handleReadFileContent(event)"/>
-        </mx:HBox>
+        </s:HGroup>
         <views:ExtendedTextArea text="{data}" 
             selectable="true"
             editable="false"
             displayAsPassword="{displayAsPassword}"
             prompt="{prompt}"
             toolTip="{prompt}"
-            borderStyle="none"
             minWidth="400"
-            maxHeight="250"/>
+            maxHeight="250"
+            includeIn="longtextDisabled"/>
 
         <!-- radiobool: 26 -->
         <mx:HBox  toolTip="{prompt}"
             width="100%"
+            includeIn="radiobool,radioboolDisabled"
             >
             <mx:RadioButtonGroup id="radiobool" itemClick="handleRadioBool(event)" />
             <mx:RadioButton id="YESbool" label="YES" value="true"
