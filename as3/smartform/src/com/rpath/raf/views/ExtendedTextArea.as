@@ -82,7 +82,7 @@ package com.rpath.raf.views
         private function expandedHeight():int
         {
             var newHeight:int;
-            newHeight = (textHeight + 10 > measuredMinHeight) ? textHeight + 10 : measuredMinHeight;
+            newHeight = (height + 10 > measuredMinHeight) ? height + 10 : measuredMinHeight;
             newHeight = (newHeight > maxHeight) ? maxHeight : (newHeight < minHeight) ? minHeight : newHeight;
             return newHeight;
         }
