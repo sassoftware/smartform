@@ -775,7 +775,7 @@
         else
             requiredV.enabled = false;
 
-        x = constraints.length;
+        x = constraints..metadataNS::length;
         if (x.length() > 0)
         {
             maxLengthV.enabled = true;
@@ -785,7 +785,7 @@
         else
             maxLengthV.enabled = false;
             
-        x = constraints.range;
+        x = constraints..metadataNS::range;
         if (x.length() > 0)
         {
             rangeV.enabled = true;
@@ -797,7 +797,7 @@
         else
             rangeV.enabled = false;
 
-        x = constraints.regexp;
+        x = constraints..metadataNS::regexp;
         if (x.length() > 0)
         {
             regExpV.enabled = true;
