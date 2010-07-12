@@ -789,8 +789,8 @@
         if (x.length() > 0)
         {
             rangeV.enabled = true;
-            rangeV.minValue = x.min;
-            rangeV.maxValue = x.max;
+            rangeV.minValue = x.metadataNS::min;
+            rangeV.maxValue = x.metadataNS::max;
             rangeV.exceedsMaxError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), rangeV.exceedsMaxError);
             rangeV.lowerThanMinError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), rangeV.lowerThanMinError);
         }
