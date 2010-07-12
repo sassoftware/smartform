@@ -24,3 +24,8 @@ flexlibs-build/lib/
 */junit.xml
 */user.properties
 jirate/*.xml
+.coverage/*
+.failed
+*.pyc
+smartform/constants.py
+.times

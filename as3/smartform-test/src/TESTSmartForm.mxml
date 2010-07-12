@@ -20,36 +20,47 @@
     creationComplete="creationComplete()"
     verticalAlign="top" borderColor="#DDDDDD" borderStyle="solid"
     minWidth="500"
-    xmlns:views="com.rpath.raf.views.*">
-    
-<!--
-#
-# Copyright (c) 2005-2008 rPath, Inc.
-#
-# All rights reserved
-#
--->
+    xmlns:views="com.rpath.raf.views.*"
+    >
 
-    <mx:Script>
-    <![CDATA[
-        import com.rpath.xobj.XObjXMLEncoder;
-        import com.rpath.xobj.XObjXMLDecoder;
-        import mx.rpc.xml.SimpleXMLDecoder;
-        import mx.events.PropertyChangeEvent;
-        import mx.rpc.xml.SimpleXMLEncoder;
-        import mx.events.FlexEvent;
-        import mx.binding.utils.BindingUtils;
+<mx:Script>
+<![CDATA[
+    import com.rpath.xobj.XObjXMLDecoder;
+    import com.rpath.xobj.XObjXMLEncoder;
+    
+    import mx.events.PropertyChangeEvent;
     
     [Bindable]    
     public var metadata:XML;
     
     [Bindable]
-    public var testObject:TestObject;
+    public function get testObject():TestObject
+    {
+        return _testObject;
+    }
+    
+    private var _testObject:TestObject;
+
+    public function set testObject(s:TestObject):void
+    {
+        if (_testObject)
+        {
+            _testObject.removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, getObjectXML);
+        }
+        
+        _testObject = s;
+        
+        if (_testObject)
+        {
+            _testObject.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, getObjectXML);
+        }
+    }
+    
     
     public function creationComplete():void
     {
+        // start with a fresh testObject
         testObject = new TestObject();
-        testObject.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, getObjectXML);
         setMetadata(tests[0].test);
     }
 
@@ -83,6 +94,8 @@
                 newObject = xmlDecoder.decodeXML(xmlNode).foo;
                 testObject = newObject;
                 testObject.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, getObjectXML);
+                // force a refresh now
+                getObjectXML();
             }
             catch (e:Error)
             { }
@@ -121,11 +134,18 @@
     {
         var testId:String = testSelector.selectedItem.test;
         setMetadata(testId);
+        
+        // start with a fresh testObject
+        testObject = new TestObject();
     }
     
     ]]>
     </mx:Script>
 
+    <mx:XML id="launch_ec2_metadata" source="/data/test/launch_ec2.xml" />
+    <mx:XML id="launch_vsphere_metadata" source="/data/test/launch_vsphere.xml" />
+    <mx:XML id="configure_ec2_metadata" source="/data/test/configure_ec2.xml" />
+    <mx:XML id="configure_vsphere_metadata" source="/data/test/configure_vsphere.xml" />
     <mx:XML id="single_metadata" source="/data/test/single.xml" />
     <mx:XML id="booltest_metadata" source="/data/test/booltest.xml" />
     <mx:XML id="conditional_metadata" source="/data/test/conditional.xml" />
@@ -133,6 +153,10 @@
     <mx:XML id="simple_metadata" source="/data/test/simple.xml" />
 
     <mx:ArrayCollection id="tests">
+        <mx:Object label="Launch EC2" test="launch_ec2_metadata" />
+        <mx:Object label="Launch vsphere" test="launch_vsphere_metadata" />
+        <mx:Object label="Configure EC2" test="configure_ec2_metadata" />
+        <mx:Object label="Configure vsphere" test="configure_vsphere_metadata" />
         <mx:Object label="Single" test="single_metadata" />
         <mx:Object label="Booltest" test="booltest_metadata" />
         <mx:Object label="Simple" test="simple_metadata" />
@@ -141,7 +165,7 @@
     </mx:ArrayCollection>
     
     <mx:HDividedBox width="100%" height="100%">
-        <mx:VDividedBox width="70%" height="100%">
+        <mx:VDividedBox width="70%" height="100%" verticalScrollPolicy="off">
         
             <mx:VBox width="100%" height="40%">
                 <mx:FormItem label="Field Set" >
@@ -153,12 +177,12 @@
                 <mx:CheckBox id="isDirty" label="DIRTY?" selected="{infoForm.isDirty}"/>
                 <mx:TextArea id="mdInput" width="100%" height="100%" text="{metadata}" change="editMetadata(event)" />
             </mx:VBox>
-            
+
             <views:SmartForm id="infoForm" editable="{editableCheck.selected}"
-                metadata="{metadata}" data="{testObject}"
-                width="100%" height="60%"
-                />
-        
+            metadata="{metadata}" data="{testObject}"
+            width="100%" height="60%"
+            />
+
         </mx:VDividedBox>
         <mx:TextArea id="objView" text="{objectXML}"  width="30%" height="100%" change="{objectXML = objView.text}"/>
         <mx:Button label="REFRESH" click="getObjectXML()"/>
