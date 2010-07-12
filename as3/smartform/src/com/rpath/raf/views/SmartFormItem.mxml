@@ -410,6 +410,10 @@
     override public function onCreationComplete(event:FlexEvent):void
     {
         super.onCreationComplete(event);
+        if (helpNode && helpNode.length() > 0)
+        {
+            helpLink = helpNode.@href;
+        }
     }
 
     // ----------------------------------------------------- INITIALIZERS
