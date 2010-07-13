@@ -351,6 +351,8 @@
             createFormItems();
             checkDirty();
             
+            this.setFocus();
+            
             // after the rebuild, clear any change flag
             _conditionsChanged = false;
         }

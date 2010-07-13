@@ -410,6 +410,10 @@
     override public function onCreationComplete(event:FlexEvent):void
     {
         super.onCreationComplete(event);
+        if (helpNode && helpNode.length() > 0)
+        {
+            helpLink = helpNode.@href;
+        }
     }
 
     // ----------------------------------------------------- INITIALIZERS
@@ -775,7 +779,7 @@
         else
             requiredV.enabled = false;
 
-        x = constraints.length;
+        x = constraints..metadataNS::length;
         if (x.length() > 0)
         {
             maxLengthV.enabled = true;
@@ -785,19 +789,19 @@
         else
             maxLengthV.enabled = false;
             
-        x = constraints.range;
+        x = constraints..metadataNS::range;
         if (x.length() > 0)
         {
             rangeV.enabled = true;
-            rangeV.minValue = x.min;
-            rangeV.maxValue = x.max;
+            rangeV.minValue = x.metadataNS::min;
+            rangeV.maxValue = x.metadataNS::max;
             rangeV.exceedsMaxError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), rangeV.exceedsMaxError);
             rangeV.lowerThanMinError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), rangeV.lowerThanMinError);
         }
         else
             rangeV.enabled = false;
 
-        x = constraints.regexp;
+        x = constraints..metadataNS::regexp;
         if (x.length() > 0)
         {
             regExpV.enabled = true;

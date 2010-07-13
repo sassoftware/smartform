@@ -28,10 +28,12 @@
     <mx:Script>
     <![CDATA[
         import com.rpath.raf.events.HelpEvent;
-        import mx.controls.Label;
-        import mx.events.FlexEvent;
+        
         import flash.net.URLRequest;
         import flash.net.navigateToURL;
+        
+        import mx.controls.Label;
+        import mx.events.FlexEvent;
 
 
     [Bindable]
@@ -70,8 +72,8 @@
         var evt:HelpEvent = new HelpEvent(HelpEvent.SHOW_HELP, true);
         if (helpText && helpText != "")
             evt.text = helpText;
-        if (helpNode && helpNode.length() > 0)
-            evt.node = helpNode;
+        if (helpLink && helpLink != "")
+            evt.uri = helpLink;
         if (helpKey && helpKey != "")
             evt.key = helpKey;
         dispatchEvent(evt);
