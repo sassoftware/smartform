@@ -413,6 +413,14 @@
         if (helpNode && helpNode.length() > 0)
         {
             helpLink = helpNode.@href;
+            if (helpLink == "")
+            {
+                helpKey = helpNode.toString();
+                if (helpKey.substring(0, 1) == "@")
+                {
+                    helpKey = helpKey.slice(1, -1);
+                }
+            }
         }
     }
 
