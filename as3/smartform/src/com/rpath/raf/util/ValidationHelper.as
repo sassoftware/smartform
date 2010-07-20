@@ -31,81 +31,152 @@ package com.rpath.raf.util
     import mx.validators.Validator;
     import mx.binding.utils.BindingUtils;
     import mx.binding.utils.ChangeWatcher;
+    import mx.utils.ArrayUtil;
+    
+    
+    /** ValidationHelper provides a way to aggregate the checking of multiple
+    * Validators to arrive at an "isValid" decision. It offers the ability
+    * to maintain the isValid property on a target object, typically a View that
+    * contains a form, so that Save buttons, etc can be bound to the isValid
+    * property rather than wiring up various event listeners to the underlying
+    * validation events.
+    * 
+    * ValidationHelper accepts an array of Validators as well as the target to
+    * inform of isValid changes.
+    * 
+    * ValidationHelper can also manage the presentation of errorTips.
+    * 
+    */
     
     [Bindable]
     public class ValidationHelper
     {
-        public var target:*;
-        private var cw:ChangeWatcher;
+
+        /** isValid indicates whether this ValidationHelper as a whole is
+        * valid. This is also bound to the target.property (if provided)
+        */
         
-        public function ValidationHelper(vals:Array=null, target:*=null, property:String=null)
+        public var isValid:Boolean;
+
+        public function ValidationHelper(vals:Array=null, target:*=null, property:String=null, errorTipManager:ErrorTipManager=null)
         {
-            this.target = target;
-            if (this.target && property)
-                cw = BindingUtils.bindProperty(this.target, property, this, ["isValid"], true, true);
+            super();
             
+            this.property = property;
+            this.target = target;
+            
+            this.errorTipManager = errorTipManager;
+
+            // do this last, since it wires up errorTipManager as a side effect
             validators = vals;
         }
-
-        public var isValid:Boolean;
         
-        public function get validators():Array
+        // we use a further helper instance to pop errorTips
+        private var _errorTipManager:ErrorTipManager;
+
+        public function get errorTipManager():ErrorTipManager
         {
-            return _validators;
+            return _errorTipManager;
+        }
+
+        public function set errorTipManager(value:ErrorTipManager):void
+        {
+            _errorTipManager = value;
+            // now inform it of all our validators
+            for (var v:* in _vals)
+            {
+                _errorTipManager.registerValidator(v as Validator);
+            }
+        }
+
+
+        private var cw:ChangeWatcher;
+        private var property:String;
+        
+        private function bindTargetProperty(targetObj:*, property:*=null):void
+        {
+            if (_target && cw)
+            {
+                cw.unwatch();
+                cw = null;
+            }
+            
+            _target = targetObj;
+            
+            if (!property)
+                property = "isValid";
+            
+            if (_target)
+                cw = BindingUtils.bindProperty(_target, property, this, ["isValid"], true, true);
         }
         
-        private var _validators:Array;
-        private var _vals:Array;
-        private var _others:Array;
-        
-        public function set validators(vals:Array):void
+        public function get target():*
         {
-            var v:*;
-            
-            for each (v in _validators)
+            return _target;
+        }
+        
+        private var _target:*;
+        
+        public function set target(v:*):void
+        {
+            bindTargetProperty(v, property);
+        }
+        
+        private var _validators:Dictionary = new Dictionary(true);
+        
+        // _vals is a partition of actual Validator instances
+        private var _vals:Dictionary = new Dictionary(true);
+        
+        // _others is a partition of non-Validator instances we're also
+        // monitoring as part of the total validation set
+        private var _others:Dictionary = new Dictionary(true);
+        
+        
+        public function addValidator(v:IEventDispatcher):void
+        {
+            if (v is Validator)
             {
-                if (v is IEventDispatcher)
-                {
-                    v.removeEventListener(ValidationResultEvent.VALID, validateNow);
-                    v.removeEventListener(ValidationResultEvent.INVALID, validateNow);
-                }
+                _vals[v] = true;
+                setupListeners(v);
+                if (errorTipManager)
+                    errorTipManager.registerValidator(v as Validator);
+            }
+            else if (v is ValidationHelper)
+            {
+                // should we do anything extra in nested case?
+                _others[v] = true;
+                setupListeners(v);
+            }
+            else
+            {
+                _others[v] = true;
+                setupListeners(v);
             }
             
-            _validators = vals;
-            _vals = [];
-            _others = [];
-            
-            for each (v in _validators)
+        }
+        
+        public function removeValidator(v:IEventDispatcher):void
+        {
+            if (v is IEventDispatcher)
             {
-                if (v is Validator)
-                {
-                    _vals.push(v);
-                    setupListeners(v);
-                }
-                else if (v is Array)
-                {
-                    for each (var v2:* in v)
-                    {
-                        if (v2 is Validator)
-                        {
-                            _vals.push(v2);
-                        }
-                        else
-                        {
-                            _others.push(v2);
-                        }
-                        setupListeners(v2);
-                    }
-                }
-                else
-                {
-                    _others.push(v);
-                    setupListeners(v);
-                }
-                
+                v.removeEventListener(ValidationResultEvent.VALID, validateNow);
+                v.removeEventListener(ValidationResultEvent.INVALID, validateNow);
             }
+            
+            errorTipManager.unregisterValidator(v as Validator);
+            
+            // clean up our various partitioned validators
+            delete _others[v];
+            delete _vals[v];
+            delete _validators[v];
+        }
 
-            validateNow();
+        public function reset():void
+        {
+            for each (var v:IEventDispatcher in validators)
+            {
+                removeValidator(v);
+            }
         }
         
         protected function setupListeners(v:IEventDispatcher):void
@@ -114,16 +185,85 @@ package com.rpath.raf.util
             v.addEventListener(ValidationResultEvent.INVALID, validateNow,false,0,true);
         }
 
+        private function getKeys(map:Dictionary) : Array
+        {
+            var keys:Array = [];
+            
+            for (var key:* in map)
+            {
+                keys.push( key );
+            }
+            return keys;
+        }
+        
+        public function get validators():Array
+        {
+            return getKeys(_validators);
+        }
+
+        public function set validators(vals:Array):void
+        {
+            var v:*;
+            
+            reset();
+
+            for each (v in vals)
+            {
+                // allow for nested sets
+                if (v is Array)
+                {
+                    for each (var v2:* in v)
+                    {
+                        addValidator(v2);
+                    }
+                }
+                else
+                {
+                    addValidator(v);
+                }
+                
+            }
+
+            // now ensure our own isValid state reflects validity of all 
+            // new Validators
+            validateNow();
+        }
+        
+        public function get showErrorsImmediately():Boolean
+        {
+            return _showErrorsImmediately;
+        }
+
+        private var _showErrorsImmediately:Boolean = false;
+
+        public function set showErrorsImmediately(value:Boolean):void
+        {
+            if (_showErrorsImmediately)
+            {
+                errorTipManager.hideAllErrorTips();
+            }
+            
+            _showErrorsImmediately = value;
+            
+            if (_showErrorsImmediately)
+            {
+                errorTipManager.showAllErrorTips();
+            }
+        }
+
+        
         /**
-         *  @private
          *  Shows the tip immediately when the toolTip or errorTip property 
          *  becomes non-null and the mouse is over the target.
          */
         public function showErrorImmediately(target:UIComponent):void
         {
-            // we have to callLater this to avoid other fields that send events
-            // that reset the timers and prevent the errorTip ever showing up.
-            target.callLater(showDeferred, [target]);
+            if (showErrorsImmediately)
+            {
+                // we have to callLater this to avoid other fields that send events
+                // that reset the timers and prevent the errorTip ever showing up.
+                target.callLater(showDeferred, [target]);
+            }
         }
         
         private function showDeferred(target:UIComponent):void
@@ -169,6 +309,55 @@ package com.rpath.raf.util
         private var _validating:Boolean;
         
         public function validateNow(...args):void
+        {
+            if (!_validating)
+            {
+                _validating = true;
+                
+                var valid:Boolean = false;
+                
+                // only pop errorTips if desired
+                errorTipManager.showErrorsImmediately = showErrorsImmediately;
+                
+                var results:Array = Validator.validateAll(getKeys(_vals));
+                
+                valid = (results.length == 0);
+                
+                // now all the "others"
+                for (var v:* in _others)
+                {
+                    if (v.hasOwnProperty("isValid"))
+                    {
+                        valid = valid && v["isValid"];
+                    }
+                    else if (v.hasOwnProperty("valid"))
+                    {
+                        valid = valid && v["valid"];
+                    }
+                }
+                
+                _validating = false;
+                
+                if (showErrorsImmediately)
+                {
+                    errorTipManager.showAllErrorTips();
+                }
+                
+                isValid = valid;
+            }
+        }
+        
+        public function showErrors():void
+        {
+            errorTipManager.showAllErrorTips();
+        }
+        
+        public function hideErrors():void
+        {
+            errorTipManager.hideAllErrorTips();
+        }
+        
+        public function OLDvalidateNow(...args):void
         {
             if (!_validating)
             {
@@ -236,6 +425,8 @@ package com.rpath.raf.util
                 // are we valid overall?
                 var valid:Boolean;
                 valid = invalidValidators.length == 0;
+                
+                // now check the others
                 
                 for each (var item:* in _others)
                 {

@@ -25,6 +25,10 @@
     
     <mx:Script>
     <![CDATA[
+        import com.rpath.raf.util.ErrorTipManager;
+        import com.rpath.raf.util.ErrorTipManager;
+        import com.rpath.raf.util.ValidationHelper;
+        import com.rpath.raf.util.ErrorTipManager;
         import com.rpath.raf.util.DescriptorUtil;
 
         import mx.binding.utils.BindingUtils;
@@ -183,6 +187,9 @@
     
     [Bindable]
     public var labelLengthThreshold:int = 13;
+    
+    [Bindable]
+    public var validationHelper:ValidationHelper;
         
     private var watchers:Array;
     
@@ -473,19 +480,24 @@
     * initial default values for every form item described in the descriptor
     */
     
+    public var errorTipManager:ErrorTipManager;
+        
     private function createFormItems():void
     {
-
+        errorTipManager = new ErrorTipManager();
+        validationHelper = new ValidationHelper(null,this,"isValid", errorTipManager);
+        
         // now add any other children
         for each (var item:* in itemsBefore)
         {
             addChild(item);
+            
+            validationHelper.addValidator(item);
         }
         
         
         if (metadata)
         {
-    
             //trace("create form items " + this.uid);
             heading = DescriptorUtil.localeDescString(descriptionsList, metadataNS);
     
@@ -585,8 +597,12 @@
                     BindingUtils.bindProperty(newItem, "editable", this, [ "editable"], false, false);
                     BindingUtils.bindProperty(newItem, "enabled", this, [ "enabled"], false, false);
                     
-                    newItem.addEventListener(ValidationResultEvent.VALID, handleValidationEvent,false,0,true);
-                    newItem.addEventListener(ValidationResultEvent.INVALID, handleValidationEvent,false,0,true);
+                    newItem.errorTipManager = errorTipManager;
+                    validationHelper.addValidator(newItem);
+                    
+                    //newItem.addEventListener(ValidationResultEvent.VALID, handleValidationEvent,false,0,true);
+                    //newItem.addEventListener(ValidationResultEvent.INVALID, handleValidationEvent,false,0,true);
+                    
                     newItem.addEventListener(FlexEvent.DATA_CHANGE, handleDataChange,false,0,true);
                     newItem.addEventListener("dirtyChanged", handleDirtyEvent,false,0,true);
                     
@@ -626,7 +642,8 @@
         }
         
         // force validate the whole lot
-        handleValidationEvent();
+        //handleValidationEvent();
+        validationHelper.validateNow();
     }
     
     private function itemDataSetterWrapper(newItem:SmartFormItem):Function
@@ -703,6 +720,19 @@
         {
             removeChildAt(1);
         }
+
+        if (validationHelper)
+        {
+            validationHelper.reset();
+            validationHelper = null;
+        }
+        
+        if (errorTipManager)
+        {
+            errorTipManager.reset();
+            errorTipManager = null;
+        }
+
     }
 
     // ------------------------------------------------ VALIDATION
@@ -714,17 +744,17 @@
     
     public override function validationResultHandler(event:ValidationResultEvent):void
     {
-        _directValid = (event.type == ValidationResultEvent.VALID);
+/*          _directValid = (event.type == ValidationResultEvent.VALID);
         // check our children too
         handleValidationEvent();
-        super.validationResultHandler(event);
+        super.validationResultHandler(event);  */
     }
 
     private var invalidItems:int;
     
     public function handleValidationEvent(event:FlexEvent=null):void
     {
-        var newValid:Boolean = true;
+        /*  var newValid:Boolean = true;
         
         for each (var child:* in this.getChildren())
         {
@@ -740,9 +770,45 @@
         
         // rethrow the validation event should anyone else want it
         // catch it regardless of location
-        this.dispatchEvent(new FlexEvent(isValid ? FlexEvent.VALID : FlexEvent.INVALID, true));
+        this.dispatchEvent(new FlexEvent(isValid ? FlexEvent.VALID : FlexEvent.INVALID, true));  */
     }
 
+    /** validateNow forces a validation pass and pops all error flags
+    */
+    public function validate():void
+    {
+        if (!isValid)
+        {
+            for each (var child:* in this.getChildren())
+            {
+                if (child is SmartFormItem)
+                {
+                    (child as SmartFormItem).validate();
+                }
+            }
+        }
+    }
+    
+    /** showErrors just pops any errors we're already aware of. It does NOT
+    * validate the form for current status
+    */
+        
+    public function showErrors():void
+    {
+        if (errorTipManager)
+        {
+            errorTipManager.showAllErrorTips();
+        }
+    }
+        
+    public function hideErrors():void
+    {
+        if (errorTipManager)
+        {
+            errorTipManager.hideAllErrorTips();
+        }
+    }
+        
     // ---------------------------------------------------- DIRTY TRACKING
     
 

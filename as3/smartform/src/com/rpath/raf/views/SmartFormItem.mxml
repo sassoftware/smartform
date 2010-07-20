@@ -26,6 +26,7 @@
     
     <mx:Script>
     <![CDATA[
+        import com.rpath.raf.util.ErrorTipManager;
         import com.rpath.raf.util.DescriptorUtil;
         import com.rpath.raf.util.ValidationHelper;
         
@@ -104,7 +105,6 @@
     [Bindable]
     public var displayAsPassword:Boolean;
 
-    
     private var _initializingControls:Boolean;
     private var _dataChanged:Boolean;
     
@@ -135,6 +135,7 @@
     {
         _origData = data;
     }
+    
     
     protected override function commitProperties():void
     {
@@ -717,7 +718,23 @@
     //---------------------------------------------- VALIDATION
     
     private var _validationHelper:ValidationHelper;
-    
+        
+    // optionally, show errors via this manager
+    private var _errorTipManager:ErrorTipManager;
+
+    public function get errorTipManager():ErrorTipManager
+    {
+        return _errorTipManager;
+    }
+
+    public function set errorTipManager(value:ErrorTipManager):void
+    {
+        _errorTipManager = value;
+        if (_validationHelper)
+            _validationHelper.errorTipManager = _errorTipManager;
+    }
+
+        
     public function handleValidationEvent(event:FlexEvent):void
     {
         isValid = (event.type == FlexEvent.VALID) && _directValid;
@@ -822,7 +839,23 @@
         
         // TODO: validate IP addresses, Dates, Times
         
-        _validationHelper = new ValidationHelper(validators, this, "isValid");
+        _validationHelper = new ValidationHelper(validators, this, "isValid", errorTipManager);
+    }
+    
+    public function showErrors():void
+    {
+        if (_validationHelper)
+        {
+            _validationHelper.showErrors();
+        }
+    }
+
+    public function hideErrors():void
+    {
+        if (_validationHelper)
+        {
+            _validationHelper.hideErrors();
+        }
     }
     
     public function validate():void
