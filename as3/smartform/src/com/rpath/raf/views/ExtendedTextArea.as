@@ -54,7 +54,7 @@ package com.rpath.raf.views
         */
         
         [Bindable]
-        public var autoResize:Boolean = true;
+        public var autoResize:Boolean = false;
         
         public function onInitialize(event:Event):void
         {

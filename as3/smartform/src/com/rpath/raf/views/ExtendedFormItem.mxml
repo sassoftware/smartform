@@ -17,7 +17,6 @@
 <mx:FormItem xmlns:mx="http://www.adobe.com/2006/mxml"
     xmlns:views="com.rpath.raf.views.*"
     creationComplete="onCreationComplete(event)"
-    width="100%"
     >
 
     

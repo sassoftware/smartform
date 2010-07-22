@@ -15,98 +15,93 @@
 -->
 
 
-<mx:Form xmlns:mx="http://www.adobe.com/2006/mxml"
+<mx:Form 
+    xmlns:fx="http://ns.adobe.com/mxml/2009" 
+    xmlns:s="library://ns.adobe.com/flex/spark" 
+    xmlns:mx="library://ns.adobe.com/flex/mx" 
+
     creationComplete="onCreationComplete(event)"
     >
-
-    <mx:Metadata>
+    
+    <fx:Metadata>
         [Event(name="dirtyChanged", type="mx.events.DynamicEvent")]
-    </mx:Metadata>
+    </fx:Metadata>
     
     
-    <mx:Script>
-    <![CDATA[
-        import com.rpath.raf.util.ErrorTipManager;
-        import com.rpath.raf.util.ErrorTipManager;
-        import com.rpath.raf.util.ValidationHelper;
-        import com.rpath.raf.util.ErrorTipManager;
-        import com.rpath.raf.util.DescriptorUtil;
-
-        import mx.binding.utils.BindingUtils;
-        import mx.binding.utils.ChangeWatcher;
-        import mx.events.DynamicEvent;
-        import mx.utils.ArrayUtil;
-        import mx.collections.ArrayCollection;
-        import com.rpath.raf.util.DescriptorUtil;
-        import mx.events.FlexEvent;
-        import mx.events.ValidationResultEvent;
-        import mx.events.FlexEvent;
-        import mx.binding.utils.ChangeWatcher;
-        import mx.events.PropertyChangeEvent;
-        import mx.core.UIComponent;
-        import mx.containers.FormItem;
-
-
-
+    <fx:Script>
+<![CDATA[
+    import com.rpath.raf.util.DescriptorUtil;
+    import com.rpath.raf.util.ErrorTipManager;
+    import com.rpath.raf.util.ValidationHelper;
+    
+    import mx.binding.utils.BindingUtils;
+    import mx.binding.utils.ChangeWatcher;
+    import mx.collections.ArrayCollection;
+    import mx.containers.FormItem;
+    import mx.core.IFlexDisplayObject;
+    import mx.events.DynamicEvent;
+    import mx.events.FlexEvent;
+    import mx.events.ValidationResultEvent;
+    import mx.utils.ArrayUtil;
     
     /** metadata drives the SmartForm
-    * 
-    * metadata must be an XML object that declares <datafield>
-    * element that contains a set of <field> elements each of which defines
-    * a FormItem for the Form.
-    * 
-    * Each <field> entry looks something like:
-    * 
-    * <field>
-    *   <name>propertyName of resulting data object</name>
-    *   <descriptions>
-    *     <desc>Label form FormItem</desc>
-    *   </descriptions>
-    *   <type>str</type>
-    *   <required>true</required>
-    *   <constraints>
-    *     <descriptions>
-    *       <desc>Tooltip to be displayed on this constraint</desc>
-    *     </descriptions>
-    *     <legalValues>
-    *       <value>EC2</value>
-    *       <value>Globus</value>
-    *       <value>Citrix XenServer</value>
-    *       <value>VMware Infrastructure</value>
-    *     </legalValues>
-    *   </constraints>
-    *   <allowFileContent>true</allowFileContent>
-    * </field>
-    * 
-    * The specific constraints, etc. available are:
-    * 
-    * DOCUMENT CONSTRAINTS HERE?
-    * 
-    * The XML must also contain a <metadata> element 
-    * that provides a Form Heading
-    * 
-    * <metadata>
-    *   <displayName>CloudInfo</displayName>
-    *   <descriptions>
-    *     <desc>The Form Heading text you want</desc>
-    *   </descriptions>
-    * </metadata>
-    * 
-    */
+     * 
+     * metadata must be an XML object that declares <datafield>
+     * element that contains a set of <field> elements each of which defines
+     * a FormItem for the Form.
+     * 
+     * Each <field> entry looks something like:
+     * 
+     * <field>
+     *   <name>propertyName of resulting data object</name>
+     *   <descriptions>
+     *     <desc>Label form FormItem</desc>
+     *   </descriptions>
+     *   <type>str</type>
+     *   <required>true</required>
+     *   <constraints>
+     *     <descriptions>
+     *       <desc>Tooltip to be displayed on this constraint</desc>
+     *     </descriptions>
+     *     <legalValues>
+     *       <value>EC2</value>
+     *       <value>Globus</value>
+     *       <value>Citrix XenServer</value>
+     *       <value>VMware Infrastructure</value>
+     *     </legalValues>
+     *   </constraints>
+     *   <allowFileContent>true</allowFileContent>
+     * </field>
+     * 
+     * The specific constraints, etc. available are:
+     * 
+     * DOCUMENT CONSTRAINTS HERE?
+     * 
+     * The XML must also contain a <metadata> element 
+     * that provides a Form Heading
+     * 
+     * <metadata>
+     *   <displayName>CloudInfo</displayName>
+     *   <descriptions>
+     *     <desc>The Form Heading text you want</desc>
+     *   </descriptions>
+     * </metadata>
+     * 
+     */
     
     [Bindable]
     public function get metadata():XML
     {
         return _metadata;
     }
-
+    
     private var _metadata:XML;
     private var metadataList:XMLList;
     private var descriptionsList:XMLList;
     private var fieldsList:XMLList;
     private var metadataNS:Namespace;
     private var metadataChanged:Boolean;
-
+    
     public function set metadata(m:XML):void
     {
         if (_metadata != m)
@@ -127,18 +122,18 @@
     public var itemsAfter:Array;
     
     /** make editable and enabled the same logical thing
-    * since I have no idea why one would want to allow editable disabled fields 
-    * in a form
-    */
+     * since I have no idea why one would want to allow editable disabled fields 
+     * in a form
+     */
     
     [Bindable]
     public function set editable(v:Boolean):void
     {
         _formEditable = v;
     }
-
+    
     private var _formEditable:Boolean = true;
-
+    
     public function get editable():Boolean
     {
         return _formEditable;
@@ -149,9 +144,9 @@
     {
         _formEnabled = v;
     }
-
+    
     private var _formEnabled:Boolean = true;
-
+    
     
     public override function get enabled():Boolean
     {
@@ -167,16 +162,16 @@
     
     [Bindable]
     public var heading:String = "";
-
+    
     /** discreteControlThreshold controls when we switch from checkbox/radiobutton
-    * to a pulldown menu
-    */
+     * to a pulldown menu
+     */
     [Bindable]
     public var discreteControlThreshold:int = 4;
     
     /** menuControlThreshold controls when we switch from a pulldown menu to 
-    * to a listbox 
-    */    
+     * to a listbox 
+     */    
     [Bindable]
     public var menuControlThreshold:int = 10;
     
@@ -191,7 +186,7 @@
     
     [Bindable]
     public var validationHelper:ValidationHelper;
-        
+    
     private var watchers:Array;
     
     [Bindable("dataChange")]
@@ -213,7 +208,7 @@
     {
         return super.data;
     }
-
+    
     // set this true by default to ensure we get initial refresh
     private var _needsRebuilding:Boolean;
     
@@ -238,7 +233,7 @@
             watchers = new Array();
         watchers.push({prop:propName, item: item, watcher:cw});
     }
-
+    
     private function unbindWatchers():void
     {
         if (watchers)
@@ -253,7 +248,7 @@
             }
         }
     }
-
+    
     private function rebindWatchers():void
     {
         if (watchers)
@@ -310,7 +305,7 @@
     {       
         // necessary hack to get the form to scrollbar properly
         minHeight=0;
-
+        
         if (metadataChanged)
         {
             metadataChanged = false;
@@ -349,7 +344,7 @@
             checkDirty();
             _childDirtyChanged = false;
         }
-
+        
         if (_needsRebuilding)
         {
             //trace("smartform commit REBUILD" + this.uid);
@@ -371,10 +366,10 @@
             rebindWatchers();
             checkDirty();
         }
-
+        
         
         super.commitProperties();
-
+        
     }
     
     
@@ -471,18 +466,18 @@
     }
     
     /** firstTime tracks whether we've created form items before
-    * This is important because we need to initialize the default
-    * values of the data object properties from the descriptor
-    * iff this is the first time we're doing so
-    */
+     * This is important because we need to initialize the default
+     * values of the data object properties from the descriptor
+     * iff this is the first time we're doing so
+     */
     private var firstTime:Boolean = true;
-
+    
     /** createFormItems iterates the descriptor and creates, binds and sets 
-    * initial default values for every form item described in the descriptor
-    */
+     * initial default values for every form item described in the descriptor
+     */
     
     public var errorTipManager:ErrorTipManager;
-        
+    
     private function createFormItems():void
     {
         errorTipManager = new ErrorTipManager();
@@ -501,7 +496,7 @@
         {
             //trace("create form items " + this.uid);
             heading = DescriptorUtil.localeDescString(descriptionsList, metadataNS);
-    
+            
             var meetsCondition:Boolean;
             var condition:Object;
             
@@ -537,7 +532,10 @@
                     is false, don't set the default value. Confused? I'm not.
                     */
                     
-                    if (firstTime && (field.metadataNS::default.length() > 0) && allowItemDefaults)
+                    // ugly QName indirection to avoid direct expression of the 
+                    // default keyword in . expression
+                    var defaultNode:XMLList = field[new QName(metadataNS,"default")];
+                    if (firstTime && (defaultNode.length() > 0) && allowItemDefaults)
                     {
                         //TODO: handle the case where data is NULL by moving this
                         // into the SmartFormItem so it can be deferred
@@ -547,19 +545,19 @@
                             var newValue:*;
                             
                             // single or multi-valued default?
-                            if (field.metadataNS::default.length() == 1)
+                            if (defaultNode.length() == 1)
                             {
-                                newValue = field.metadataNS::default.toString();
+                                newValue = defaultNode.toString();
                             }
                             else
                             {
                                 newValue = [];
-                                for each (var val:XML in field.metadataNS::default)
+                                for each (var val:XML in defaultNode)
                                 {
                                     var def:String = val.toString();
                                     newValue.push(def);
                                 }
-                             }
+                            }
                             
                             // now should we set the value at all?
                             if (value is Array || value is ArrayCollection)
@@ -581,11 +579,11 @@
                     // skip hidden fields
                     if (field.metadataNS::hidden.toString().toLowerCase() == "true")
                         continue;
-    
+                    
                     var newItem:SmartFormItem = new SmartFormItem()
                     newItem.metadataNS = metadataNS;
                     newItem.smartForm = this;
-                                        
+                    
                     // make sure changes to the data object propagate to the control
                     var propChain:Array = propName.split('.');
                     BindingUtils.bindSetter(itemDataSetterWrapper(newItem), this, ["data"].concat(propChain), false, false);
@@ -615,13 +613,13 @@
                     }
                     
                     this.addChild(newItem);
-    
+                    
                     // track the first item in the smartform for label computation 
                     // see onCreationComplete()
                     if (firstItem == null)
                         firstItem = newItem;
                 }
-                else
+                /* else
                 {
                     // we did not meet the condition, so REMOVE the property we represent 
                     // from the underlying data object
@@ -629,10 +627,9 @@
                     // TODO: THIS GETS HAIRY because it may be that there's multiple, duplicative fields
                     // that have mutually exclusive conditions. We don't want to delete a property that 
                     // is actually defined by another field in the descriptor
-                    
-                }
+                } */
             }
-
+            
             firstTime = false;
         }
         
@@ -644,15 +641,15 @@
         
         // force validate the whole lot
         //handleValidationEvent();
-        validationHelper.validateNow();
+        validationHelper.validateNow(true);
     }
     
     private function itemDataSetterWrapper(newItem:SmartFormItem):Function
     {
         return function setter(value:*):void
-            {
-                newItem.data = value;
-            }
+        {
+            newItem.data = value;
+        }
     }
     
     protected function getProperty(obj:*, propName:String):*
@@ -715,13 +712,13 @@
     private function removeFormItems():void
     {
         removeWatchers();
-                
+        
         var length:int = this.numChildren;
         for (var count:int = 1; count < length; count++)
         {
             removeChildAt(1);
         }
-
+        
         if (validationHelper)
         {
             validationHelper.reset();
@@ -733,9 +730,9 @@
             errorTipManager.reset();
             errorTipManager = null;
         }
-
+        
     }
-
+    
     // ------------------------------------------------ VALIDATION
     
     [Bindable]
@@ -745,12 +742,12 @@
     
     public override function validationResultHandler(event:ValidationResultEvent):void
     {
-/*          _directValid = (event.type == ValidationResultEvent.VALID);
+        /*          _directValid = (event.type == ValidationResultEvent.VALID);
         // check our children too
         handleValidationEvent();
         super.validationResultHandler(event);  */
     }
-
+    
     private var invalidItems:int;
     
     public function handleValidationEvent(event:FlexEvent=null):void
@@ -759,12 +756,12 @@
         
         for each (var child:* in this.getChildren())
         {
-            if (child is SmartFormItem)
-                if (!child.isValid)
-                {
-                    newValid = false;
-                    break;
-                }
+        if (child is SmartFormItem)
+        if (!child.isValid)
+        {
+        newValid = false;
+        break;
+        }
         }
         
         isValid = newValid && _directValid;
@@ -773,9 +770,9 @@
         // catch it regardless of location
         this.dispatchEvent(new FlexEvent(isValid ? FlexEvent.VALID : FlexEvent.INVALID, true));  */
     }
-
-    /** validateNow forces a validation pass and pops all error flags
-    */
+    
+    /** validate forces a validation pass and pops all error flags
+     */
     public function validate():void
     {
         if (!isValid)
@@ -791,28 +788,23 @@
     }
     
     /** showErrors just pops any errors we're already aware of. It does NOT
-    * validate the form for current status
-    */
-        
+     * validate the form for current status
+     */
+    
     public function showErrors():void
     {
-        if (errorTipManager)
-        {
-            errorTipManager.showAllErrorTips();
-        }
+        // validate and pop errors as we find them
+        validationHelper.showErrors();
     }
-        
+    
     public function hideErrors():void
     {
-        if (errorTipManager)
-        {
-            errorTipManager.hideAllErrorTips();
-        }
+        validationHelper.hideErrors();
     }
-        
+    
     // ---------------------------------------------------- DIRTY TRACKING
     
-
+    
     [Bindable]
     public function set isDirty(b:Boolean):void
     {
@@ -832,7 +824,7 @@
     {
         return _isDirty;
     }
-
+    
     public var _childDirtyChanged:Boolean;
     
     public function handleDirtyEvent(event:Event):void
@@ -870,12 +862,37 @@
         {
             if (child is FormItem)
             {
-               child.setFocus();
-               break;
+                child.setFocus();
+                break;
             }
         }
     }
     
+    override public function get defaultButton():IFlexDisplayObject
+    {
+        return super.defaultButton;
+    }
+    
+    /**
+     *  @private
+     */
+    
+    private var dw:ChangeWatcher;
+    
+    override public function set defaultButton(value:IFlexDisplayObject):void
+    {
+        super.defaultButton = value;
+        // also hook up enabled/disabled status on the default isValid
+        if (dw)
+            dw.unwatch();
+        
+        if (value)
+        {
+            dw = BindingUtils.bindProperty(value, "enabled",
+                this, ["isValid"],false,true);
+        }
+    }
+
     private var firstItem:FormItem;
     
     public function onCreationComplete(event:Event):void
@@ -893,11 +910,10 @@
             firstItem.label = oldLabel;
         }
     }
-
-    ]]>
-    </mx:Script>
-
+    
+]]>
+    </fx:Script>
+    
     <mx:FormHeading label="{heading}"/>
-
     
 </mx:Form>

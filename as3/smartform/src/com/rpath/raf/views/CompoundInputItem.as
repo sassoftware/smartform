@@ -11,31 +11,29 @@
 # or fitness for a particular purpose. See the MIT License for full details.
 */
 
-
 package com.rpath.raf.views
 {
-    import mx.containers.Canvas;
+    import mx.collections.ArrayCollection;
     import mx.core.IVisualElement;
     import mx.core.UIComponent;
+    import mx.events.ToolTipEvent;
     import mx.events.ValidationResultEvent;
     
-    import spark.components.BorderContainer;
     import spark.components.Group;
 
-    public class MagicFormItem extends Group
+    public class CompoundInputItem extends Group
     {
-        
-        public function MagicFormItem()
+        public function CompoundInputItem()
         {
             super();
 
-            // force height computation
-            minHeight = 0;
-            
             // force initial setting of validation styles
             _validChanged = true;
         }
-        
+
+        [Bindable]
+        public var inputFields:Array;
+
         private var _validChanged:Boolean;
         
         [Bindable]
@@ -59,56 +57,25 @@ package com.rpath.raf.views
             // let our specific input control mark itself appropriately
             try
             {
-                if (this.getChildAt(0) is UIComponent)
+                for each (var elem:UIComponent in inputFields)
                 {
-                    (this.getChildAt(0) as UIComponent).validationResultHandler(event);
+                    elem.validationResultHandler(event);
                 }
             }
-            catch (e:RangeError)
+            catch (e:Error)
             {
-                // no children yet. Ignore
+                // ignore??
             }
             
             // propagate events beyond ourselves
             super.validationResultHandler(event);
         }
         
-        private var _selectedIndex:int;
-        
-        public function get selectedIndex():int
-        {
-            return _selectedIndex;
-        }
-
-        public function set selectedIndex( value:int ):void
-        {
-            _selectedIndex = value;
-        }
-    
-        /** enabled override
-        * We do this to prevent the Canvas that is our parent type
-        * from dimming the whole box. Rather, we want the items within
-        * the box to respond to the enabled flag directly
-        */
-        
-        [Bindable]
-        public override function set enabled(v:Boolean):void
-        {
-            _itemEnabled = v;
-        }
-    
-        private var _itemEnabled:Boolean = true;
-        
-        public override function get enabled():Boolean
-        {
-            return _itemEnabled;
-        }
-
         
         override protected function commitProperties():void
         {
             super.commitProperties();
-
+            
             if (_validChanged)
             {
                 _validChanged = false;

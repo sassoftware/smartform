@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<flexLibProperties includeAllClasses="true" version="1">
+<flexLibProperties includeAllClasses="false" version="1">
   <includeClasses>
     <classEntry path="com.rpath.raf.SmartformVersion"/>
     <classEntry path="com.rpath.raf.events.HelpEvent"/>
@@ -17,6 +17,8 @@
     <classEntry path="com.rpath.raf.views.SmartForm"/>
     <classEntry path="com.rpath.raf.views.SmartFormChoice"/>
     <classEntry path="com.rpath.raf.views.SmartFormItem"/>
+    <classEntry path="com.rpath.raf.util.LifecycleObject"/>
+    <classEntry path="com.rpath.raf.views.CompoundInputItem"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests>

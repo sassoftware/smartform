@@ -41,8 +41,8 @@ import flash.events.Event;
 import flash.events.FocusEvent;
 import flash.text.TextField;
 
+import mx.controls.TextInput;
 import mx.events.FlexEvent;
-import spark.components.TextInput;
 
 /**
  * The <code>PromptingTextInput</code> component is a small enhancement to
@@ -203,11 +203,11 @@ public class PromptingTextInput extends TextInput
         {
             if ( _promptFormat == "" )
             {
-                super.text = _prompt;
+                super.htmlText = _prompt;
             }
             else
             {
-                super.text = _promptFormat.replace( /\[prompt\]/g, _prompt );
+                super.htmlText = _promptFormat.replace( /\[prompt\]/g, _prompt );
             }
 
             if(super.displayAsPassword) {
