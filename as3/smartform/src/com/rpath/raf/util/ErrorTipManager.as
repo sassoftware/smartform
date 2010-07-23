@@ -207,6 +207,7 @@ package com.rpath.raf.util
                     ed.addEventListener(ResizeEvent.RESIZE, targetMoved, false, 0, true);
                     ed.addEventListener(FlexEvent.HIDE, targetHidden, false, 0, true);
                     ed.addEventListener(FlexEvent.REMOVE, targetRemoved, false, 0, true);
+                    ed.addEventListener(Event.REMOVED_FROM_STAGE, targetRemoved, false, 0, true);
                     validators[validator] = true;
                     
                     // listen for scroll events on the parent containers
@@ -243,7 +244,8 @@ package com.rpath.raf.util
                     ed.removeEventListener(ResizeEvent.RESIZE, targetMoved);
                     ed.removeEventListener(FlexEvent.HIDE, targetHidden);
                     ed.removeEventListener(FlexEvent.REMOVE, targetRemoved);
-                    
+                    ed.removeEventListener(Event.REMOVED_FROM_STAGE, targetRemoved);
+
                     if (validator.source is DisplayObject) {
                         var obj:DisplayObject = (validator.source as DisplayObject);
                         var parent:DisplayObjectContainer = obj.parent;

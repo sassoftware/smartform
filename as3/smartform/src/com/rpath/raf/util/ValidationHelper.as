@@ -35,6 +35,7 @@ package com.rpath.raf.util
     import mx.managers.ToolTipManager;
     import mx.utils.ArrayUtil;
     import mx.validators.Validator;
+    import flash.events.Event;
     
     
     /** ValidationHelper provides a way to aggregate the checking of multiple
@@ -61,7 +62,7 @@ package com.rpath.raf.util
         
         public var isValid:Boolean = true;
         
-        public function ValidationHelper(vals:Array=null, target:*=null, property:String=null, errorTipManager:ErrorTipManager=null)
+        public function ValidationHelper(vals:Array=null, target:IEventDispatcher=null, property:String=null, errorTipManager:ErrorTipManager=null)
         {
             super();
             
@@ -109,25 +110,50 @@ package com.rpath.raf.util
                 cw = null;
             }
             
-            _target = targetObj;
-            
             if (!property)
                 property = "isValid";
             
-            if (_target)
-                cw = BindingUtils.bindProperty(_target, property, this, ["isValid"], true, true);
+            if (targetObj)
+                cw = BindingUtils.bindProperty(targetObj, property, this, ["isValid"], true, true);
         }
         
-        public function get target():*
+        public function get target():IEventDispatcher
         {
             return _target;
         }
         
-        private var _target:*;
+        private var _target:IEventDispatcher;
         
-        public function set target(v:*):void
+        public function set target(v:IEventDispatcher):void
         {
+            if (_target)
+            {
+                _target.removeEventListener(Event.REMOVED_FROM_STAGE, handleTargetRemovedFromStage);
+                _target.removeEventListener(Event.REMOVED, handleTargetRemovedFromStage);
+                _target.removeEventListener(FlexEvent.REMOVE, handleTargetRemovedFromStage);
+                _target.removeEventListener(Event.CLOSE, handleTargetRemovedFromStage);
+            }
+
             bindTargetProperty(v, property);
+            
+            _target = v;
+            
+            if (_target)
+            {
+                _target.addEventListener(Event.REMOVED_FROM_STAGE, handleTargetRemovedFromStage,false,0,true);
+                _target.addEventListener(Event.REMOVED, handleTargetRemovedFromStage,false,0,true);
+                _target.addEventListener(FlexEvent.REMOVE, handleTargetRemovedFromStage,false,0,true);
+                _target.addEventListener(Event.CLOSE, handleTargetRemovedFromStage,false,0,true);
+            }
+        }
+        
+        private function handleTargetRemovedFromStage(event:Event):void
+        {
+            // remove all the error tips
+            if (event.target == target)
+            {
+                errorTipManager.reset();
+            }
         }
         
         private var _validators:Dictionary = new Dictionary(true);
