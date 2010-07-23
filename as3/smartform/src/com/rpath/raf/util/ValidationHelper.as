@@ -68,6 +68,11 @@ package com.rpath.raf.util
             this.property = property;
             this.target = target;
             
+            if (!errorTipManager)
+            {
+                errorTipManager = new ErrorTipManager();
+            }
+            
             this.errorTipManager = errorTipManager;
             
             // do this last, since it wires up errorTipManager as a side effect
@@ -162,8 +167,8 @@ package com.rpath.raf.util
         {
             if (v is IEventDispatcher)
             {
-                v.removeEventListener(ValidationResultEvent.VALID, validateNow);
-                v.removeEventListener(ValidationResultEvent.INVALID, validateNow);
+                v.removeEventListener(ValidationResultEvent.VALID, handleItemValidationEvent);
+                v.removeEventListener(ValidationResultEvent.INVALID, handleItemValidationEvent);
             }
             
             errorTipManager.unregisterValidator(v as Validator);
@@ -271,7 +276,7 @@ package com.rpath.raf.util
             }
             else if (event is ValidationResultEvent)
             {
-                //validateNow(false);
+                validateNow(true);
             }
         }
         

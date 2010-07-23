@@ -57,6 +57,12 @@ package com.rpath.raf.util
     public class ErrorTipManager
     {
         
+        public function ErrorTipManager():void
+        {
+            super();
+        }
+        
+        
         // maps the target components to the error IToolTip components
         private var errorTips:Dictionary = new Dictionary(true); 
         // maps the validators to a boolean indicating whether the toolTipShown event listener has been
