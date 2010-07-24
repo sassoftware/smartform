@@ -214,6 +214,11 @@ package com.rpath.raf.util
                         var obj:DisplayObject = (validator.source as DisplayObject);
                         var parent:DisplayObjectContainer = obj.parent;
                         while (parent) {
+                            
+                            //TODO: add in code here to auto discover that we're in a 
+                            // POPUP window and add the required event listeners 
+                            // to handle the popup moving around the screen (user drag)
+                            
                             if (parent is DisplayObjectContainer) {
                                 parent.addEventListener(ScrollEvent.SCROLL, parentContainerScrolled, false, 0, true);
                                 if (!(containersToTargets[parent] is Array)) {
