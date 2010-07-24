@@ -128,9 +128,6 @@ package com.rpath.raf.util
         {
             if (_target)
             {
-                _target.removeEventListener(Event.REMOVED_FROM_STAGE, handleTargetRemovedFromStage);
-                _target.removeEventListener(Event.REMOVED, handleTargetRemovedFromStage);
-                _target.removeEventListener(FlexEvent.REMOVE, handleTargetRemovedFromStage);
                 _target.removeEventListener(Event.CLOSE, handleTargetRemovedFromStage);
             }
 
@@ -140,9 +137,6 @@ package com.rpath.raf.util
             
             if (_target)
             {
-                _target.addEventListener(Event.REMOVED_FROM_STAGE, handleTargetRemovedFromStage,false,0,true);
-                _target.addEventListener(Event.REMOVED, handleTargetRemovedFromStage,false,0,true);
-                _target.addEventListener(FlexEvent.REMOVE, handleTargetRemovedFromStage,false,0,true);
                 _target.addEventListener(Event.CLOSE, handleTargetRemovedFromStage,false,0,true);
             }
         }

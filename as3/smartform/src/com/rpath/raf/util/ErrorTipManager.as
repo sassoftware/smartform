@@ -207,7 +207,6 @@ package com.rpath.raf.util
                     ed.addEventListener(ResizeEvent.RESIZE, targetMoved, false, 0, true);
                     ed.addEventListener(FlexEvent.HIDE, targetHidden, false, 0, true);
                     ed.addEventListener(FlexEvent.REMOVE, targetRemoved, false, 0, true);
-                    ed.addEventListener(Event.REMOVED_FROM_STAGE, targetRemoved, false, 0, true);
                     validators[validator] = true;
                     
                     // listen for scroll events on the parent containers
@@ -215,7 +214,7 @@ package com.rpath.raf.util
                         var obj:DisplayObject = (validator.source as DisplayObject);
                         var parent:DisplayObjectContainer = obj.parent;
                         while (parent) {
-                            if (parent is Container) {
+                            if (parent is DisplayObjectContainer) {
                                 parent.addEventListener(ScrollEvent.SCROLL, parentContainerScrolled, false, 0, true);
                                 if (!(containersToTargets[parent] is Array)) {
                                     containersToTargets[parent] = [];
@@ -250,7 +249,7 @@ package com.rpath.raf.util
                         var obj:DisplayObject = (validator.source as DisplayObject);
                         var parent:DisplayObjectContainer = obj.parent;
                         while (parent) {
-                            if (parent is Container) {
+                            if (parent is DisplayObjectContainer) {
                                 parent.removeEventListener(ScrollEvent.SCROLL, parentContainerScrolled);
                                 if (containersToTargets[parent] is Array) {
                                     var array:Array = (containersToTargets[parent] as Array);
@@ -339,7 +338,7 @@ package com.rpath.raf.util
         /**
          * When a target is removed, then make sure the error tip is hidden too.
          */
-        private function targetRemoved(event:FlexEvent):void {
+        private function targetRemoved(event:Event):void {
             var target:DisplayObject = (event.target as DisplayObject);
             removeErrorTip(target, true);
         }
