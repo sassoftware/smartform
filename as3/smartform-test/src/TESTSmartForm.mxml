@@ -189,27 +189,35 @@
                 <s:Button label="hide errors" click="infoForm.hideErrors()" />
             </s:VGroup>
             
-            <s:Scroller width="100%" height="60%">
-                <s:VGroup>
+            <!--<s:Scroller width="100%" height="60%">
+                <s:VGroup>  // does not work until ErrorTipManager can handle SPARK scrolling
+            // events (via PropertYChange rather than SCROLL events 
+            -->
+            <mx:VBox width="100%" height="60%"
+                     verticalScrollPolicy="auto"
+                     horizontalScrollPolicy="off"
+                     >
+                
+                <smartform:SmartForm id="infoForm" editable="{editableCheck.selected}"
+                                     metadata="{metadata}" data="{testObject}"
+                                     defaultButton="{okButton}"
+                                     />
+                
+                <s:HGroup width="100%">
+                    <s:Button label="Cancel" />
+                    <s:Label id="warningLabel" text="Please complete required fields" 
+                             visible="{!infoForm.isValid}" 
+                             color="blue"
+                             click="infoForm.showErrors()"/>
                     
-                    <smartform:SmartForm id="infoForm" editable="{editableCheck.selected}"
-                                         metadata="{metadata}" data="{testObject}"
-                                         defaultButton="{okButton}"
-                                         />
-                    
-                    <s:HGroup width="100%">
-                        <s:Button label="Cancel" />
-                        <s:Label id="warningLabel" text="Please complete required fields" 
-                                 visible="{!infoForm.isValid}" 
-                                 color="blue"
-                                 click="infoForm.showErrors()"/>
-                        
-                        <!-- TODO: make this enable/disabled automatically -->
-                        <s:Button id="okButton" label="OK" />
-                    </s:HGroup>
-                    
-                </s:VGroup>
-            </s:Scroller>
+                    <!-- TODO: make this enable/disabled automatically -->
+                    <s:Button id="okButton" label="OK" />
+                </s:HGroup>
+                
+                
+            </mx:VBox>
+<!--                </s:VGroup>
+            </s:Scroller>-->
         </mx:VDividedBox>
         <s:VGroup height="100%">
             <s:Button label="REFRESH" click="getObjectXML()"/>

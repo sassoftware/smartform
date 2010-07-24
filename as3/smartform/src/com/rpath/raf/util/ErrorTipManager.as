@@ -298,6 +298,10 @@ package com.rpath.raf.util
             // ensure that the source listeners were added 
             addValidatorSourceListeners(validator);
         }
+        // TODO: make this also work for Spark viewport scrolling which DO NOT
+        // appear to dispatch SCROLL events. Instead, we need to listen for 
+        // PropertChange events on the verticalScrollPosition and horizontalScrollPosition
+        // properties and react accordingly. <sigh>
         
         private function parentContainerScrolled(event:ScrollEvent):void {
             var parent:DisplayObjectContainer = (event.target as DisplayObjectContainer);
