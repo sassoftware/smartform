@@ -11,6 +11,9 @@
       <descriptions><desc>String</desc></descriptions>
       <prompt><desc>Any old string</desc></prompt>
       <type>str</type>
+      <constraints>
+          <length>32</length>
+       </constraints>
     </field>
   </dataFields>
 </cloudDescription>

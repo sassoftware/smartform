@@ -203,7 +203,7 @@ public class PromptingTextInput extends TextInput
         {
             if ( _promptFormat == "" )
             {
-                super.text = _prompt;
+                super.htmlText = _prompt;
             }
             else
             {
@@ -252,7 +252,7 @@ public class PromptingTextInput extends TextInput
         // If the text is empty, clear the prompt
         if ( _textEmpty )
         {
-            super.htmlText = "";
+            super.text = "";
             // KLUDGE: Have to validate now to avoid a bug where the format
             // gets "stuck" even though the text gets cleared.
             validateNow();

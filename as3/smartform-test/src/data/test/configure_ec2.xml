@@ -83,9 +83,7 @@ str
 </type>
 <constraints>
 <descriptions>
-<desc>
-Maximum Characters
-</desc>
+<desc>This field cannot be more than 12 characters in length</desc>
 </descriptions>
 <length>
 12
@@ -110,9 +108,7 @@ str
 </type>
 <constraints>
 <descriptions>
-<desc>
-Maximum Characters
-</desc>
+<desc>This field cannot be more than 100 characters in length</desc>
 </descriptions>
 <length>
 100
@@ -137,9 +133,7 @@ str
 </type>
 <constraints>
 <descriptions>
-<desc>
-Maximum Characters
-</desc>
+<desc>256 is all the characters this field can hold</desc>
 </descriptions>
 <length>
 256
@@ -233,9 +227,7 @@ str
 </type>
 <constraints>
 <descriptions>
-<desc>
-Maximum Characters
-</desc>
+<desc>The S3 bucket name cannot be more than 32 characters long</desc>
 </descriptions>
 <length>
 32
