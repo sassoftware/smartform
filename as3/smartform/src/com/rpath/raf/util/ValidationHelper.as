@@ -56,11 +56,28 @@ package com.rpath.raf.util
     public class ValidationHelper extends LifecycleObject
     {
         
+        
+        private var _isValid:Boolean = true;
+
         /** isValid indicates whether this ValidationHelper as a whole is
          * valid. This is also bound to the target.property (if provided)
          */
-        
-        public var isValid:Boolean = true;
+        [Bindable("validChanged")]
+        public function get isValid():Boolean
+        {
+            return _isValid;
+        }
+
+        /**
+         * @private
+         */
+        public function set isValid(value:Boolean):void
+        {
+            _isValid = value;
+            // propagate a validation changed event through our target view
+            target.dispatchEvent(new FlexEvent("validChanged",true,true));
+        }
+
         
         public function ValidationHelper(vals:Array=null, target:IEventDispatcher=null, property:String=null, errorTipManager:ErrorTipManager=null)
         {
@@ -129,6 +146,8 @@ package com.rpath.raf.util
             if (_target)
             {
                 _target.removeEventListener(Event.CLOSE, handleTargetRemovedFromStage);
+                _target.removeEventListener(FlexEvent.HIDE, handleTargetRemovedFromStage);
+                _target.removeEventListener(Event.REMOVED_FROM_STAGE, handleTargetRemovedFromStage);
             }
 
             bindTargetProperty(v, property);
@@ -138,6 +157,8 @@ package com.rpath.raf.util
             if (_target)
             {
                 _target.addEventListener(Event.CLOSE, handleTargetRemovedFromStage,false,0,true);
+                _target.addEventListener(FlexEvent.HIDE, handleTargetRemovedFromStage,false,0,true);
+                _target.addEventListener(Event.REMOVED_FROM_STAGE, handleTargetRemovedFromStage,false,0,true);
             }
         }
         
@@ -189,6 +210,7 @@ package com.rpath.raf.util
             {
                 v.removeEventListener(ValidationResultEvent.VALID, handleItemValidationEvent);
                 v.removeEventListener(ValidationResultEvent.INVALID, handleItemValidationEvent);
+                v.removeEventListener("validChanged", handleItemValidationEvent);
             }
             
             errorTipManager.unregisterValidator(v as Validator);
@@ -211,6 +233,7 @@ package com.rpath.raf.util
         {
             v.addEventListener(ValidationResultEvent.VALID, handleItemValidationEvent,false,0,true);
             v.addEventListener(ValidationResultEvent.INVALID, handleItemValidationEvent,false,0,true);
+            v.addEventListener("validChanged", handleItemValidationEvent,false,0,true);
         }
         
         private function getKeys(map:Dictionary) : Array
@@ -297,6 +320,11 @@ package com.rpath.raf.util
             else if (event is ValidationResultEvent)
             {
                 validateNow(true);
+            }
+            else if (event.type == 'validChanged')
+            {
+                // bubbling from subordinate ValidationHelpers
+                validateNow(false);
             }
         }
         
