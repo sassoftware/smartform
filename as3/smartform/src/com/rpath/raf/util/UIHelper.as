@@ -80,7 +80,7 @@ package com.rpath.raf.util
                 ":" + padLeft(date.getMinutes()) + ":" + padLeft(date.getSeconds());
         }
         
-        private static function padLeft(number:Number):String
+        public static function padLeft(number:Number):String
         {
             var strNum:String = number.toString();
             if (number.toString().length == 1)
