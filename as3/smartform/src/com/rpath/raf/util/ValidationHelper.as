@@ -23,6 +23,7 @@ package com.rpath.raf.util
 {    
     import com.rpath.raf.views.SmartFormItem;
     
+    import flash.events.Event;
     import flash.events.IEventDispatcher;
     import flash.events.MouseEvent;
     import flash.utils.Dictionary;
@@ -35,7 +36,6 @@ package com.rpath.raf.util
     import mx.managers.ToolTipManager;
     import mx.utils.ArrayUtil;
     import mx.validators.Validator;
-    import flash.events.Event;
     
     
     /** ValidationHelper provides a way to aggregate the checking of multiple
@@ -74,12 +74,18 @@ package com.rpath.raf.util
         public function set isValid(value:Boolean):void
         {
             _isValid = value;
-            // propagate a validation changed event through our target view
-            target.dispatchEvent(new FlexEvent("validChanged",true,true));
+            
+            if (target)
+            {
+                target[property] = _isValid;
+                // propagate a validation changed event through our target view
+                target.dispatchEvent(new FlexEvent("validChanged",true,true));
+            }
         }
 
+        private var property:String;
         
-        public function ValidationHelper(vals:Array=null, target:IEventDispatcher=null, property:String=null, errorTipManager:ErrorTipManager=null)
+        public function ValidationHelper(vals:Array=null, target:IEventDispatcher=null, property:String="isValid", errorTipManager:ErrorTipManager=null)
         {
             super();
             
@@ -115,25 +121,6 @@ package com.rpath.raf.util
             }
         }
         
-        
-        private var cw:ChangeWatcher;
-        private var property:String;
-        
-        private function bindTargetProperty(targetObj:*, property:*=null):void
-        {
-            if (_target && cw)
-            {
-                cw.unwatch();
-                cw = null;
-            }
-            
-            if (!property)
-                property = "isValid";
-            
-            if (targetObj)
-                cw = BindingUtils.bindProperty(targetObj, property, this, ["isValid"], true, true);
-        }
-        
         public function get target():IEventDispatcher
         {
             return _target;
@@ -150,12 +137,12 @@ package com.rpath.raf.util
                 _target.removeEventListener(Event.REMOVED_FROM_STAGE, handleTargetRemovedFromStage);
             }
 
-            bindTargetProperty(v, property);
-            
             _target = v;
             
             if (_target)
             {
+                _target[property] = isValid;
+                
                 _target.addEventListener(Event.CLOSE, handleTargetRemovedFromStage,false,0,true);
                 _target.addEventListener(FlexEvent.HIDE, handleTargetRemovedFromStage,false,0,true);
                 _target.addEventListener(Event.REMOVED_FROM_STAGE, handleTargetRemovedFromStage,false,0,true);
@@ -190,27 +177,19 @@ package com.rpath.raf.util
                 if (errorTipManager)
                     errorTipManager.registerValidator(v as Validator);
             }
-            else if (v is ValidationHelper)
+            else 
             {
-                // should we do anything extra in nested case?
+                // if (v is ValidationHelper) should we do anything extra in nested case?
                 _others[v] = true;
                 setupListeners(v);
             }
-            else
-            {
-                _others[v] = true;
-                setupListeners(v);
-            }
-            
         }
         
         public function removeValidator(v:IEventDispatcher):void
         {
             if (v is IEventDispatcher)
             {
-                v.removeEventListener(ValidationResultEvent.VALID, handleItemValidationEvent);
-                v.removeEventListener(ValidationResultEvent.INVALID, handleItemValidationEvent);
-                v.removeEventListener("validChanged", handleItemValidationEvent);
+                removeListeners(v);
             }
             
             errorTipManager.unregisterValidator(v as Validator);
@@ -234,6 +213,13 @@ package com.rpath.raf.util
             v.addEventListener(ValidationResultEvent.VALID, handleItemValidationEvent,false,0,true);
             v.addEventListener(ValidationResultEvent.INVALID, handleItemValidationEvent,false,0,true);
             v.addEventListener("validChanged", handleItemValidationEvent,false,0,true);
+        }
+        
+        protected function removeListeners(v:IEventDispatcher):void
+        {
+            v.removeEventListener(ValidationResultEvent.VALID, handleItemValidationEvent);
+            v.removeEventListener(ValidationResultEvent.INVALID, handleItemValidationEvent);
+            v.removeEventListener("validChanged", handleItemValidationEvent);
         }
         
         private function getKeys(map:Dictionary) : Array
@@ -295,9 +281,9 @@ package com.rpath.raf.util
             var n:int = validators.length;
             for (var i:int = 0; i < n; i++)
             {
-                var v:Validator = Validator(validators[i]);
+                var v:Validator = validators[i] as Validator;
                 
-                if (v.enabled)
+                if (v && v.enabled)
                 {
                     // Note the suppressEvents path
                     var resultEvent:ValidationResultEvent = v.validate(null, suppressEvents);
@@ -314,17 +300,20 @@ package com.rpath.raf.util
         {
             if (event is FlexEvent)
             {
+                if (event.type == 'validChanged')
+                {
+                    // make a note of the source of the event since we should
+                    // check this object directly in computing valid status
+                    addValidator(event.target as IEventDispatcher);
+                }
+                
+                // and recompute our own validity
                 _needsValidation = true;
                 invalidateProperties();
             }
             else if (event is ValidationResultEvent)
             {
                 validateNow(true);
-            }
-            else if (event.type == 'validChanged')
-            {
-                // bubbling from subordinate ValidationHelpers
-                validateNow(false);
             }
         }
         

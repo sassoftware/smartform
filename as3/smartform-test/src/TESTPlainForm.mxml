@@ -96,13 +96,14 @@
                            property="text" required="true" triggerEvent="change"/>
         <mx:EmailValidator id="email2V" source="{confirmEmail}"
                            property="text" required="true" triggerEvent="change"/>
-        <mx:RegExpValidator id="usernameV" source="{username}" 
-                            property="text" required="true" 
-                            expression="^[a-zA-Z0-9_]+$" triggerEvent="change"
-                            noMatchError="Your username cannot contains spaces or special characters"/>
         <mx:StringValidator id="usernameV2" source="{username}"
                             property="text" required="true" triggerEvent="change"
                             maxLength="63"/>
+        <mx:RegExpValidator id="usernameV" source="{username}" 
+                            property="text"
+                            required="false"
+                            expression="^[a-zA-Z0-9_]+$" triggerEvent="change"
+                            noMatchError="Your username cannot contains spaces or special characters"/>
         <mx:StringValidator id="passwordV" source="{password}"
                             property="text" required="true" triggerEvent="change"/>
         <mx:StringValidator id="password2V" source="{confirmPassword}"

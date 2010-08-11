@@ -826,14 +826,12 @@
     {
         var constraints:XMLList = metadata.metadataNS::constraints;
         var descriptions:XMLList = constraints.metadataNS::descriptions;
-        var otherValidator:Boolean;
         
         var x:XMLList;
         
         x = constraints..metadataNS::length;
         if (x.length() > 0)
         {
-            otherValidator = true;
             maxLengthV.enabled = true;
             maxLengthV.maxLength = x;
             maxLengthV.tooLongError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), maxLengthV.tooLongError);
@@ -844,7 +842,6 @@
         x = constraints..metadataNS::range;
         if (x.length() > 0)
         {
-            otherValidator = true;
             rangeV.enabled = true;
             rangeV.minValue = x.metadataNS::min;
             rangeV.maxValue = x.metadataNS::max;
@@ -857,7 +854,6 @@
         x = constraints..metadataNS::regexp;
         if (x.length() > 0)
         {
-            otherValidator = true;
             regExpV.enabled = true;
             regExpV.expression = x.toString();
             regExpV.noMatchError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), regExpV.noMatchError);
@@ -865,12 +861,8 @@
         else
             regExpV.enabled = false;
         
-        
-        // only add the manual required validator if no other validators
-        // were enabled
-        if (required && !otherValidator)
+        if (required)
         {
-            otherValidator = true;
             requiredV.enabled = true;
             requiredV.requiredFieldError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), requiredV.requiredFieldError)
         }
@@ -986,7 +978,7 @@
                                 flags="s"
                                 listener="{magic}"
                                 enabled="false"
-                                required="{required}"
+                                required="false"
                                 />
             
             <mx:StringValidator id="maxLengthV" 
@@ -994,7 +986,7 @@
                                 minLength="0" maxLength="0"
                                 listener="{magic}"
                                 enabled="false"
-                                required="{required}"
+                                required="false"
                                 />
             
             <mx:NumberValidator id="rangeV"
@@ -1002,7 +994,7 @@
                                 minValue="0" maxValue="0"
                                 listener="{magic}"
                                 enabled="false"
-                                required="{required}"
+                                required="false"
                                 />
         </fx:Array>
         
