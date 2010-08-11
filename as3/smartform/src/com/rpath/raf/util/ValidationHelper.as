@@ -56,13 +56,34 @@ package com.rpath.raf.util
     public class ValidationHelper extends LifecycleObject
     {
         
+        public function ValidationHelper(vals:Array=null, 
+                                         target:IEventDispatcher=null, 
+                                         property:String="isValid", 
+                                         errorTipManager:ErrorTipManager=null)
+        {
+            super();
+            
+            this.property = property;
+            this.target = target;
+            
+            if (!errorTipManager)
+            {
+                errorTipManager = new ErrorTipManager();
+                // start off not displaying anything
+                errorTipManager.suppressErrors = true;
+            }
+            
+            this.errorTipManager = errorTipManager;
+            
+            // do this last, since it wires up errorTipManager as a side effect
+            validators = vals;
+        }
         
         private var _isValid:Boolean = true;
 
         /** isValid indicates whether this ValidationHelper as a whole is
          * valid. This is also bound to the target.property (if provided)
          */
-        [Bindable("validChanged")]
         public function get isValid():Boolean
         {
             return _isValid;
@@ -73,36 +94,22 @@ package com.rpath.raf.util
          */
         public function set isValid(value:Boolean):void
         {
+            if (_isValid == value)
+                return;
+            
             _isValid = value;
             
             if (target)
             {
                 target[property] = _isValid;
                 // propagate a validation changed event through our target view
-                target.dispatchEvent(new FlexEvent("validChanged",true,true));
+                // rethrow the validation event so that our whole form can go invalid
+                target.dispatchEvent(new FlexEvent(_isValid ? FlexEvent.VALID : FlexEvent.INVALID));
             }
         }
 
         private var property:String;
-        
-        public function ValidationHelper(vals:Array=null, target:IEventDispatcher=null, property:String="isValid", errorTipManager:ErrorTipManager=null)
-        {
-            super();
-            
-            this.property = property;
-            this.target = target;
-            
-            if (!errorTipManager)
-            {
-                errorTipManager = new ErrorTipManager();
-            }
-            
-            this.errorTipManager = errorTipManager;
-            
-            // do this last, since it wires up errorTipManager as a side effect
-            validators = vals;
-        }
-        
+                
         // we use a further helper instance to pop errorTips
         private var _errorTipManager:ErrorTipManager;
         
@@ -167,15 +174,15 @@ package com.rpath.raf.util
         // monitoring as part of the total validation set
         private var _others:Dictionary = new Dictionary(true);
         
-        
         public function addValidator(v:IEventDispatcher):void
         {
-            if (v is Validator)
+            var validator:Validator = v as Validator;
+            if (validator)
             {
-                _vals[v] = true;
-                setupListeners(v);
+                _vals[validator] = true;
+                setupListeners(validator);
                 if (errorTipManager)
-                    errorTipManager.registerValidator(v as Validator);
+                    errorTipManager.registerValidator(validator);
             }
             else 
             {
@@ -192,7 +199,11 @@ package com.rpath.raf.util
                 removeListeners(v);
             }
             
-            errorTipManager.unregisterValidator(v as Validator);
+            var validator:Validator = v as Validator;
+            if (validator)
+            {
+                errorTipManager.unregisterValidator(validator);
+            }
             
             // clean up our various partitioned validators
             delete _others[v];
@@ -212,14 +223,18 @@ package com.rpath.raf.util
         {
             v.addEventListener(ValidationResultEvent.VALID, handleItemValidationEvent,false,0,true);
             v.addEventListener(ValidationResultEvent.INVALID, handleItemValidationEvent,false,0,true);
-            v.addEventListener("validChanged", handleItemValidationEvent,false,0,true);
-        }
+            v.addEventListener(FlexEvent.VALID, handleItemValidationEvent,false,0,true);
+            v.addEventListener(FlexEvent.INVALID, handleItemValidationEvent,false,0,true);
+            //v.addEventListener("validChanged", handleItemValidationEvent,false,0,true);
+            }
         
         protected function removeListeners(v:IEventDispatcher):void
         {
             v.removeEventListener(ValidationResultEvent.VALID, handleItemValidationEvent);
             v.removeEventListener(ValidationResultEvent.INVALID, handleItemValidationEvent);
-            v.removeEventListener("validChanged", handleItemValidationEvent);
+            v.removeEventListener(FlexEvent.VALID, handleItemValidationEvent);
+            v.removeEventListener(FlexEvent.INVALID, handleItemValidationEvent);
+            //v.removeEventListener("validChanged", handleItemValidationEvent);
         }
         
         private function getKeys(map:Dictionary) : Array
@@ -263,7 +278,7 @@ package com.rpath.raf.util
             
             // now ensure our own isValid state reflects validity of all 
             // new Validators
-            _needsValidation = true;
+            _needsSuppressedValidation = true;
             invalidateProperties();
         }
         
@@ -271,7 +286,8 @@ package com.rpath.raf.util
         private var _validating:Boolean;
         
         /** checkValidity runs through all validators and checks their state
-         * without sending result events (that would trigger errorTip display)
+         *  Note that we handle the events carefully to control whether the
+         *  actual UI elements hear the events or not
          */
         
         public function checkValidity(validators:Array, suppressEvents:Boolean=true):Array
@@ -285,37 +301,61 @@ package com.rpath.raf.util
                 
                 if (v && v.enabled)
                 {
-                    // Note the suppressEvents path
+                    // Validate with event dispatch so that we and our errorTip
+                    // manager get to hear the events.
                     var resultEvent:ValidationResultEvent = v.validate(null, suppressEvents);
                     
                     if (resultEvent.type != ValidationResultEvent.VALID)
+                    {
                         result.push(resultEvent);
+                    }
+                    
                 }
             }   
             
             return result;
         }
         
+        // unfortunately, FlexEvent.VALID and ValidationResultEvent.VALID are the
+        // same string constant
+        
+        private var _validationStates:Dictionary = new Dictionary(true);
+            
         public function handleItemValidationEvent(event:Event):void
         {
+            // plain FlexEvent is the way a UIComponent reports it's validity
+            // typically after setting errorString on itself
             if (event is FlexEvent)
             {
-                if (event.type == 'validChanged')
-                {
-                    // make a note of the source of the event since we should
-                    // check this object directly in computing valid status
-                    addValidator(event.target as IEventDispatcher);
-                }
+                // make a note of the source of the event since we should
+                // check this object directly in computing valid status
+                addValidator(event.target as IEventDispatcher);
                 
                 // and recompute our own validity
                 _needsValidation = true;
                 invalidateProperties();
             }
-            else if (event is ValidationResultEvent)
+            // ValidationResultEvents are sent by Validators to report their
+            // assessment of a source items validity. We're inserted in the 
+            // middle of this chain
+            else if (event is ValidationResultEvent && !_validating)
             {
-                validateNow(true);
+                var newValid:Boolean = true;
+                
+                _validationStates[event.target] = (event.type == ValidationResultEvent.VALID);
+                
+                var validators:Array = getKeys(_validationStates);
+                
+                //r ecompute validity from the cache
+                for each (var v:Validator in validators)
+                {
+                    newValid = newValid && _validationStates[v];
+                }
+                
+                isValid = newValid;
             }
         }
+
         
         public function validateNow(suppressEvents:Boolean=false):void
         {
@@ -396,7 +436,8 @@ package com.rpath.raf.util
         }
         
         private var _needsValidation:Boolean;
-        
+        private var _needsSuppressedValidation:Boolean;
+
         override protected function commitProperties():void
         {
             super.commitProperties();
@@ -404,7 +445,24 @@ package com.rpath.raf.util
             if (_needsValidation)
             {
                 _needsValidation = false;
+                // temporarily disable errors flags
+                errorTipManager.suppressErrors = false;
+                // but validate with error marker dispatch
+                validateNow(false);
+                // start showing the problems hereafter
+                errorTipManager.suppressErrors = false;
+            }
+            
+            if (_needsSuppressedValidation)
+            {
+                _needsSuppressedValidation = false;
+
+                // temporarily disable errors flags
+                errorTipManager.suppressErrors = true;
+                // validate without error markers
                 validateNow(true);
+                // start showing the problems hereafter
+                errorTipManager.suppressErrors = false;
             }
         }
     }

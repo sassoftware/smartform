@@ -724,7 +724,7 @@
     {
         _isValid = b;
         // rethrow the validation event so that our whole form can go invalid
-        this.dispatchEvent(new FlexEvent(_isValid ? FlexEvent.VALID : FlexEvent.INVALID));
+        dispatchEvent(new FlexEvent(_isValid ? FlexEvent.VALID : FlexEvent.INVALID));
     }
     
     private var _isValid:Boolean = true;
