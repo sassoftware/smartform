@@ -733,9 +733,7 @@
     {
         return _isValid;
     }
-        
-    private var _directValid:Boolean = true;
-    
+
     //---------------------------------------------- VALIDATION
     
     private var _validationHelper:ValidationHelper;
@@ -756,50 +754,11 @@
     }
 
         
-    public function handleValidationEvent(event:FlexEvent):void
+    public function handleValidEvent(event:FlexEvent):void
     {
-        isValid = (event.type == FlexEvent.VALID) && _directValid;
-        
-        /* if (!isValid)
-        {
-            //TODO: make these proper style properties that can be
-            // set in MXML / CSS
-            if (errorStyleMap[effectiveType])
-            {
-                magic.setStyle("borderStyle", "solid");
-            }
-        }
-        else
-        {
-            magic.setStyle("borderStyle", "none");
-        }
-         */
+        isValid = (event.type == FlexEvent.VALID);
     }
 
-    // we also have to look for this FormItem itself being validated
-    
-    public override function validationResultHandler(event:ValidationResultEvent):void
-    {
-        _directValid = (event.type == ValidationResultEvent.VALID);
-        
-        // let our specific input control mark itself appropriately
-        /* try
-        {
-            var firstChild:UIComponent = magic.getChildAt(0) as UIComponent;
-            if (firstChild)
-            {
-                firstChild.validationResultHandler(event);
-            }
-        }
-        catch (e:RangeError)
-        {
-            // must not be fully initialized yet...
-        } */
-        // propagate events beyond ourselves
-        super.validationResultHandler(event);
-    }
-    
-    
     // --------------------------------------------------- DIRTY HANDLING
     
     [Bindable]
@@ -1046,9 +1005,6 @@
     </mx:NumberValidator>-->
     
    <views:MagicFormItem id="magic"
-        valid="handleValidationEvent(event)"
-        invalid="handleValidationEvent(event)"
-        isValid="{isValid}"
         width="100%"
         toolTipShown="toolTipShown(event)"
         >

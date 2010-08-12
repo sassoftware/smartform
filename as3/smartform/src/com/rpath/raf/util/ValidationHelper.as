@@ -104,7 +104,7 @@ package com.rpath.raf.util
                 target[property] = _isValid;
                 // propagate a validation changed event through our target view
                 // rethrow the validation event so that our whole form can go invalid
-                target.dispatchEvent(new FlexEvent(_isValid ? FlexEvent.VALID : FlexEvent.INVALID));
+                dispatchEvent(new FlexEvent(_isValid ? FlexEvent.VALID : FlexEvent.INVALID));
             }
         }
 

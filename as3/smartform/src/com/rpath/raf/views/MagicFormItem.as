@@ -21,6 +21,7 @@ package com.rpath.raf.views
     
     import spark.components.BorderContainer;
     import spark.components.Group;
+    import mx.events.FlexEvent;
 
     public class MagicFormItem extends Group
     {
@@ -31,9 +32,6 @@ package com.rpath.raf.views
 
             // force height computation
             minHeight = 0;
-            
-            // force initial setting of validation styles
-            _validChanged = true;
         }
         
         private var _validChanged:Boolean;
@@ -43,7 +41,7 @@ package com.rpath.raf.views
         {
             _isValid = v;
             _validChanged = true;
-            invalidateProperties();
+            dispatchEvent(new FlexEvent(_isValid ? FlexEvent.VALID : FlexEvent.INVALID));
         }
         
         private var _isValid:Boolean;
@@ -53,15 +51,20 @@ package com.rpath.raf.views
             return _isValid;
         }
         
+        /** we need to override validationResultHandler in order to propagate
+        * the validation events from Validators down to the actual UI elements
+        * so they can change state, etc.
+        */
+        
         public override function validationResultHandler(event:ValidationResultEvent):void
         {
             isValid = (event.type == ValidationResultEvent.VALID);
             // let our specific input control mark itself appropriately
             try
             {
-                if (this.getChildAt(0) is UIComponent)
+                if (this.getElementAt(0) is UIComponent)
                 {
-                    (this.getChildAt(0) as UIComponent).validationResultHandler(event);
+                    (this.getElementAt(0) as UIComponent).validationResultHandler(event);
                 }
             }
             catch (e:RangeError)
@@ -84,37 +87,6 @@ package com.rpath.raf.views
         {
             _selectedIndex = value;
         }
-    
-        /** enabled override
-        * We do this to prevent the Canvas that is our parent type
-        * from dimming the whole box. Rather, we want the items within
-        * the box to respond to the enabled flag directly
-        */
-        
-        [Bindable]
-        public override function set enabled(v:Boolean):void
-        {
-            _itemEnabled = v;
-        }
-    
-        private var _itemEnabled:Boolean = true;
-        
-        public override function get enabled():Boolean
-        {
-            return _itemEnabled;
-        }
 
-        
-        override protected function commitProperties():void
-        {
-            super.commitProperties();
-
-            if (_validChanged)
-            {
-                _validChanged = false;
-                //setStylesFromValidStatus();
-            }
-            
-        }
     }
 }
