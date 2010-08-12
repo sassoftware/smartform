@@ -652,7 +652,7 @@
         data = e.item;
     }
 
-    private function handleCombobox(e:IndexChangeEvent):void
+    private function handleDropdownList(e:IndexChangeEvent):void
     {
         var newData:*;
         
@@ -751,12 +751,6 @@
         _errorTipManager = value;
         if (_validationHelper)
             _validationHelper.errorTipManager = _errorTipManager;
-    }
-
-        
-    public function handleValidEvent(event:FlexEvent):void
-    {
-        isValid = (event.type == FlexEvent.VALID);
     }
 
     // --------------------------------------------------- DIRTY HANDLING
@@ -1110,7 +1104,6 @@
 
         <!-- ipAddress: 13 -->
        <views:CompoundInputItem includeIn="ipAddress,ipAddressDisabled"
-                                isValid="{isValid}"
                                 width="100%"
                                 inputFields="{[A, B, C, D]}">
            <s:HGroup width="100%"
@@ -1187,8 +1180,8 @@
        </mx:HBox>
         
         <!-- pulldownchoice: 20 -->
-        <s:ComboBox id="pulldownchoice" toolTip="{prompt}" enabled="{editable &amp;&amp; enabled}"
-                    dataProvider="{choices}" change="handleCombobox(event)" 
+        <s:DropDownList id="pulldownchoice" toolTip="{prompt}" enabled="{editable &amp;&amp; enabled}"
+                    dataProvider="{choices}" change="handleDropdownList(event)" 
                     toolTipShown="toolTipShown(event)"
                     includeIn="pulldownchoice,pulldownchoiceDisabled"
                     />
@@ -1274,7 +1267,6 @@
        
        <!-- longtext: 24 -->
        <views:CompoundInputItem includeIn="longtext, longtextDisabled"
-                                isValid="{isValid}"
                                 minHeight="0"
                                 width="100%"
                                 toolTipShown="toolTipShown(event)"
@@ -1308,7 +1300,6 @@
         
         <!-- radiobool: 26 -->
        <views:CompoundInputItem includeIn="radiobool,radioboolDisabled"
-                                isValid="{isValid}"
                                 toolTipShown="toolTipShown(event)"
                                 width="100%"
                                 minHeight="0"

@@ -307,6 +307,8 @@ package com.rpath.raf.util
                     // manager get to hear the events.
                     var resultEvent:ValidationResultEvent = v.validate(null, suppressEvents);
                     
+                    _validationStates[v] = (resultEvent.type == ValidationResultEvent.VALID);
+                    
                     if (resultEvent.type != ValidationResultEvent.VALID)
                     {
                         result.push(resultEvent);
@@ -322,12 +324,26 @@ package com.rpath.raf.util
         // same string constant
         
         private var _validationStates:Dictionary = new Dictionary(true);
-            
-        public function handleItemValidationEvent(event:Event):void
+        
+        private function computeValidityFromCache():void
         {
             var newValid:Boolean = true;
             var item:*;
             var items:Array;
+
+            items = getKeys(_validationStates);
+            
+            // recompute validity from the cache
+            for each (item in items)
+            {
+                newValid = newValid && _validationStates[item];
+            }
+            
+            isValid = newValid;
+        }
+        
+        public function handleItemValidationEvent(event:Event):void
+        {
             
             // plain FlexEvent is the way a UIComponent reports it's validity
             // typically after setting errorString on itself
@@ -341,33 +357,23 @@ package com.rpath.raf.util
                 
                 _validationStates[event.target] = (event.type == FlexEvent.VALID);
                 
-                items = getKeys(_validationStates);
-                
-                // recompute validity from the cache
-                for each (item in items)
+                if (!_validating)
                 {
-                    newValid = newValid && _validationStates[item];
+                    computeValidityFromCache();
                 }
-                
-                isValid = newValid;
             }
             // ValidationResultEvents are sent by Validators to report their
             // assessment of a source items validity. We're inserted in the 
             // middle of this chain
-            else if (event is ValidationResultEvent && !_validating)
+            else if (event is ValidationResultEvent)
             {
                 
                 _validationStates[event.target] = (event.type == ValidationResultEvent.VALID);
                 
-                items = getKeys(_validationStates);
-                
-                // recompute validity from the cache
-                for each (item in items)
+                if (!_validating)
                 {
-                    newValid = newValid && _validationStates[item];
+                    computeValidityFromCache();
                 }
-                
-                isValid = newValid;
             }
         }
 
@@ -378,7 +384,7 @@ package com.rpath.raf.util
             {
                 _validating = true;
                 
-                errorTipManager.suppressErrors = suppressEvents;
+                //errorTipManager.suppressErrors = suppressEvents;
 
                 var valid:Boolean = false;
                 

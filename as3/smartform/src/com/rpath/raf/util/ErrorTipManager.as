@@ -54,6 +54,7 @@ package com.rpath.raf.util
      * @author Chris Callendar
      * @date August 5th, 2009
      */
+    [Bindable]
     public class ErrorTipManager
     {
         
@@ -101,8 +102,8 @@ package com.rpath.raf.util
          * Adds "invalid" and "valid" event listeners which show and hide the error tooltips.
          */
         public function registerValidator(validator:Validator):void {
-            validator.addEventListener(ValidationResultEvent.VALID, validHandler, false, 0, true);
-            validator.addEventListener(ValidationResultEvent.INVALID, invalidHandler, false, 0, true);
+            validator.addEventListener(ValidationResultEvent.VALID, validValidationHandler, false, 0, true);
+            validator.addEventListener(ValidationResultEvent.INVALID, invalidValidationHandler, false, 0, true);
             validators[validator] = false;
             
             // Also listen for when the real mouse over error tooltip is shown 
@@ -117,8 +118,8 @@ package com.rpath.raf.util
             if (!validator)
                 return;
             
-            validator.removeEventListener(ValidationResultEvent.VALID, validHandler);
-            validator.removeEventListener(ValidationResultEvent.INVALID, invalidHandler);
+            validator.removeEventListener(ValidationResultEvent.VALID, validValidationHandler);
+            validator.removeEventListener(ValidationResultEvent.INVALID, invalidValidationHandler);
             // make sure our error tooltip is hidden
             removeErrorTip(validator.source);
             // stop listening for events on the validator's source
@@ -208,8 +209,8 @@ package com.rpath.raf.util
         
         protected function addValidatorListeners(source:*):void
         {
-            if (source is IEventDispatcher) {
-                var ed:IEventDispatcher = (source as IEventDispatcher);
+            var ed:IEventDispatcher = (source as IEventDispatcher);
+            if (ed) {
                 // need to listener for when the real tooltip gets shown 
                 // we'll hide it if is an error tooltip since we are already showing it 
                 ed.addEventListener(ToolTipEvent.TOOL_TIP_SHOWN, toolTipShown, false, 0, true);
@@ -218,6 +219,8 @@ package com.rpath.raf.util
                 ed.addEventListener(ResizeEvent.RESIZE, targetMoved, false, 0, true);
                 ed.addEventListener(FlexEvent.HIDE, targetHidden, false, 0, true);
                 ed.addEventListener(FlexEvent.REMOVE, targetRemoved, false, 0, true);
+                ed.addEventListener(FlexEvent.VALID, validHandler, false, 0, true);
+                ed.addEventListener(FlexEvent.INVALID, invalidHandler, false, 0, true);
                 
                 // listen for scroll events on the parent containers
                 if (source is DisplayObject) {
@@ -259,14 +262,16 @@ package com.rpath.raf.util
         
         protected function removeValidatorListeners(source:*):void
         {
-            if (source is IEventDispatcher) {
-                var ed:IEventDispatcher = (source as IEventDispatcher);
+            var ed:IEventDispatcher = (source as IEventDispatcher);
+            if (ed) {
                 ed.removeEventListener(ToolTipEvent.TOOL_TIP_SHOWN, toolTipShown);
                 ed.removeEventListener(MoveEvent.MOVE, targetMoved);
                 ed.removeEventListener(ResizeEvent.RESIZE, targetMoved);
                 ed.removeEventListener(FlexEvent.HIDE, targetHidden);
                 ed.removeEventListener(FlexEvent.REMOVE, targetRemoved);
                 ed.removeEventListener(Event.REMOVED_FROM_STAGE, targetRemoved);
+                ed.removeEventListener(FlexEvent.VALID, validHandler);
+                ed.removeEventListener(FlexEvent.INVALID, invalidHandler);
                 
                 if (source is DisplayObject) {
                     var obj:DisplayObject = (source as DisplayObject);
@@ -293,11 +298,11 @@ package com.rpath.raf.util
          * Called when the validator fires the valid event.
          * Hides the error tooltip if it is visible.
          */
-        public function validHandler(event:ValidationResultEvent):void {
+        public function validValidationHandler(event:ValidationResultEvent):void {
             // the target component is valid, so hide the error tooltip
             var validator:Validator = Validator(event.target); 
-            removeErrorTip(validator.source);
-            // ensure that the source listeners were added 
+/*            removeErrorTip(validator.source);
+*/            // ensure that the source listeners were added 
             addValidatorSourceListeners(validator);
         }
         
@@ -305,10 +310,10 @@ package com.rpath.raf.util
          * Called when the validator fires an invalid event.
          * Shows the error tooltip with the ValidatorResultEvent.message as the error String.
          */
-        public function invalidHandler(event:ValidationResultEvent):void {
+        public function invalidValidationHandler(event:ValidationResultEvent):void {
             // the target component is invalid, so show the error tooltip 
             var validator:Validator = Validator(event.target); 
-            
+/*            
             // always create the errorTip
             createErrorTip(validator.source, event.message);
             
@@ -316,9 +321,35 @@ package com.rpath.raf.util
             if (!suppressErrors)
                 showErrorTip(validator.source, event.message);
             
-            // ensure that the source listeners were added 
+*/            // ensure that the source listeners were added 
             addValidatorSourceListeners(validator);
         }
+
+        /**
+         * Called when the validator fires the valid event.
+         * Hides the error tooltip if it is visible.
+         */
+        public function validHandler(event:FlexEvent):void {
+            // the target component is valid, so hide the error tooltip
+            removeErrorTip(event.target);
+        }
+        
+        /**
+         * Called when the validator fires an invalid event.
+         * Shows the error tooltip with the ValidatorResultEvent.message as the error String.
+         */
+        public function invalidHandler(event:FlexEvent):void {
+            // the target component is invalid, so show the error tooltip 
+            
+            // always create the errorTip
+            createErrorTip(event.target, event.target.errorString);
+            
+            // only show if requested
+            if (!suppressErrors)
+                showErrorTip(event.target, event.target.errorString);
+        }
+
+        
         // TODO: make this also work for Spark viewport scrolling which DO NOT
         // appear to dispatch SCROLL events. Instead, we need to listen for 
         // PropertChange events on the verticalScrollPosition and horizontalScrollPosition
