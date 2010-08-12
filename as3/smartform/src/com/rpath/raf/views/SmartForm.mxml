@@ -641,7 +641,7 @@
         
         // force validate the whole lot
         //handleValidationEvent();
-        validationHelper.validateNow(true);
+        //validationHelper.validateNow(true);
     }
     
     private function itemDataSetterWrapper(newItem:SmartFormItem):Function
@@ -781,7 +781,7 @@
             {
                 if (child is SmartFormItem)
                 {
-                    (child as SmartFormItem).validate();
+                    //(child as SmartFormItem).validate();
                 }
             }
         }

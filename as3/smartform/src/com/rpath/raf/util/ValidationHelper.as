@@ -176,6 +176,8 @@ package com.rpath.raf.util
         
         public function addValidator(v:IEventDispatcher):void
         {
+            _validators[v] = true;
+            
             var validator:Validator = v as Validator;
             if (validator)
             {
@@ -323,6 +325,10 @@ package com.rpath.raf.util
             
         public function handleItemValidationEvent(event:Event):void
         {
+            var newValid:Boolean = true;
+            var item:*;
+            var items:Array;
+            
             // plain FlexEvent is the way a UIComponent reports it's validity
             // typically after setting errorString on itself
             if (event is FlexEvent)
@@ -332,24 +338,33 @@ package com.rpath.raf.util
                 addValidator(event.target as IEventDispatcher);
                 
                 // and recompute our own validity
-                _needsValidation = true;
-                invalidateProperties();
+                
+                _validationStates[event.target] = (event.type == FlexEvent.VALID);
+                
+                items = getKeys(_validationStates);
+                
+                // recompute validity from the cache
+                for each (item in items)
+                {
+                    newValid = newValid && _validationStates[item];
+                }
+                
+                isValid = newValid;
             }
             // ValidationResultEvents are sent by Validators to report their
             // assessment of a source items validity. We're inserted in the 
             // middle of this chain
             else if (event is ValidationResultEvent && !_validating)
             {
-                var newValid:Boolean = true;
                 
                 _validationStates[event.target] = (event.type == ValidationResultEvent.VALID);
                 
-                var validators:Array = getKeys(_validationStates);
+                items = getKeys(_validationStates);
                 
-                //r ecompute validity from the cache
-                for each (var v:Validator in validators)
+                // recompute validity from the cache
+                for each (item in items)
                 {
-                    newValid = newValid && _validationStates[v];
+                    newValid = newValid && _validationStates[item];
                 }
                 
                 isValid = newValid;
@@ -363,6 +378,8 @@ package com.rpath.raf.util
             {
                 _validating = true;
                 
+                errorTipManager.suppressErrors = suppressEvents;
+
                 var valid:Boolean = false;
                 
                 var results:Array = checkValidity(getKeys(_vals), suppressEvents);

@@ -164,7 +164,7 @@
             isDirty = checkDirty();
         }
         
-        if (_created)
+        /* if (_created)
         {
             // make sure form is marked valid/invalid at all times
             validate(false);
@@ -173,7 +173,7 @@
         {
             // in initialization case, validate without events
             validate(true);
-        }
+        } */
         
     }
     
@@ -894,8 +894,6 @@
     {        
         if (_validationHelper)
             _validationHelper.validateNow(suppressEvents);
-
-        //TODO: add validation for IPAddress, Date, Time, Currency
     }
     
     public override function setFocus():void
@@ -963,17 +961,10 @@
     <fx:Declarations>
         <fx:Array id="validators">
             
-            <mx:Validator id="requiredV" 
-                          source="{this}" property="data"
-                          listener="{magic}"
-                          enabled="false"
-                          required="{required}"
-                          requiredFieldError="Required field"
-                          />
-            
             <!-- the dotall flag (s) *must* be on for ec2 cert/key validation, should not matter for anything else -->
             <mx:RegExpValidator id="regExpV" 
                                 source="{this}" property="data"
+                                triggerEvent="dataChange"
                                 expression=""
                                 flags="s"
                                 listener="{magic}"
@@ -983,6 +974,7 @@
             
             <mx:StringValidator id="maxLengthV" 
                                 source="{this}" property="data"
+                                triggerEvent="dataChange"
                                 minLength="0" maxLength="0"
                                 listener="{magic}"
                                 enabled="false"
@@ -991,11 +983,22 @@
             
             <mx:NumberValidator id="rangeV"
                                 source="{this}" property="data"
+                                triggerEvent="dataChange"
                                 minValue="0" maxValue="0"
                                 listener="{magic}"
                                 enabled="false"
                                 required="false"
                                 />
+            
+            <mx:Validator id="requiredV" 
+                          source="{this}" property="data"
+                          listener="{magic}"
+                          triggerEvent="dataChange"
+                          enabled="false"
+                          required="true"
+                          requiredFieldError="Required field"
+                          />
+            
         </fx:Array>
         
     </fx:Declarations>

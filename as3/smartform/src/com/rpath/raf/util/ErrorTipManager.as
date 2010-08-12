@@ -197,79 +197,95 @@ package com.rpath.raf.util
             // make sure the listeners have been added
             if (validator) {
                 var alreadyAdded:Boolean = validators[validator];
-                if (!alreadyAdded && (validator.source is IEventDispatcher)) {
-                    var ed:IEventDispatcher = (validator.source as IEventDispatcher);
-                    // need to listener for when the real tooltip gets shown 
-                    // we'll hide it if is an error tooltip since we are already showing it 
-                    ed.addEventListener(ToolTipEvent.TOOL_TIP_SHOWN, toolTipShown, false, 0, true);
-                    // also need to listen for move and resize events to keep the error tip positioned correctly
-                    ed.addEventListener(MoveEvent.MOVE, targetMoved, false, 0, true);
-                    ed.addEventListener(ResizeEvent.RESIZE, targetMoved, false, 0, true);
-                    ed.addEventListener(FlexEvent.HIDE, targetHidden, false, 0, true);
-                    ed.addEventListener(FlexEvent.REMOVE, targetRemoved, false, 0, true);
+                if (!alreadyAdded)
+                {
                     validators[validator] = true;
-                    
-                    // listen for scroll events on the parent containers
-                    if (validator.source is DisplayObject) {
-                        var obj:DisplayObject = (validator.source as DisplayObject);
-                        var parent:DisplayObjectContainer = obj.parent;
-                        while (parent) {
-                            
-                            //TODO: add in code here to auto discover that we're in a 
-                            // POPUP window and add the required event listeners 
-                            // to handle the popup moving around the screen (user drag)
-                            
-                            if (parent is DisplayObjectContainer) {
-                                parent.addEventListener(ScrollEvent.SCROLL, parentContainerScrolled, false, 0, true);
-                                if (!(containersToTargets[parent] is Array)) {
-                                    containersToTargets[parent] = [];
-                                }
-                                var array:Array = (containersToTargets[parent] as Array);
-                                if (array.indexOf(obj) == -1) {
-                                    array.push(obj);
-                                }
-                            }
-                            parent = parent.parent;
-                        }
-                    }
+                    addValidatorListeners(validator.source);
+                    addValidatorListeners(validator.listener);
                 }
             }
         }
+        
+        protected function addValidatorListeners(source:*):void
+        {
+            if (source is IEventDispatcher) {
+                var ed:IEventDispatcher = (source as IEventDispatcher);
+                // need to listener for when the real tooltip gets shown 
+                // we'll hide it if is an error tooltip since we are already showing it 
+                ed.addEventListener(ToolTipEvent.TOOL_TIP_SHOWN, toolTipShown, false, 0, true);
+                // also need to listen for move and resize events to keep the error tip positioned correctly
+                ed.addEventListener(MoveEvent.MOVE, targetMoved, false, 0, true);
+                ed.addEventListener(ResizeEvent.RESIZE, targetMoved, false, 0, true);
+                ed.addEventListener(FlexEvent.HIDE, targetHidden, false, 0, true);
+                ed.addEventListener(FlexEvent.REMOVE, targetRemoved, false, 0, true);
+                
+                // listen for scroll events on the parent containers
+                if (source is DisplayObject) {
+                    var obj:DisplayObject = (source as DisplayObject);
+                    var parent:DisplayObjectContainer = obj.parent;
+                    while (parent) {
+                        
+                        //TODO: add in code here to auto discover that we're in a 
+                        // POPUP window and add the required event listeners 
+                        // to handle the popup moving around the screen (user drag)
+                        
+                        if (parent is DisplayObjectContainer) {
+                            parent.addEventListener(ScrollEvent.SCROLL, parentContainerScrolled, false, 0, true);
+                            if (!(containersToTargets[parent] is Array)) {
+                                containersToTargets[parent] = [];
+                            }
+                            var array:Array = (containersToTargets[parent] as Array);
+                            if (array.indexOf(obj) == -1) {
+                                array.push(obj);
+                            }
+                        }
+                        parent = parent.parent;
+                    }
+                }
+            }            
+        }
+        
         
         /**
          * Removes the event listeners that were added to the validator's source.
          */
         private function removeValidatorSourceListeners(validator:Validator):void {
             if (validator && (validators[validator] == true)) {
-                if (validator.source is IEventDispatcher) {
-                    var ed:IEventDispatcher = (validator.source as IEventDispatcher);
-                    ed.removeEventListener(ToolTipEvent.TOOL_TIP_SHOWN, toolTipShown);
-                    ed.removeEventListener(MoveEvent.MOVE, targetMoved);
-                    ed.removeEventListener(ResizeEvent.RESIZE, targetMoved);
-                    ed.removeEventListener(FlexEvent.HIDE, targetHidden);
-                    ed.removeEventListener(FlexEvent.REMOVE, targetRemoved);
-                    ed.removeEventListener(Event.REMOVED_FROM_STAGE, targetRemoved);
-
-                    if (validator.source is DisplayObject) {
-                        var obj:DisplayObject = (validator.source as DisplayObject);
-                        var parent:DisplayObjectContainer = obj.parent;
-                        while (parent) {
-                            if (parent is DisplayObjectContainer) {
-                                parent.removeEventListener(ScrollEvent.SCROLL, parentContainerScrolled);
-                                if (containersToTargets[parent] is Array) {
-                                    var array:Array = (containersToTargets[parent] as Array);
-                                    var index:int = array.indexOf(obj);
-                                    if (index != -1) {
-                                        array.splice(index, 1);
-                                        containersToTargets[parent] = array;
-                                    }
+                removeValidatorListeners(validator.source);
+                removeValidatorListeners(validator.listener);
+                delete validators[validator];
+            }
+        }
+        
+        protected function removeValidatorListeners(source:*):void
+        {
+            if (source is IEventDispatcher) {
+                var ed:IEventDispatcher = (source as IEventDispatcher);
+                ed.removeEventListener(ToolTipEvent.TOOL_TIP_SHOWN, toolTipShown);
+                ed.removeEventListener(MoveEvent.MOVE, targetMoved);
+                ed.removeEventListener(ResizeEvent.RESIZE, targetMoved);
+                ed.removeEventListener(FlexEvent.HIDE, targetHidden);
+                ed.removeEventListener(FlexEvent.REMOVE, targetRemoved);
+                ed.removeEventListener(Event.REMOVED_FROM_STAGE, targetRemoved);
+                
+                if (source is DisplayObject) {
+                    var obj:DisplayObject = (source as DisplayObject);
+                    var parent:DisplayObjectContainer = obj.parent;
+                    while (parent) {
+                        if (parent is DisplayObjectContainer) {
+                            parent.removeEventListener(ScrollEvent.SCROLL, parentContainerScrolled);
+                            if (containersToTargets[parent] is Array) {
+                                var array:Array = (containersToTargets[parent] as Array);
+                                var index:int = array.indexOf(obj);
+                                if (index != -1) {
+                                    array.splice(index, 1);
+                                    containersToTargets[parent] = array;
                                 }
                             }
-                            parent = parent.parent;
                         }
+                        parent = parent.parent;
                     }
                 }
-                delete validators[validator];
             }
         }
         
