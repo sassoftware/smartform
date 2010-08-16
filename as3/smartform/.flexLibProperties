@@ -17,6 +17,10 @@
     <classEntry path="com.rpath.raf.views.SmartForm"/>
     <classEntry path="com.rpath.raf.views.SmartFormChoice"/>
     <classEntry path="com.rpath.raf.views.SmartFormItem"/>
+    <classEntry path="com.rpath.raf.util.LifecycleObject"/>
+    <classEntry path="com.rpath.raf.views.CompoundInputItem"/>
+    <classEntry path="com.rpath.raf.validators.UniqueElementValidator"/>
+    <classEntry path="com.rpath.raf.validators.StringMatchValidator"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests>

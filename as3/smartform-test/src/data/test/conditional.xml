@@ -21,7 +21,7 @@
       <required>true</required>
       <constraints>
         <descriptions>
-          <desc>Pattern match required</desc>
+          <desc>Entry must start with FOOBAR</desc>
         </descriptions>
         <regexp>FOOBAR</regexp>
       </constraints>

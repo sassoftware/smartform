@@ -11,7 +11,6 @@
 # or fitness for a particular purpose. See the MIT License for full details.
 */
 
-
 package com.rpath.raf.views
 {
     import mx.core.UIComponent;
@@ -19,40 +18,30 @@ package com.rpath.raf.views
     
     import spark.components.Group;
 
-    public class MagicFormItem extends Group
+    public class CompoundInputItem extends Group
     {
-        
-        public function MagicFormItem()
+        public function CompoundInputItem()
         {
             super();
-
+            
             // force height computation
             minHeight = 0;
         }
-       
-        /** we need to override validationResultHandler in order to propagate
-        * the validation events from Validators down to the actual UI elements
-        * so they can change state, etc.
-        */
-        
+
+        [Bindable]
+        public var inputFields:Array;
+
         public override function validationResultHandler(event:ValidationResultEvent):void
         {
-            // let our specific input control mark itself appropriately
-            var child:UIComponent;
-            var numElements:int = numElements;
-            
-            for (var i:int = 0; i < numElements; i++)
+            // let our specific input controls mark themselves appropriately
+            for each (var elem:UIComponent in inputFields)
             {
-                child = getElementAt(i) as UIComponent;
-                if (child)
-                {
-                    child.validationResultHandler(event);
-                }
+                elem.validationResultHandler(event);
             }
             
+            // propagate events beyond ourselves
             super.validationResultHandler(event);
         }
-
 
     }
 }

@@ -14,6 +14,17 @@
       <constraints>
           <length>32</length>
        </constraints>
+       <required>true</required>
+    </field>
+    <field>
+      <name>String</name>
+      <descriptions><desc>String</desc></descriptions>
+      <prompt><desc>Any old string</desc></prompt>
+      <type>str</type>
+      <constraints>
+          <length>32</length>
+       </constraints>
+       <required>true</required>
     </field>
   </dataFields>
 </cloudDescription>

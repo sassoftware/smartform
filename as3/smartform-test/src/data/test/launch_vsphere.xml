@@ -1,344 +1,352 @@
-
-<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd">
-<metadata>
-<displayName>
-VMware Launch Parameters
+<?xml version="1.0"?>
+<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd">
+	<metadata>
+		<displayName>
+			VMware Launch Parameters
 </displayName>
-<descriptions>
-<desc>
-VMware Launch Parameters
+		<descriptions>
+			<desc>
+				VMware Launch Parameters
 </desc>
-</descriptions>
-</metadata>
-<dataFields>
-<field>
-<name>
-imageId
+		</descriptions>
+	</metadata>
+	<dataFields>
+		<field>
+			<name>
+				imageId
 </name>
-<descriptions>
-<desc>
-Image ID
+			<descriptions>
+				<desc>
+					Image ID
 </desc>
-</descriptions>
-<type>
-str
+			</descriptions>
+			<type>
+				str
 </type>
-<constraints>
-<range>
-<min>
-1
+			<constraints>
+				<range>
+					<min>
+						1
 </min>
-<max>
-32
+					<max>
+						32
 </max>
-</range>
-</constraints>
-<required>
-true
+				</range>
+			</constraints>
+			<required>
+				true
 </required>
-<hidden>
-true
+			<hidden>
+				true
 </hidden>
-</field>
-<field>
-<name>
-instanceName
+		</field>
+		<field>
+			<name>
+				instanceName
 </name>
-<descriptions>
-<desc>
-Instance Name
+			<descriptions>
+				<desc>
+					Instance Name
 </desc>
-</descriptions>
-<help href="https://rbanext-eng.eng.rpath.com/catalog/clouds/vmware/help/launch/instanceName.html" />
-<type>
-str
+			</descriptions>
+			<help
+				href="https://rbanext-eng.eng.rpath.com/catalog/clouds/vmware/help/launch/instanceName.html" />
+			<type>
+				str
 </type>
-<constraints>
-<length>
-32
+			<constraints>
+				<length>
+					32
 </length>
-</constraints>
-<required>
-true
+			</constraints>
+			<required>
+				true
 </required>
-</field>
-<field>
-<name>
-instanceDescription
+		</field>
+		<field>
+			<name>
+				instanceDescription
 </name>
-<descriptions>
-<desc>
-Instance Description
+			<descriptions>
+				<desc>
+					Instance Description
 </desc>
-</descriptions>
-<help href="https://rbanext-eng.eng.rpath.com/catalog/clouds/vmware/help/launch/instanceDescription.html" />
-<type>
-str
+			</descriptions>
+			<help
+				href="https://rbanext-eng.eng.rpath.com/catalog/clouds/vmware/help/launch/instanceDescription.html" />
+			<type>
+				str
 </type>
-<constraints>
-<length>
-128
+			<constraints>
+				<length>
+					128
 </length>
-</constraints>
-</field>
-<field>
-<name>
-dataCenter
+			</constraints>
+		</field>
+		<field>
+			<name>
+				dataCenter
 </name>
-<descriptions>
-<desc>
-Data Center
+			<descriptions>
+				<desc>
+					Data Center
 </desc>
-</descriptions>
-<help href="https://rbanext-eng.eng.rpath.com/catalog/clouds/vmware/help/launch/dataCenter.html" />
-<enumeratedType>
-<describedValue>
-<descriptions>
-<desc>
-rPath4
+			</descriptions>
+			<help
+				href="https://rbanext-eng.eng.rpath.com/catalog/clouds/vmware/help/launch/dataCenter.html" />
+			<enumeratedType>
+				<describedValue>
+					<descriptions>
+						<desc>
+							rPath4
 </desc>
-</descriptions>
-<key>
-datacenter-6098
+					</descriptions>
+					<key>
+						datacenter-6098
 </key>
-</describedValue>
-</enumeratedType>
-<default>
-datacenter-6098
+				</describedValue>
+			</enumeratedType>
+			<default>
+				datacenter-6098
 </default>
-<required>
-true
+			<required>
+				true
 </required>
-</field>
-<field>
-<name>
-cr-datacenter-6098
+		</field>
+		<field>
+			<name>
+				cr-datacenter-6098
 </name>
-<descriptions>
-<desc>
-Compute Resource
+			<descriptions>
+				<desc>
+					Compute Resource
 </desc>
-</descriptions>
-<help href="https://rbanext-eng.eng.rpath.com/catalog/clouds/vmware/help/launch/computeResource.html" />
-<enumeratedType>
-<describedValue>
-<descriptions>
-<desc>
-eng lab
+			</descriptions>
+			<help
+				href="https://rbanext-eng.eng.rpath.com/catalog/clouds/vmware/help/launch/computeResource.html" />
+			<enumeratedType>
+				<describedValue>
+					<descriptions>
+						<desc>
+							eng lab
 </desc>
-</descriptions>
-<key>
-domain-c6103
+					</descriptions>
+					<key>
+						domain-c6103
 </key>
-</describedValue>
-</enumeratedType>
-<default>
-domain-c6103
+				</describedValue>
+			</enumeratedType>
+			<default>
+				domain-c6103
 </default>
-<required>
-true
+			<required>
+				true
 </required>
-<conditional>
-<fieldName>
-dataCenter
+			<conditional>
+				<fieldName>
+					dataCenter
 </fieldName>
-<operator>
-eq
+				<operator>
+					eq
 </operator>
-<value>
-datacenter-6098
+				<value>
+					datacenter-6098
 </value>
-</conditional>
-</field>
-<field>
-<name>
-dataStore-domain-c6103
+			</conditional>
+		</field>
+		<field>
+			<name>
+				dataStore-domain-c6103
 </name>
-<descriptions>
-<desc>
-Data Store
+			<descriptions>
+				<desc>
+					Data Store
 </desc>
-</descriptions>
-<help href="https://rbanext-eng.eng.rpath.com/catalog/clouds/vmware/help/launch/dataStore.html" />
-<enumeratedType>
-<describedValue>
-<descriptions>
-<desc>
-nfs-isos - 472 GiB free
+			</descriptions>
+			<help
+				href="https://rbanext-eng.eng.rpath.com/catalog/clouds/vmware/help/launch/dataStore.html" />
+			<enumeratedType>
+				<describedValue>
+					<descriptions>
+						<desc>
+							nfs-isos - 472 GiB free
 </desc>
-</descriptions>
-<key>
-datastore-6367
+					</descriptions>
+					<key>
+						datastore-6367
 </key>
-</describedValue>
-<describedValue>
-<descriptions>
-<desc>
-high-volume01 - 307 GiB free
+				</describedValue>
+				<describedValue>
+					<descriptions>
+						<desc>
+							high-volume01 - 307 GiB free
 </desc>
-</descriptions>
-<key>
-datastore-6375
+					</descriptions>
+					<key>
+						datastore-6375
 </key>
-</describedValue>
-<describedValue>
-<descriptions>
-<desc>
-high-volume-temp - 158 GiB free
+				</describedValue>
+				<describedValue>
+					<descriptions>
+						<desc>
+							high-volume-temp - 158 GiB free
 </desc>
-</descriptions>
-<key>
-datastore-6377
+					</descriptions>
+					<key>
+						datastore-6377
 </key>
-</describedValue>
-<describedValue>
-<descriptions>
-<desc>
-common-temp - 365 GiB free
+				</describedValue>
+				<describedValue>
+					<descriptions>
+						<desc>
+							common-temp - 365 GiB free
 </desc>
-</descriptions>
-<key>
-datastore-6379
+					</descriptions>
+					<key>
+						datastore-6379
 </key>
-</describedValue>
-<describedValue>
-<descriptions>
-<desc>
-esx04-local - 230 GiB free
+				</describedValue>
+				<describedValue>
+					<descriptions>
+						<desc>
+							esx04-local - 230 GiB free
 </desc>
-</descriptions>
-<key>
-datastore-9898
+					</descriptions>
+					<key>
+						datastore-9898
 </key>
-</describedValue>
-<describedValue>
-<descriptions>
-<desc>
-nas1 target1 - 284 GiB free
+				</describedValue>
+				<describedValue>
+					<descriptions>
+						<desc>
+							nas1 target1 - 284 GiB free
 </desc>
-</descriptions>
-<key>
-datastore-11884
+					</descriptions>
+					<key>
+						datastore-11884
 </key>
-</describedValue>
-<describedValue>
-<descriptions>
-<desc>
-nas1 target2 - 596 GiB free
+				</describedValue>
+				<describedValue>
+					<descriptions>
+						<desc>
+							nas1 target2 - 596 GiB free
 </desc>
-</descriptions>
-<key>
-datastore-11886
+					</descriptions>
+					<key>
+						datastore-11886
 </key>
-</describedValue>
-<describedValue>
-<descriptions>
-<desc>
-nas1 target3 - 626 GiB free
+				</describedValue>
+				<describedValue>
+					<descriptions>
+						<desc>
+							nas1 target3 - 626 GiB free
 </desc>
-</descriptions>
-<key>
-datastore-11888
+					</descriptions>
+					<key>
+						datastore-11888
 </key>
-</describedValue>
-<describedValue>
-<descriptions>
-<desc>
-nas1 target4 - 621 GiB free
+				</describedValue>
+				<describedValue>
+					<descriptions>
+						<desc>
+							nas1 target4 - 621 GiB free
 </desc>
-</descriptions>
-<key>
-datastore-11890
+					</descriptions>
+					<key>
+						datastore-11890
 </key>
-</describedValue>
-<describedValue>
-<descriptions>
-<desc>
-esx05-local - 141 GiB free
+				</describedValue>
+				<describedValue>
+					<descriptions>
+						<desc>
+							esx05-local - 141 GiB free
 </desc>
-</descriptions>
-<key>
-datastore-8228
+					</descriptions>
+					<key>
+						datastore-8228
 </key>
-</describedValue>
-<describedValue>
-<descriptions>
-<desc>
-esx03-local - 102 GiB free
+				</describedValue>
+				<describedValue>
+					<descriptions>
+						<desc>
+							esx03-local - 102 GiB free
 </desc>
-</descriptions>
-<key>
-datastore-8234
+					</descriptions>
+					<key>
+						datastore-8234
 </key>
-</describedValue>
-<describedValue>
-<descriptions>
-<desc>
-esx02-local - 291 GiB free
+				</describedValue>
+				<describedValue>
+					<descriptions>
+						<desc>
+							esx02-local - 291 GiB free
 </desc>
-</descriptions>
-<key>
-datastore-9877
+					</descriptions>
+					<key>
+						datastore-9877
 </key>
-</describedValue>
-</enumeratedType>
-<default>
-datastore-6367
+				</describedValue>
+			</enumeratedType>
+			<default>
+				datastore-6367
 </default>
-<required>
-true
+			<required>
+				true
 </required>
-<conditional>
-<fieldName>
-cr-datacenter-6098
+			<conditional>
+				<fieldName>
+					cr-datacenter-6098
 </fieldName>
-<operator>
-eq
+				<operator>
+					eq
 </operator>
-<value>
-domain-c6103
+				<value>
+					domain-c6103
 </value>
-</conditional>
-</field>
-<field>
-<name>
-resourcePool-domain-c6103
+			</conditional>
+		</field>
+		<field>
+			<name>
+				resourcePool-domain-c6103
 </name>
-<descriptions>
-<desc>
-Resource Pool
+			<descriptions>
+				<desc>
+					Resource Pool
 </desc>
-</descriptions>
-<help href="https://rbanext-eng.eng.rpath.com/catalog/clouds/vmware/help/launch/resourcePool.html" />
-<enumeratedType>
-<describedValue>
-<descriptions>
-<desc>
-Resources
+			</descriptions>
+			<help
+				href="https://rbanext-eng.eng.rpath.com/catalog/clouds/vmware/help/launch/resourcePool.html" />
+			<enumeratedType>
+				<describedValue>
+					<descriptions>
+						<desc>
+							Resources
 </desc>
-</descriptions>
-<key>
-resgroup-6105
+					</descriptions>
+					<key>
+						resgroup-6105
 </key>
-</describedValue>
-</enumeratedType>
-<default>
-resgroup-6105
+				</describedValue>
+			</enumeratedType>
+			<default>
+				resgroup-6105
 </default>
-<required>
-true
+			<required>
+				true
 </required>
-<conditional>
-<fieldName>
-cr-datacenter-6098
+			<conditional>
+				<fieldName>
+					cr-datacenter-6098
 </fieldName>
-<operator>
-eq
+				<operator>
+					eq
 </operator>
-<value>
-domain-c6103
+				<value>
+					domain-c6103
 </value>
-</conditional>
-</field>
-</dataFields>
+			</conditional>
+		</field>
+	</dataFields>
 </descriptor>
