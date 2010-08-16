@@ -1,45 +1,47 @@
 /*
-   Copyright (c) 2007 FlexLib Contributors.  See:
-   http://code.google.com/p/flexlib/wiki/ProjectContributors
+Copyright (c) 2007 FlexLib Contributors.  See:
+    http://code.google.com/p/flexlib/wiki/ProjectContributors
 
-   Permission is hereby granted, free of charge, to any person obtaining a copy of
-   this software and associated documentation files (the "Software"), to deal in
-   the Software without restriction, including without limitation the rights to
-   use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-   of the Software, and to permit persons to whom the Software is furnished to do
-   so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
 
-   The above copyright notice and this permission notice shall be included in all
-   copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-   SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
-   #
-   # Copyright (c) 2009 rPath, Inc.
-   #
-   # This program is distributed under the terms of the MIT License as found
-   # in a file called LICENSE. If it is not present, the license
-   # is always available at http://www.opensource.org/licenses/mit-license.php.
-   #
-   # This program is distributed in the hope that it will be useful, but
-   # without any waranty; without even the implied warranty of merchantability
-   # or fitness for a particular purpose. See the MIT License for full details.
- */
+#
+# Copyright (c) 2009 rPath, Inc.
+#
+# This program is distributed under the terms of the MIT License as found 
+# in a file called LICENSE. If it is not present, the license
+# is always available at http://www.opensource.org/licenses/mit-license.php.
+#
+# This program is distributed in the hope that it will be useful, but
+# without any waranty; without even the implied warranty of merchantability
+# or fitness for a particular purpose. See the MIT License for full details.
+*/
 
 
 package com.rpath.raf.views
 {
+
 import flash.events.Event;
 import flash.events.FocusEvent;
 import flash.text.TextField;
+
 import mx.events.FlexEvent;
-import spark.components.TextArea;
+import mx.controls.TextArea;
 
 /**
  * The <code>PromptingTextArea</code> component is a small enhancement to
@@ -49,6 +51,14 @@ import spark.components.TextArea;
  */
 public class PromptingTextArea extends TextArea
 {
+    /** Flag to indicate if the text is empty or not */
+    private var _textEmpty:Boolean;
+
+    /**
+     * Flag to prevent us from re-inserting the prompt if the text is cleared
+     * while the component still has focus.
+     */
+    private var _currentlyFocused:Boolean = false;
 
 
     /**
@@ -58,25 +68,10 @@ public class PromptingTextArea extends TextArea
     {
         _textEmpty = true;
 
-        addEventListener(Event.CHANGE, handleChange);
-        addEventListener(FocusEvent.FOCUS_IN, handleFocusIn);
-        addEventListener(FocusEvent.FOCUS_OUT, handleFocusOut);
+        addEventListener( Event.CHANGE, handleChange );
+        addEventListener( FocusEvent.FOCUS_IN, handleFocusIn );
+        addEventListener( FocusEvent.FOCUS_OUT, handleFocusOut );
     }
-
-    /**
-     * Flag to prevent us from re-inserting the prompt if the text is cleared
-     * while the component still has focus.
-     */
-    private var _currentlyFocused:Boolean = false;
-
-
-
-    /**
-     * We store a local copy of displayAsPassword. We need to keep this so that we can
-     * change it to false if we're showing the prompt. Then we change it back (if it was
-     * set to true) once we're no longer showing the prompt.
-     */
-    private var _displayAsPassword:Boolean = false;
 
     // ==============================================================
     //  prompt
@@ -84,26 +79,6 @@ public class PromptingTextArea extends TextArea
 
     /** Storage for the prompt property */
     private var _prompt:String = "";
-
-    // ==============================================================
-    //  promptFormat
-    // ==============================================================
-
-    /** Storage for the promptFormat property */
-    private var _promptFormat:String = '<font color="#999999"><i>[prompt]</i></font>';
-    /** Flag to indicate if the text is empty or not */
-    private var _textEmpty:Boolean;
-
-    override public function get displayAsPassword():Boolean
-    {
-        return _displayAsPassword;
-    }
-
-    override public function set displayAsPassword(value:Boolean):void
-    {
-        _displayAsPassword = value;
-        super.displayAsPassword = value;
-    }
 
     /**
      * The string to use as the prompt value
@@ -114,13 +89,20 @@ public class PromptingTextArea extends TextArea
     }
 
     [Bindable]
-    public function set prompt(value:String):void
+    public function set prompt( value:String ):void
     {
         _prompt = value ? value : "";
 
         invalidateProperties();
         invalidateDisplayList();
     }
+
+    // ==============================================================
+    //  promptFormat
+    // ==============================================================
+
+    /** Storage for the promptFormat property */
+    private var _promptFormat:String = '<font color="#999999"><i>[prompt]</i></font>';
 
     /**
      * A format string to specify how the prompt is displayed.  This is typically
@@ -135,31 +117,17 @@ public class PromptingTextArea extends TextArea
         return _promptFormat;
     }
 
-    public function set promptFormat(value:String):void
+    public function set promptFormat( value:String ):void
     {
         _promptFormat = value;
         // Check to see if the replacement code is found in the new format string
-        if (_promptFormat.indexOf("[prompt]") < 0)
+        if ( _promptFormat.indexOf( "[prompt]" ) < 0 )
         {
             // TODO: Log error with the logging framework, or just use trace?
             //trace( "PromptingTextInput warning: prompt format does not contain [prompt] replacement code." );
         }
 
         invalidateDisplayList();
-    }
-
-    override public function get text():String
-    {
-        // If the text has changed
-        if (_textEmpty)
-        {
-            // Skip the prompt text value
-            return "";
-        }
-        else
-        {
-            return super.text;
-        }
     }
 
     // ==============================================================
@@ -175,7 +143,7 @@ public class PromptingTextArea extends TextArea
     [Bindable("textChanged")]
     [CollapseWhiteSpace]
     [NonCommittingChangeEvent("change")]
-    override public function set text(value:String):void
+    override public function set text( value:String ):void
     {
         // changed the test to also test for null values, not just 0 length
         // if we were passed undefined or null then the zero length test would
@@ -185,6 +153,83 @@ public class PromptingTextArea extends TextArea
         invalidateDisplayList();
     }
 
+    override public function get text():String
+    {
+        // If the text has changed
+        if ( _textEmpty )
+        {
+            // Skip the prompt text value
+            return "";
+        }
+        else
+        {
+            return super.text;
+        }
+    }
+
+
+
+    /**
+     * We store a local copy of displayAsPassword. We need to keep this so that we can
+     * change it to false if we're showing the prompt. Then we change it back (if it was
+     * set to true) once we're no longer showing the prompt.
+     */
+    private var _displayAsPassword:Boolean = false;
+
+    override public function set displayAsPassword(value:Boolean):void {
+        _displayAsPassword = value;
+        super.displayAsPassword = value;
+    }
+    override public function get displayAsPassword():Boolean {
+        return _displayAsPassword;
+    }
+
+    // ==============================================================
+    //  overriden methods
+    // ==============================================================
+
+    /**
+     * @private
+     *
+     * Determines if the prompt needs to be displayed.
+     */
+    override protected function updateDisplayList( unscaledWidth:Number, unscaledHeight:Number ):void
+    {
+        // If the text is empty and a prompt value is set and the
+        // component does not currently have focus, then the component
+        // needs to display the prompt
+
+        //IMPORTANT: we need to do the check for initialized already being set to true
+        //if this is omitted we get caught in an infinite loop. See the code in TextArea that
+        //does a call to callLater(invalidateDisplayaList) if not initialized to see why
+        if ( _textEmpty && _prompt != "" && !_currentlyFocused && initialized)
+        {
+            if ( _promptFormat == "" )
+            {
+                super.text = _prompt;
+            }
+            else
+            {
+                super.htmlText = _promptFormat.replace( /\[prompt\]/g, _prompt );
+            }
+
+            if(super.displayAsPassword) {
+                //If we're showing the prompt and we have displayAsPassword set then
+                //we need to set it to false while the prompt is showing.
+                var oldVal:Boolean = _displayAsPassword;
+                super.displayAsPassword = false;
+                _displayAsPassword = oldVal;
+            }
+        }
+        else {
+            if(super.displayAsPassword != _displayAsPassword) {
+                super.displayAsPassword = _displayAsPassword;
+            }
+        }
+
+        super.updateDisplayList( unscaledWidth, unscaledHeight );
+    }
+
     // ==============================================================
     //  event handlers
     // ==============================================================
@@ -192,7 +237,7 @@ public class PromptingTextArea extends TextArea
     /**
      * @private
      */
-    protected function handleChange(event:Event):void
+    protected function handleChange( event:Event ):void
     {
         _textEmpty = super.text.length == 0;
     }
@@ -203,19 +248,17 @@ public class PromptingTextArea extends TextArea
      * When the component recevies focus, check to see if the prompt
      * needs to be cleared or not.
      */
-    protected function handleFocusIn(event:FocusEvent):void
+    protected function handleFocusIn( event:FocusEvent ):void
     {
         if (!editable)
-        {
             return;
-        }
 
         _currentlyFocused = true;
 
         // If the text is empty, clear the prompt
-        if (_textEmpty)
+        if ( _textEmpty )
         {
-            super.text = "";
+            super.htmlText = "";
             // KLUDGE: Have to validate now to avoid a bug where the format
             // gets "stuck" even though the text gets cleared.
             validateNow();
@@ -228,7 +271,7 @@ public class PromptingTextArea extends TextArea
      * When the component loses focus, check to see if the prompt needs
      * to be displayed or not.
      */
-    protected function handleFocusOut(event:FocusEvent):void
+    protected function handleFocusOut( event:FocusEvent ):void
     {
         _currentlyFocused = false;
 
@@ -236,53 +279,6 @@ public class PromptingTextArea extends TextArea
         invalidateDisplayList();
     }
 
-    // ==============================================================
-    //  overriden methods
-    // ==============================================================
 
-    /**
-     * @private
-     *
-     * Determines if the prompt needs to be displayed.
-     */
-    override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
-    {
-        // If the text is empty and a prompt value is set and the
-        // component does not currently have focus, then the component
-        // needs to display the prompt
-
-        //IMPORTANT: we need to do the check for initialized already being set to true
-        //if this is omitted we get caught in an infinite loop. See the code in TextArea that
-        //does a call to callLater(invalidateDisplayaList) if not initialized to see why
-        if (_textEmpty && _prompt != "" && !_currentlyFocused && initialized)
-        {
-            if (_promptFormat == "")
-            {
-                super.text = _prompt;
-            }
-            else
-            {
-                super.text = _promptFormat.replace(/\[prompt\]/g, _prompt);
-            }
-
-            if (super.displayAsPassword)
-            {
-                //If we're showing the prompt and we have displayAsPassword set then
-                //we need to set it to false while the prompt is showing.
-                var oldVal:Boolean = _displayAsPassword;
-                super.displayAsPassword = false;
-                _displayAsPassword = oldVal;
-            }
-        }
-        else
-        {
-            if (super.displayAsPassword != _displayAsPassword)
-            {
-                super.displayAsPassword = _displayAsPassword;
-            }
-        }
-
-        super.updateDisplayList(unscaledWidth, unscaledHeight);
-    }
 } // end class
 } // en package
