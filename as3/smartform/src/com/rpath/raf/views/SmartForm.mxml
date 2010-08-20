@@ -637,6 +637,7 @@
         for each (var itemAfter:* in itemsAfter)
         {
             addChild(itemAfter);
+            validationHelper.addValidator(itemAfter);
         }
         
         // force validate the whole lot
