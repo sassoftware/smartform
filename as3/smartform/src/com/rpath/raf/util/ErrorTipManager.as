@@ -77,7 +77,34 @@ package com.rpath.raf.util
         /** suppressErrors allows you to control whether validation events pop
         * errors message as they occur or not
         */
-        public var suppressErrors:Boolean = false;
+        private function get suppressErrors():Boolean
+        {
+            return _suppressErrors;
+        }
+        
+        private var _suppressErrors:Boolean = true;
+        public var suppressionCount:int = 0;  // start off suppressed
+        
+        private function set suppressErrors(b:Boolean):void
+        {
+            _suppressErrors = b;
+        }
+        
+        public function increaseSuppressionCount():void
+        {
+            suppressionCount++;
+            suppressErrors = true;
+        }
+        
+        public function decreaseSuppressionCount():void
+        {
+            suppressionCount--;
+            if (suppressionCount <= 0)
+            {
+                suppressionCount = 0;
+                suppressErrors = false;
+            }
+        }
         
         /** showAllErrors controls whether all errors should be shown
         * and scrolling should reveal errors, etc.

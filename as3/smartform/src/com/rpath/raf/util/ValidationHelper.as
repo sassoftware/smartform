@@ -69,9 +69,9 @@ package com.rpath.raf.util
             if (!errorTipManager)
             {
                 errorTipManager = new ErrorTipManager();
-                // start off not displaying anything
-                errorTipManager.suppressErrors = true;
             }
+            
+            errorTipManager.increaseSuppressionCount();
             
             this.errorTipManager = errorTipManager;
             
@@ -142,6 +142,7 @@ package com.rpath.raf.util
                 _target.removeEventListener(Event.CLOSE, handleTargetRemovedFromStage);
                 _target.removeEventListener(FlexEvent.HIDE, handleTargetRemovedFromStage);
                 _target.removeEventListener(Event.REMOVED_FROM_STAGE, handleTargetRemovedFromStage);
+                _target.removeEventListener(FlexEvent.UPDATE_COMPLETE, handleTargetUpdateComplete);
             }
 
             _target = v;
@@ -150,9 +151,19 @@ package com.rpath.raf.util
             {
                 _target[property] = isValid;
                 
+                _target.addEventListener(FlexEvent.UPDATE_COMPLETE, handleTargetUpdateComplete,false,0,true);
                 _target.addEventListener(Event.CLOSE, handleTargetRemovedFromStage,false,0,true);
                 _target.addEventListener(FlexEvent.HIDE, handleTargetRemovedFromStage,false,0,true);
                 _target.addEventListener(Event.REMOVED_FROM_STAGE, handleTargetRemovedFromStage,false,0,true);
+            }
+        }
+        
+        private function handleTargetUpdateComplete(event:Event):void
+        {
+            // remove all the error tips
+            if (event.target == target)
+            {
+                errorTipManager.decreaseSuppressionCount();
             }
         }
         
@@ -188,7 +199,12 @@ package com.rpath.raf.util
             }
             else 
             {
-                // if (v is ValidationHelper) should we do anything extra in nested case?
+                // we want to share a single errorTipManager
+                if (v is ValidationHelper)
+                {
+                    (v as ValidationHelper).errorTipManager = errorTipManager;
+                }
+                
                 _others[v] = true;
                 setupListeners(v);
             }
@@ -442,7 +458,7 @@ package com.rpath.raf.util
         {
             errorTipManager.hideAllErrorTips();
            // but still allow new errors to pop
-            errorTipManager.suppressErrors = false;
+            errorTipManager.decreaseSuppressionCount();
         }
         
         
@@ -469,11 +485,11 @@ package com.rpath.raf.util
             {
                 _needsValidation = false;
                 // temporarily disable errors flags
-                errorTipManager.suppressErrors = false;
+                errorTipManager.increaseSuppressionCount();
                 // but validate with error marker dispatch
                 validateNow(false);
                 // start showing the problems hereafter
-                errorTipManager.suppressErrors = false;
+                errorTipManager.decreaseSuppressionCount();
             }
             
             if (_needsSuppressedValidation)
@@ -481,11 +497,11 @@ package com.rpath.raf.util
                 _needsSuppressedValidation = false;
 
                 // temporarily disable errors flags
-                errorTipManager.suppressErrors = true;
+                errorTipManager.increaseSuppressionCount();
                 // validate without error markers
                 validateNow(true);
                 // start showing the problems hereafter
-                errorTipManager.suppressErrors = false;
+                errorTipManager.decreaseSuppressionCount();
             }
         }
     }

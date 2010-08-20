@@ -903,6 +903,9 @@
         // until AFTER the form is fully initialized.
         // So we have to force the issue here
         
+/*         if (validationHelper)
+            validationHelper.errorTipManager.suppressErrors = false;
+ */        
         if (firstItem)
         {
             var oldLabel:String = firstItem.label;
