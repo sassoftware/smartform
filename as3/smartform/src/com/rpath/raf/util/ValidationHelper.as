@@ -218,6 +218,10 @@ package com.rpath.raf.util
                 {
                     (v as ValidationHelper).errorTipManager = errorTipManager;
                 }
+                else // must just be a plain old item...
+                {
+                    errorTipManager.addComponentListeners(v);
+                }
                 
                 _others[v] = true;
                 setupListeners(v);
@@ -235,6 +239,10 @@ package com.rpath.raf.util
             if (validator)
             {
                 errorTipManager.unregisterValidator(validator);
+            }
+            else
+            {
+                errorTipManager.removeComponentListeners(v);
             }
             
             // clean up our various partitioned validators
