@@ -53,7 +53,7 @@ package com.rpath.raf.util
      */
     
     [Bindable]
-    public class ValidationHelper extends LifecycleObject
+    public class ValidationHelper extends LifecycleObject implements IValidationAware
     {
         
         public function ValidationHelper(vals:Array=null, 
@@ -108,16 +108,30 @@ package com.rpath.raf.util
             }
         }
 
+        /** required for conformance with the IValidationAware protocol
+        */
+        
+        public function get validationHelper():ValidationHelper
+        {
+            return this;
+        }
+        
+        public function set validationHelper(v:ValidationHelper):void
+        {
+            // ignore;
+        }
+        
         private var property:String;
                 
         // we use a further helper instance to pop errorTips
-        private var _errorTipManager:ErrorTipManager;
         
         public function get errorTipManager():ErrorTipManager
         {
             return _errorTipManager;
         }
         
+        private var _errorTipManager:ErrorTipManager;
+
         public function set errorTipManager(value:ErrorTipManager):void
         {
             _errorTipManager = value;
@@ -214,9 +228,11 @@ package com.rpath.raf.util
             else 
             {
                 // we want to share a single errorTipManager
-                if (v is ValidationHelper)
+                var vAware:IValidationAware = v as IValidationAware;
+                
+                if (vAware)
                 {
-                    (v as ValidationHelper).errorTipManager = errorTipManager;
+                    vAware.errorTipManager = errorTipManager;
                 }
                 else // must just be a plain old item...
                 {

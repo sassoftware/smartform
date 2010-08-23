@@ -30,4 +30,6 @@
     <component id="SmartformVersion" class="com.rpath.raf.SmartformVersion"/>
     <component id="StringMatchValidator" class="com.rpath.raf.validators.StringMatchValidator"/>
     <component id="UniqueElementValidator" class="com.rpath.raf.validators.UniqueElementValidator"/>
+    <component id="BooleanValidator" class="com.rpath.raf.validators.BooleanValidator"/>
+    <component id="CollectionValidator" class="com.rpath.raf.validators.CollectionValidator"/>
 </componentPackage>

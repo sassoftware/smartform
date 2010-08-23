@@ -20,6 +20,8 @@
     <classEntry path="com.rpath.raf.views.CompoundInputItem"/>
     <classEntry path="com.rpath.raf.validators.UniqueElementValidator"/>
     <classEntry path="com.rpath.raf.validators.StringMatchValidator"/>
+    <classEntry path="com.rpath.raf.util.IValidationAware"/>
+    <classEntry path="com.rpath.raf.validators.BooleanValidator"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests>

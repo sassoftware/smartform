@@ -21,6 +21,8 @@
     xmlns:mx="library://ns.adobe.com/flex/mx" 
 
     creationComplete="onCreationComplete(event)"
+    
+    implements="com.rpath.raf.util.IValidationAware"
     >
     
     <fx:Metadata>
@@ -32,6 +34,7 @@
 <![CDATA[
     import com.rpath.raf.util.DescriptorUtil;
     import com.rpath.raf.util.ErrorTipManager;
+    import com.rpath.raf.util.IValidationAware;
     import com.rpath.raf.util.ValidationHelper;
     
     import mx.binding.utils.BindingUtils;
@@ -185,7 +188,17 @@
     public var labelLengthThreshold:int = 13;
     
     [Bindable]
-    public var validationHelper:ValidationHelper;
+    public function get validationHelper():ValidationHelper
+    {
+        return _validationHelper;
+    }
+    
+    private var _validationHelper:ValidationHelper;
+    
+    public function set validationHelper(v:ValidationHelper):void
+    {
+        _validationHelper = v;
+    }
     
     private var watchers:Array;
     
@@ -472,12 +485,26 @@
      */
     private var firstTime:Boolean = true;
     
+    
+    public function get errorTipManager():ErrorTipManager
+    {
+        return _errorTipManager;
+    }
+    
+    private var _errorTipManager:ErrorTipManager;
+    
+    public function set errorTipManager(v:ErrorTipManager):void
+    {
+        _errorTipManager = v;
+        if (validationHelper)
+            validationHelper.errorTipManager = _errorTipManager;
+    }
+    
+    
     /** createFormItems iterates the descriptor and creates, binds and sets 
      * initial default values for every form item described in the descriptor
      */
-    
-    public var errorTipManager:ErrorTipManager;
-    
+
     private function createFormItems():void
     {
         errorTipManager = new ErrorTipManager();
@@ -640,9 +667,6 @@
             validationHelper.addValidator(itemAfter);
         }
         
-        // force validate the whole lot
-        //handleValidationEvent();
-        //validationHelper.validateNow(true);
     }
     
     private function itemDataSetterWrapper(newItem:SmartFormItem):Function
@@ -737,7 +761,17 @@
     // ------------------------------------------------ VALIDATION
     
     [Bindable]
-    public var isValid:Boolean = true;;
+    public function get isValid():Boolean
+    {
+        return _isValid;
+    }
+    
+    private var _isValid:Boolean = true;;
+    
+    public function set isValid(v:Boolean):void
+    {
+        _isValid = v;
+    }
     
     private var _directValid:Boolean = true;
     
