@@ -11,7 +11,6 @@
     <classEntry path="com.rpath.raf.views.ExtendedText"/>
     <classEntry path="com.rpath.raf.views.ExtendedTextArea"/>
     <classEntry path="com.rpath.raf.views.ExtendedTextInput"/>
-    <classEntry path="com.rpath.raf.views.MagicFormItem"/>
     <classEntry path="com.rpath.raf.views.PromptingTextArea"/>
     <classEntry path="com.rpath.raf.views.PromptingTextInput"/>
     <classEntry path="com.rpath.raf.views.SmartForm"/>

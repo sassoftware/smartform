@@ -9,7 +9,7 @@
 # is always available at http://www.opensource.org/licenses/mit-license.php.
 #
 # This program is distributed in the hope that it will be useful, but
-# without fany waranty; without even the implied warranty of merchantability
+# without fany warranty; without even the implied warranty of merchantability
 # or fitness for a particular purpose. See the MIT License for full details.
 */
 -->
@@ -40,7 +40,6 @@
         import mx.events.DynamicEvent;
         import mx.events.FlexEvent;
         import mx.events.ItemClickEvent;
-        import mx.events.ListEvent;
         import mx.events.ToolTipEvent;
         import mx.events.ValidationResultEvent;
         import mx.validators.Validator;
@@ -290,8 +289,8 @@
     }
         
     // The workhorse method. Unpacks metadata, decides what effective UI control
-    // to use and then uses the underlying MagicFormItem to instantiate the
-    // correct control type
+    // to use and then sets our state appropriately to cause the right type of
+    // UI element to be added as a child
     
     protected override function createChildren():void
     {        
@@ -753,6 +752,28 @@
             _validationHelper.errorTipManager = _errorTipManager;
     }
 
+    /** we need to override validationResultHandler in order to propagate
+     * the validation events from Validators down to the actual UI elements
+     * so they can change state, etc.
+     */
+    
+    public override function validationResultHandler(event:ValidationResultEvent):void
+    {
+        // let our specific input control mark itself appropriately
+        var child:UIComponent;
+        
+        for (var i:int = 0; i < numElements; i++)
+        {
+            child = getElementAt(i) as UIComponent;
+            if (child)
+            {
+                child.validationResultHandler(event);
+            }
+        }
+        
+        super.validationResultHandler(event);
+    }
+        
     // --------------------------------------------------- DIRTY HANDLING
     
     [Bindable]
@@ -817,7 +838,7 @@
         if (required)
         {
             requiredV.enabled = true;
-            requiredV.requiredFieldError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), requiredV.requiredFieldError)
+            //requiredV.requiredFieldError = requiredV.requiredFieldError)
         }
         else
             requiredV.enabled = false;
@@ -920,7 +941,6 @@
                                 triggerEvent="dataChange"
                                 expression=""
                                 flags="s"
-                                listener="{magic}"
                                 enabled="false"
                                 required="false"
                                 />
@@ -929,7 +949,6 @@
                                 source="{this}" property="data"
                                 triggerEvent="dataChange"
                                 minLength="0" maxLength="0"
-                                listener="{magic}"
                                 enabled="false"
                                 required="false"
                                 />
@@ -938,18 +957,16 @@
                                 source="{this}" property="data"
                                 triggerEvent="dataChange"
                                 minValue="0" maxValue="0"
-                                listener="{magic}"
                                 enabled="false"
                                 required="false"
                                 />
             
             <mx:Validator id="requiredV" 
                           source="{this}" property="data"
-                          listener="{magic}"
                           triggerEvent="dataChange"
                           enabled="false"
                           required="true"
-                          requiredFieldError="Required field"
+                          requiredFieldError="This field is required"
                           />
             
         </fx:Array>
@@ -998,11 +1015,11 @@
     <!--<mx:NumberValidator id="intValidation" source="{intField}">
     </mx:NumberValidator>-->
     
-   <views:MagicFormItem id="magic"
+<!--   <views:MagicFormItem id="magic"
         width="100%"
         toolTipShown="toolTipShown(event)"
         >
-       
+       -->
        <!-- str: 0 -->
        <views:ExtendedTextInput id="strField" text="{data}" 
                                 editable="{editable}" enabled="{enabled}"
@@ -1317,6 +1334,6 @@
 
        </views:CompoundInputItem>
 
-    </views:MagicFormItem>
-
+<!--    </views:MagicFormItem>
+-->
 </views:ExtendedFormItem>

@@ -20,7 +20,6 @@ package com.rpath.raf.util
     import flash.utils.setTimeout;
     
     import mx.controls.ToolTip;
-    import mx.core.Container;
     import mx.core.IChildList;
     import mx.core.IInvalidating;
     import mx.core.IToolTip;
@@ -228,16 +227,21 @@ package com.rpath.raf.util
                 if (!alreadyAdded)
                 {
                     validators[validator] = true;
-                    addValidatorListeners(validator.source);
-                    addValidatorListeners(validator.listener);
+                    addComponentListeners(validator.source);
+                    if (validator.source != validator.listener)
+                        addComponentListeners(validator.listener);
                 }
             }
         }
         
-        protected function addValidatorListeners(source:*):void
+        private var listened:Dictionary = new Dictionary(true);
+        
+        public function addComponentListeners(source:*):void
         {
             var ed:IEventDispatcher = (source as IEventDispatcher);
-            if (ed) {
+            if (ed && !listened[ed])
+            {
+                listened[ed] = true;
                 // need to listener for when the real tooltip gets shown 
                 // we'll hide it if is an error tooltip since we are already showing it 
                 ed.addEventListener(ToolTipEvent.TOOL_TIP_SHOWN, toolTipShown, false, 0, true);
@@ -246,6 +250,7 @@ package com.rpath.raf.util
                 ed.addEventListener(ResizeEvent.RESIZE, targetMoved, false, 0, true);
                 ed.addEventListener(FlexEvent.HIDE, targetHidden, false, 0, true);
                 ed.addEventListener(FlexEvent.REMOVE, targetRemoved, false, 0, true);
+                ed.addEventListener(Event.REMOVED_FROM_STAGE, targetRemoved, false, 0, true);
                 ed.addEventListener(FlexEvent.VALID, validHandler, false, 0, true);
                 ed.addEventListener(FlexEvent.INVALID, invalidHandler, false, 0, true);
                 
@@ -281,16 +286,18 @@ package com.rpath.raf.util
          */
         private function removeValidatorSourceListeners(validator:Validator):void {
             if (validator && (validators[validator] == true)) {
-                removeValidatorListeners(validator.source);
-                removeValidatorListeners(validator.listener);
+                removeComponentListeners(validator.source);
+                removeComponentListeners(validator.listener);
                 delete validators[validator];
             }
         }
         
-        protected function removeValidatorListeners(source:*):void
+        public function removeComponentListeners(source:*):void
         {
             var ed:IEventDispatcher = (source as IEventDispatcher);
-            if (ed) {
+            if (ed && listened[ed])
+            {
+                delete listened[ed];
                 ed.removeEventListener(ToolTipEvent.TOOL_TIP_SHOWN, toolTipShown);
                 ed.removeEventListener(MoveEvent.MOVE, targetMoved);
                 ed.removeEventListener(ResizeEvent.RESIZE, targetMoved);

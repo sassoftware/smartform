@@ -14,7 +14,7 @@
                xmlns:validators="com.rpath.raf.validators.*"
                 
                creationComplete="onCreationComplete(event)"
-               minWidth="955" minHeight="600">
+               minWidth="955" minHeight="600" xmlns:rpath="http://www.rpath.com/raf/2009/smartform">
     
     <s:layout>
         
@@ -138,22 +138,22 @@
 <s:HGroup id="contentBox">
     
     <mx:Form id="userForm" defaultButton="{okButton}" width="100%" enabled="{!user.isRunning}">
-        <mx:FormItem id="usernameField" label="Username" required="true">
+        <rpath:ExtendedFormItem id="usernameField" label="Username" required="true">
             <mx:TextInput id="username" text="{user.userName}"/>
-        </mx:FormItem>
-        <mx:FormItem label="Password" required="true">
+        </rpath:ExtendedFormItem>
+        <rpath:ExtendedFormItem label="Password" required="true">
             <mx:TextInput id="password" text="{user.password}" displayAsPassword="true" />
-        </mx:FormItem>
-        <mx:FormItem label="Confirm password" required="true">
+        </rpath:ExtendedFormItem>
+        <rpath:ExtendedFormItem label="Confirm password" required="true">
             <mx:TextInput id="confirmPassword" text="{user.confirmPassword}" displayAsPassword="true"/>
-        </mx:FormItem>       
-        <mx:FormItem label="Email" required="true"
+        </rpath:ExtendedFormItem>       
+        <rpath:ExtendedFormItem label="Email" required="true"
                      toolTip="Your email address is used to confirm your account details">
             <mx:TextInput id="email" text="{user.email}"/>
-        </mx:FormItem>
-        <mx:FormItem label="Confirm email" required="true">
+        </rpath:ExtendedFormItem>
+        <rpath:ExtendedFormItem label="Confirm email" required="true">
             <mx:TextInput id="confirmEmail" text="{user.confirmEmail}"/>
-        </mx:FormItem>
+        </rpath:ExtendedFormItem>
         
     </mx:Form>
 </s:HGroup>

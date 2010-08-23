@@ -15,7 +15,7 @@
 # is always available at http://www.opensource.org/licenses/mit-license.php.
 #
 # This program is distributed in the hope that it will be useful, but
-# without any waranty; without even the implied warranty of merchantability
+# without any warranty; without even the implied warranty of merchantability
 # or fitness for a particular purpose. See the MIT License for full details.
 */
 
@@ -142,6 +142,7 @@ package com.rpath.raf.util
                 _target.removeEventListener(Event.CLOSE, handleTargetRemovedFromStage);
                 _target.removeEventListener(FlexEvent.HIDE, handleTargetRemovedFromStage);
                 _target.removeEventListener(Event.REMOVED_FROM_STAGE, handleTargetRemovedFromStage);
+                _target.removeEventListener(Event.ADDED_TO_STAGE, handleTargetAddedToStage);
                 _target.removeEventListener(FlexEvent.UPDATE_COMPLETE, handleTargetUpdateComplete);
             }
 
@@ -155,6 +156,7 @@ package com.rpath.raf.util
                 _target.addEventListener(Event.CLOSE, handleTargetRemovedFromStage,false,0,true);
                 _target.addEventListener(FlexEvent.HIDE, handleTargetRemovedFromStage,false,0,true);
                 _target.addEventListener(Event.REMOVED_FROM_STAGE, handleTargetRemovedFromStage,false,0,true);
+                _target.addEventListener(Event.ADDED_TO_STAGE, handleTargetAddedToStage,false,0,true);
             }
         }
         
@@ -167,6 +169,18 @@ package com.rpath.raf.util
             }
         }
         
+        private function handleTargetAddedToStage(event:Event):void
+        {
+            // add all the error tip intercepts back
+            if (event.target == target)
+            {
+                var vals:Array = validators;
+                
+                // forcibly re-add all validators
+                validators = vals;
+            }
+        }
+
         private function handleTargetRemovedFromStage(event:Event):void
         {
             // remove all the error tips
