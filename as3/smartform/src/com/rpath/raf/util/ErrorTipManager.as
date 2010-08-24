@@ -157,10 +157,15 @@ package com.rpath.raf.util
         
         public function reset():void
         {
+            // remove all errorTips
+            removeAllErrorTips();
+
+            // unregister all validators
             for (var v:* in validators)
             {
                 unregisterValidator(v as Validator);
             }
+            
         }
         
         
@@ -734,6 +739,17 @@ package com.rpath.raf.util
                 target.errorString = "";
             }
         } 
+        
+        /**
+         * Removes all the error tips.
+         */
+        public function removeAllErrorTips():void {
+            showAllErrors = false;
+            for (var target:Object in errorTips) {
+                removeErrorTip(target, false);
+            }
+        }
+
         
         /**
          * Hides all the error tips.

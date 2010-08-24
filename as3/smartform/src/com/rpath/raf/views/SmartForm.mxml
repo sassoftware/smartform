@@ -202,6 +202,12 @@
     
     private var watchers:Array;
     
+    /** keep track of our entire data object changing - e.g. during
+    * initialization or re-initialization if the form is reused
+    */
+    
+    private var _dataObjectChanged:Boolean;
+    
     [Bindable("dataChange")]
     public override function set data(v:Object):void
     {
@@ -213,6 +219,7 @@
             unbindWatchers();
             super.data = v;
             _needsRebinding = true;
+            _dataObjectChanged = true;
             invalidateProperties();
         }
     }
@@ -341,7 +348,7 @@
             }
         }
         
-        if (_dataChanged)
+        if (_itemDataChanged)
         {
             revisitConditions();
             if (!_childDirtyChanged)
@@ -349,7 +356,7 @@
                 checkDirty();
             }
             
-            _dataChanged = false;
+            _itemDataChanged = false;
         }
         
         if (_childDirtyChanged)
@@ -507,8 +514,7 @@
 
     private function createFormItems():void
     {
-        errorTipManager = new ErrorTipManager();
-        validationHelper = new ValidationHelper(null,this,"isValid", errorTipManager);
+        validationHelper = new ValidationHelper(null,this,"isValid");
         
         // now add any other children
         for each (var item:* in itemsBefore)
@@ -629,7 +635,7 @@
                     //newItem.addEventListener(ValidationResultEvent.VALID, handleValidationEvent,false,0,true);
                     //newItem.addEventListener(ValidationResultEvent.INVALID, handleValidationEvent,false,0,true);
                     
-                    newItem.addEventListener(FlexEvent.DATA_CHANGE, handleDataChange,false,0,true);
+                    newItem.addEventListener(FlexEvent.DATA_CHANGE, handleItemDataChange,false,0,true);
                     newItem.addEventListener("dirtyChanged", handleDirtyEvent,false,0,true);
                     
                     // give the item a chance to stash the orig data value for dirty detection
@@ -726,11 +732,13 @@
         }
     }
     
-    private var _dataChanged:Boolean;
+    /** keep track of data value changes by our form items
+    */
+    private var _itemDataChanged:Boolean;
     
-    private function handleDataChange(event:FlexEvent):void
+    private function handleItemDataChange(event:FlexEvent):void
     {
-        _dataChanged = true;
+        _itemDataChanged = true;
         invalidateProperties();
     }
     

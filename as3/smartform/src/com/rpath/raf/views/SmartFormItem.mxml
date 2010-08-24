@@ -762,16 +762,30 @@
         // let our specific input control mark itself appropriately
         var child:UIComponent;
         
-        for (var i:int = 0; i < numElements; i++)
-        {
-            child = getElementAt(i) as UIComponent;
-            if (child)
-            {
-                child.validationResultHandler(event);
-            }
-        }
+        // HACK: only pass down the validationResultEvent which will
+        // mark the UI element in RED IF we're not supressing
+        // TODO: cleaner way to track this state which is essentially
+        // the inialization state prior to the user entering data for the
+        // first time
         
-        super.validationResultHandler(event);
+        if (_validationHelper.errorTipManager.suppressionCount < 1)
+        {
+            
+            for (var i:int = 0; i < numElements; i++)
+            {
+                child = getElementAt(i) as UIComponent;
+                if (child)
+                {
+                    child.validationResultHandler(event);
+                }
+            }
+            
+            super.validationResultHandler(event);
+        }
+        else
+        {
+            trace("HIT validationResult without validation ready");
+        }
     }
         
     // --------------------------------------------------- DIRTY HANDLING
@@ -798,6 +812,9 @@
 
     public function initializeValidators():void
     {
+        // first ensure we have a validation helper to listen
+        _validationHelper = new ValidationHelper(validators, this, "isValid", errorTipManager);
+
         var constraints:XMLList = metadata.metadataNS::constraints;
         var descriptions:XMLList = constraints.metadataNS::descriptions;
         
@@ -845,7 +862,6 @@
         
         // TODO: validate IP addresses, Dates, Times
         
-        _validationHelper = new ValidationHelper(validators, this, "isValid", errorTipManager);
     }
     
     public function showErrors():void
