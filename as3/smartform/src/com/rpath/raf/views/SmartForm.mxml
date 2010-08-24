@@ -521,7 +521,7 @@
         {
             addChild(item);
             
-            validationHelper.addValidator(item);
+            validationHelper.addItemToValidate(item);
         }
         
         
@@ -630,7 +630,7 @@
                     BindingUtils.bindProperty(newItem, "enabled", this, [ "enabled"], false, false);
                     
                     newItem.errorTipManager = errorTipManager;
-                    validationHelper.addValidator(newItem);
+                    validationHelper.addItemToValidate(newItem);
                     
                     //newItem.addEventListener(ValidationResultEvent.VALID, handleValidationEvent,false,0,true);
                     //newItem.addEventListener(ValidationResultEvent.INVALID, handleValidationEvent,false,0,true);
@@ -670,7 +670,7 @@
         for each (var itemAfter:* in itemsAfter)
         {
             addChild(itemAfter);
-            validationHelper.addValidator(itemAfter);
+            validationHelper.addItemToValidate(itemAfter);
         }
         
     }
@@ -816,7 +816,7 @@
     
     /** validate forces a validation pass and pops all error flags
      */
-    public function validate():void
+    public function validate(suppressErrors:Boolean=false):void
     {
         if (!isValid)
         {

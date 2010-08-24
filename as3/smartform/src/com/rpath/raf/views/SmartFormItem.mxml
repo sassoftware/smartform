@@ -20,6 +20,7 @@
     xmlns:mx="library://ns.adobe.com/flex/mx"
     xmlns:views="com.rpath.raf.views.*"
     initialize="onInitialize(event)"
+    
     width="100%"
     >
     
@@ -29,6 +30,8 @@
 
     <fx:Script>
     <![CDATA[
+        import mx.effects.IAbstractEffect;
+        import com.rpath.raf.util.IValidationAware;
         import com.rpath.raf.util.DescriptorUtil;
         import com.rpath.raf.util.ErrorTipManager;
         import com.rpath.raf.util.ValidationHelper;
@@ -286,7 +289,7 @@
         // redispatch to effectively bubble the event, since toolTipShown
         // is NOT a bubbling event by default (bummer)
         dispatchEvent(event);
-    }
+     }
         
     // The workhorse method. Unpacks metadata, decides what effective UI control
     // to use and then sets our state appropriately to cause the right type of
@@ -717,40 +720,6 @@
     {
         //TODO: make sure we're valid first
     }
-    
-    [Bindable]
-    public function set isValid(b:Boolean):void
-    {
-        _isValid = b;
-        // rethrow the validation event so that our whole form can go invalid
-        dispatchEvent(new FlexEvent(_isValid ? FlexEvent.VALID : FlexEvent.INVALID));
-    }
-    
-    private var _isValid:Boolean = true;
-    
-    public function get isValid():Boolean
-    {
-        return _isValid;
-    }
-
-    //---------------------------------------------- VALIDATION
-    
-    private var _validationHelper:ValidationHelper;
-        
-    // optionally, show errors via this manager
-    private var _errorTipManager:ErrorTipManager;
-
-    public function get errorTipManager():ErrorTipManager
-    {
-        return _errorTipManager;
-    }
-
-    public function set errorTipManager(value:ErrorTipManager):void
-    {
-        _errorTipManager = value;
-        if (_validationHelper)
-            _validationHelper.errorTipManager = _errorTipManager;
-    }
 
     /** we need to override validationResultHandler in order to propagate
      * the validation events from Validators down to the actual UI elements
@@ -768,7 +737,7 @@
         // the inialization state prior to the user entering data for the
         // first time
         
-        if (_validationHelper.errorTipManager.suppressionCount < 1)
+        if (validationHelper.errorTipManager.suppressionCount < 1)
         {
             
             for (var i:int = 0; i < numElements; i++)
@@ -813,7 +782,7 @@
     public function initializeValidators():void
     {
         // first ensure we have a validation helper to listen
-        _validationHelper = new ValidationHelper(validators, this, "isValid", errorTipManager);
+        validationHelper = new ValidationHelper(validators, this);
 
         var constraints:XMLList = metadata.metadataNS::constraints;
         var descriptions:XMLList = constraints.metadataNS::descriptions;
@@ -866,25 +835,20 @@
     
     public function showErrors():void
     {
-        if (_validationHelper)
+        if (validationHelper)
         {
-            _validationHelper.showErrors();
+            validationHelper.showErrors();
         }
     }
 
     public function hideErrors():void
     {
-        if (_validationHelper)
+        if (validationHelper)
         {
-            _validationHelper.hideErrors();
+            validationHelper.hideErrors();
         }
     }
-    
-    public function validate(suppressEvents:Boolean=false):void
-    {        
-        if (_validationHelper)
-            _validationHelper.validateNow(suppressEvents);
-    }
+
     
     public override function setFocus():void
     {

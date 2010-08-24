@@ -76,7 +76,7 @@ package com.rpath.raf.util
             this.errorTipManager = errorTipManager;
             
             // do this last, since it wires up errorTipManager as a side effect
-            validators = vals;
+            itemsToValidate = vals;
         }
         
         private var _isValid:Boolean = true;
@@ -136,7 +136,7 @@ package com.rpath.raf.util
         {
             _errorTipManager = value;
             // now inform it of all our validators
-            for (var v:* in _vals)
+            for (var v:* in _validators)
             {
                 _errorTipManager.registerValidator(v as Validator);
             }
@@ -188,10 +188,10 @@ package com.rpath.raf.util
             // add all the error tip intercepts back
             if (event.target == target)
             {
-                var vals:Array = validators;
+                var vals:Array = itemsToValidate;
                 
                 // forcibly re-add all validators
-                validators = vals;
+                itemsToValidate = vals;
             }
         }
 
@@ -204,23 +204,23 @@ package com.rpath.raf.util
             }
         }
         
-        private var _validators:Dictionary = new Dictionary(true);
+        private var _itemsToValidate:Dictionary = new Dictionary(true);
         
         // _vals is a partition of actual Validator instances
-        private var _vals:Dictionary = new Dictionary(true);
+        private var _validators:Dictionary = new Dictionary(true);
         
         // _others is a partition of non-Validator instances we're also
         // monitoring as part of the total validation set
         private var _others:Dictionary = new Dictionary(true);
         
-        public function addValidator(v:IEventDispatcher):void
+        public function addItemToValidate(v:IEventDispatcher):void
         {
-            _validators[v] = true;
+            _itemsToValidate[v] = true;
             
             var validator:Validator = v as Validator;
             if (validator)
             {
-                _vals[validator] = true;
+                _validators[validator] = true;
                 setupListeners(validator);
                 if (errorTipManager)
                     errorTipManager.registerValidator(validator);
@@ -244,7 +244,7 @@ package com.rpath.raf.util
             }
         }
         
-        public function removeValidator(v:IEventDispatcher):void
+        public function removeItemToValidate(v:IEventDispatcher):void
         {
             if (v is IEventDispatcher)
             {
@@ -263,15 +263,15 @@ package com.rpath.raf.util
             
             // clean up our various partitioned validators
             delete _others[v];
-            delete _vals[v];
             delete _validators[v];
+            delete _itemsToValidate[v];
         }
         
         public function reset():void
         {
-            for each (var v:IEventDispatcher in validators)
+            for each (var v:IEventDispatcher in itemsToValidate)
             {
-                removeValidator(v);
+                removeItemToValidate(v);
             }
         }
         
@@ -304,12 +304,12 @@ package com.rpath.raf.util
             return keys;
         }
         
-        public function get validators():Array
+        public function get itemsToValidate():Array
         {
-            return getKeys(_validators);
+            return getKeys(_itemsToValidate);
         }
         
-        public function set validators(vals:Array):void
+        public function set itemsToValidate(vals:Array):void
         {
             var v:*;
             
@@ -322,12 +322,12 @@ package com.rpath.raf.util
                 {
                     for each (var v2:* in v)
                     {
-                        addValidator(v2);
+                        addItemToValidate(v2);
                     }
                 }
                 else
                 {
-                    addValidator(v);
+                    addItemToValidate(v);
                 }
                 
             }
@@ -405,7 +405,7 @@ package com.rpath.raf.util
             {
                 // make a note of the source of the event since we should
                 // check this object directly in computing valid status
-                addValidator(event.target as IEventDispatcher);
+                addItemToValidate(event.target as IEventDispatcher);
                 
                 // and recompute our own validity
                 
@@ -432,7 +432,7 @@ package com.rpath.raf.util
         }
 
         
-        public function validateNow(suppressEvents:Boolean=false):void
+        public function validate(suppressEvents:Boolean=false):void
         {
             if (!_validating)
             {
@@ -442,31 +442,25 @@ package com.rpath.raf.util
 
                 var valid:Boolean = false;
                 
-                var results:Array = checkValidity(getKeys(_vals), suppressEvents);
+                var results:Array = checkValidity(getKeys(_validators), suppressEvents);
                 
                 valid = (results.length == 0);
                 
                 // now all the "others"
                 for (var v:* in _others)
                 {
-                    if (v is ValidationHelper)
+                    var valAware:IValidationAware = v as IValidationAware;
+
+                    if (valAware)
                     {
-                        var subhelper:ValidationHelper = v as ValidationHelper;
-                        subhelper.validateNow(suppressEvents);
+                        valAware.validate(suppressEvents);
+                        _validationStates[valAware] = valAware.isValid;
+                        valid = valid && valAware.isValid;
                     }
-                    else if (v is SmartFormItem)
+                    else
                     {
-                        var item:SmartFormItem = v as SmartFormItem;
-                        item.validate(suppressEvents);
-                    }
-                    
-                    if (v.hasOwnProperty("isValid"))
-                    {
-                        valid = valid && v["isValid"];
-                    }
-                    else if (v.hasOwnProperty("valid"))
-                    {
-                        valid = valid && v["valid"];
+                        // what to do with this?
+                        trace("found non valaware item");
                     }
                 }
                 
@@ -488,7 +482,7 @@ package com.rpath.raf.util
         {
             // revalidate and throw events so we get errorTips
             //errorTipManager.showAllErrors = true;
-            validateNow(false);
+            validate(false);
             errorTipManager.showAllErrorTips();
         }
         
@@ -525,7 +519,7 @@ package com.rpath.raf.util
                 // temporarily disable errors flags
                 errorTipManager.increaseSuppressionCount();
                 // but validate with error marker dispatch
-                validateNow(false);
+                validate(false);
                 // start showing the problems hereafter
                 errorTipManager.decreaseSuppressionCount();
             }
@@ -537,7 +531,7 @@ package com.rpath.raf.util
                 // temporarily disable errors flags
                 errorTipManager.increaseSuppressionCount();
                 // validate without error markers
-                validateNow(true);
+                validate(true);
                 // start showing the problems hereafter
                 errorTipManager.decreaseSuppressionCount();
             }

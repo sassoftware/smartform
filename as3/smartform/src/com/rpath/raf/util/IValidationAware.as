@@ -14,5 +14,7 @@ package com.rpath.raf.util
         
         function get validationHelper():ValidationHelper;
         function set validationHelper(v:ValidationHelper):void;
+        
+        function validate(suppressEvent:Boolean=false):void;
     }
 }
