@@ -17,7 +17,7 @@
                xmlns:s="library://ns.adobe.com/flex/spark" 
                xmlns:mx="library://ns.adobe.com/flex/mx" 
 
-               xmlns:smartform="http://www.rpath.com/raf/2009/smartform"
+               xmlns:smartform="http://www.rpath.com/2009/smartform"
 
                minWidth="955" minHeight="600">
     

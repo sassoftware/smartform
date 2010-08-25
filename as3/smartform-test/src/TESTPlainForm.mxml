@@ -12,9 +12,10 @@
                xmlns:s="library://ns.adobe.com/flex/spark" 
                xmlns:mx="library://ns.adobe.com/flex/mx"
                xmlns:validators="com.rpath.raf.validators.*"
-                
+               xmlns:rpath="http://www.rpath.com/2009/smartform"
+               
                creationComplete="onCreationComplete(event)"
-               minWidth="955" minHeight="600" xmlns:rpath="http://www.rpath.com/raf/2009/smartform">
+               minWidth="955" minHeight="600" >
     
     <s:layout>
         
