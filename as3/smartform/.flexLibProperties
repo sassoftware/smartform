@@ -24,6 +24,6 @@
   </includeClasses>
   <includeResources/>
   <namespaceManifests>
-    <namespaceManifestEntry manifest="smartform-manifest.xml" namespace="http://www.rpath.com/raf/2009/smartform"/>
+    <namespaceManifestEntry manifest="smartform-manifest.xml" namespace="http://www.rpath.com/2009/smartform"/>
   </namespaceManifests>
 </flexLibProperties>
