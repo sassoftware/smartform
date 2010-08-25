@@ -779,6 +779,7 @@
     public function set isValid(v:Boolean):void
     {
         _isValid = v;
+       //dispatchEvent(new FlexEvent(_isValid ? FlexEvent.VALID : FlexEvent.INVALID));
     }
     
     private var _directValid:Boolean = true;
@@ -911,14 +912,11 @@
         }
     }
     
-    override public function get defaultButton():IFlexDisplayObject
+/*     override public function get defaultButton():IFlexDisplayObject
     {
         return super.defaultButton;
     }
     
-    /**
-     *  @private
-     */
     
     private var dw:ChangeWatcher;
     
@@ -934,7 +932,7 @@
             dw = BindingUtils.bindProperty(value, "enabled",
                 this, ["isValid"],false,true);
         }
-    }
+    } */
 
     private var firstItem:FormItem;
     
