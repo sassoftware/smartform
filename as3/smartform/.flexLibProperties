@@ -8,6 +8,7 @@
     <classEntry path="com.rpath.raf.skins.AdvancedTextAreaSkin"/>
     <classEntry path="com.rpath.raf.skins.AdvancedTextInputSkin"/>
     <classEntry path="com.rpath.raf.util.DescriptorUtil"/>
+    <classEntry path="com.rpath.raf.util.DictionaryUtils"/>
     <classEntry path="com.rpath.raf.util.ErrorTipManager"/>
     <classEntry path="com.rpath.raf.util.IValidationAware"/>
     <classEntry path="com.rpath.raf.util.LifecycleObject"/>
@@ -28,7 +29,6 @@
     <classEntry path="com.rpath.raf.views.SmartForm"/>
     <classEntry path="com.rpath.raf.views.SmartFormChoice"/>
     <classEntry path="com.rpath.raf.views.SmartFormItem"/>
-    <classEntry path="com.rpath.raf.util.DictionaryUtils"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests>
