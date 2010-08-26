@@ -34,6 +34,8 @@ package com.rpath.raf.util
     import mx.managers.ToolTipManager;
     import mx.styles.IStyleClient;
     import mx.validators.Validator;
+    import flash.geom.Utils3D;
+    import mx.utils.ArrayUtil;
     
     
     /**
@@ -134,6 +136,11 @@ package com.rpath.raf.util
             
             // Also listen for when the real mouse over error tooltip is shown 
             addValidatorSourceListeners(validator);
+
+            // do we already have errorTips for this validators source or listener?
+            // if so, show them (resume/scroll back into view case)
+            unhideErrorTip(validator.source);
+            unhideErrorTip(validator.listener);
         }
         
         /**
@@ -147,7 +154,8 @@ package com.rpath.raf.util
             validator.removeEventListener(ValidationResultEvent.VALID, validValidationHandler);
             validator.removeEventListener(ValidationResultEvent.INVALID, invalidValidationHandler);
             // make sure our error tooltip is hidden
-            removeErrorTip(validator.source);
+            hideErrorTip(validator.source);
+            hideErrorTip(validator.listener);
             // stop listening for events on the validator's source
             removeValidatorSourceListeners(validator);
         }
@@ -163,7 +171,12 @@ package com.rpath.raf.util
             // unregister all validators
             for (var v:* in validators)
             {
-                unregisterValidator(v as Validator);
+                var validator:Validator = v as Validator;
+
+                unregisterValidator(validator);
+                // make sure our error tooltip is actually removed
+                removeErrorTip(validator.source);
+                removeErrorTip(validator.listener);
             }
             
         }
@@ -492,15 +505,15 @@ package com.rpath.raf.util
             var errorTip:IToolTip = getErrorTip(event.target);
             if ((style == "errorTip")) //&& (errorTip != null))
             {
+                // register the target for later cleanup
+                addComponentListeners(event.target);
+                
                 // hide this tooltip, ours is already displaying (or is about to display)
-               /* if (errorTip.visible)
-                {*/
-                    event.toolTip.visible = false;
-                    event.toolTip.width = 0;
-                    event.toolTip.height = 0;
-                    event.currentTarget.dispatchEvent(new ToolTipEvent(ToolTipEvent.TOOL_TIP_HIDE, false, false, event.toolTip));
-/*                }
-*/            }
+                event.toolTip.visible = false;
+                event.toolTip.width = 0;
+                event.toolTip.height = 0;
+                event.currentTarget.dispatchEvent(new ToolTipEvent(ToolTipEvent.TOOL_TIP_HIDE, false, false, event.toolTip));
+            }
         }
         
         /**
@@ -529,6 +542,10 @@ package com.rpath.raf.util
         public function createErrorTip(target:Object, error:String = null):IToolTip {
             var errorTip:IToolTip = null;
             var position:Point;
+            
+            // always listen for subsequent lifecycle changes
+            addComponentListeners(target);
+            
             if (target) {
                 // use the errorString property on the target
                 if (!error && (target is UIComponent)) {
@@ -708,6 +725,13 @@ package com.rpath.raf.util
                 errorTip.visible = true;
             }
         }
+
+        public function unhideErrorTip(target:Object):void {
+            var errorTip:IToolTip = getErrorTip(target);
+            if (errorTip) {
+                errorTip.visible = true;
+            }
+        }
         
         /**
          * Hides the existing error tooltip for the target if one exists.
@@ -744,8 +768,10 @@ package com.rpath.raf.util
          * Removes all the error tips.
          */
         public function removeAllErrorTips():void {
-            showAllErrors = false;
-            for (var target:Object in errorTips) {
+            //showAllErrors = false;
+            var keys:Array = DictionaryUtils.getKeys(errorTips);
+            for each (var target:Object in keys) 
+            {
                 removeErrorTip(target, false);
             }
         }
@@ -756,7 +782,9 @@ package com.rpath.raf.util
          */
         public function hideAllErrorTips():void {
             showAllErrors = false;
-            for (var target:Object in errorTips) {
+            var keys:Array = DictionaryUtils.getKeys(errorTips);
+            for each (var target:Object in keys) 
+            {
                 hideErrorTip(target, false);
             }
         }
@@ -766,7 +794,9 @@ package com.rpath.raf.util
          */
         public function showAllErrorTips():void {
             showAllErrors = true;
-            for (var target:Object in errorTips) {
+            var keys:Array = DictionaryUtils.getKeys(errorTips);
+            for each (var target:Object in keys) 
+            {
                 showErrorTip(target);
             }
         }
@@ -776,7 +806,8 @@ package com.rpath.raf.util
          */
         public function validateAll():void {
             // need to validator to figure out which error tips should be shown
-            for (var validator:Object in validators) {
+            for (var validator:Object in validators)
+            {
                 validator.validate();
             }
         }

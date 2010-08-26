@@ -36,6 +36,7 @@ package com.rpath.raf.util
     import mx.managers.ToolTipManager;
     import mx.utils.ArrayUtil;
     import mx.validators.Validator;
+    import mx.events.DynamicEvent;
     
     
     /** ValidationHelper provides a way to aggregate the checking of multiple
@@ -55,20 +56,24 @@ package com.rpath.raf.util
     [Bindable]
     public class ValidationHelper extends LifecycleObject implements IValidationAware
     {
+        public static const FIND_ERROR_TIP_MANAGER:String = "findErrorTipManager";
         
         public function ValidationHelper(vals:Array=null, 
                                          target:IEventDispatcher=null, 
                                          property:String="isValid", 
-                                         errorTipManager:ErrorTipManager=null)
+                                         newErrorTipManager:ErrorTipManager=null)
         {
             super();
             
             this.property = property;
             this.target = target;
             
-            if (!errorTipManager)
+            if (!this.errorTipManager)
             {
-                errorTipManager = new ErrorTipManager();
+                if (newErrorTipManager)
+                    this.errorTipManager = newErrorTipManager;
+                else
+                    errorTipManager = new ErrorTipManager();
             }
             
             errorTipManager.increaseSuppressionCount();
@@ -154,6 +159,7 @@ package com.rpath.raf.util
         {
             if (_target)
             {
+                _target.addEventListener(FIND_ERROR_TIP_MANAGER, handleRequestErrorTipManager,false,0,true);
                 _target.removeEventListener(Event.CLOSE, handleTargetRemovedFromStage);
                 _target.removeEventListener(FlexEvent.HIDE, handleTargetRemovedFromStage);
                 _target.removeEventListener(Event.REMOVED_FROM_STAGE, handleTargetRemovedFromStage);
@@ -167,6 +173,10 @@ package com.rpath.raf.util
             {
                 _target[property] = isValid;
                 
+                // go get our errorTip manager up the visual heirarchy
+                findErrorTipManager();
+                
+                _target.addEventListener(FIND_ERROR_TIP_MANAGER, handleRequestErrorTipManager,false,0,true);
                 _target.addEventListener(FlexEvent.UPDATE_COMPLETE, handleTargetUpdateComplete,false,0,true);
                 _target.addEventListener(Event.CLOSE, handleTargetRemovedFromStage,false,0,true);
                 _target.addEventListener(FlexEvent.HIDE, handleTargetRemovedFromStage,false,0,true);
@@ -174,6 +184,25 @@ package com.rpath.raf.util
                 _target.addEventListener(Event.ADDED_TO_STAGE, handleTargetAddedToStage,false,0,true);
             }
         }
+        
+        private function findErrorTipManager():void
+        {
+            var findEvent:DynamicEvent = new DynamicEvent(FIND_ERROR_TIP_MANAGER, true, false);
+            findEvent.validationHelper = this;
+            findEvent.errorTipManager = null;
+            target.dispatchEvent(findEvent);
+            if (findEvent.errorTipManager)
+            {
+                errorTipManager = findEvent.errorTipManager;
+            }
+        }
+        
+        private function handleRequestErrorTipManager(event:DynamicEvent):void
+        {
+            if (errorTipManager && !event.errorTipManager)
+                event.errorTipManager = errorTipManager;
+        }
+        
         
         private function handleTargetUpdateComplete(event:Event):void
         {
@@ -201,8 +230,35 @@ package com.rpath.raf.util
             // remove all the error tips
             if (event.target == target)
             {
-                errorTipManager.reset();
+                reset();
             }
+        }
+        
+        public function reset():void
+        {
+            var v:*;
+
+            //errorTipManager.reset();
+            
+            // cascade the reset
+/*            for (var v:* in _others)
+            {
+                var valAware:IValidationAware = v as IValidationAware;
+                if (valAware)
+                {
+                    if (valAware.validationHelper)
+                        valAware.validationHelper.reset();
+                    if (valAware.errorTipManager)
+                        valAware.errorTipManager.reset();
+                }
+            }*/
+
+            // and forget all items
+            for each (v in itemsToValidate)
+            {
+                suspendItemToValidate(v);
+            }
+
         }
         
         private var _itemsToValidate:Dictionary = new Dictionary(true);
@@ -245,7 +301,13 @@ package com.rpath.raf.util
             }
         }
         
-        public function removeItemToValidate(v:IEventDispatcher):void
+        /** suspendItemToValidate prevents an item from being actively tracked
+        * but does NOT remove it from the overal list of items. This is necessary
+        * in the case where scroll bars cause a REMOVED_FROM_STAGE followed by an
+        * ADD_TO_STAGE which can fool us into prematurely removing validators
+        */
+        
+        public function suspendItemToValidate(v:*):void
         {
             if (v is IEventDispatcher)
             {
@@ -253,27 +315,33 @@ package com.rpath.raf.util
             }
             
             var validator:Validator = v as Validator;
+            var valAware:IValidationAware = v as IValidationAware;
+            
             if (validator)
             {
                 errorTipManager.unregisterValidator(validator);
             }
+            else if (valAware)
+            {
+                if (valAware.validationHelper)
+                    valAware.validationHelper.reset();
+            }
             else
             {
                 errorTipManager.removeComponentListeners(v);
+                errorTipManager.hideErrorTip(v);
             }
             
             // clean up our various partitioned validators
             delete _others[v];
             delete _validators[v];
-            delete _itemsToValidate[v];
         }
-        
-        public function reset():void
+
+        public function removeItemToValidate(v:*):void
         {
-            for each (var v:IEventDispatcher in itemsToValidate)
-            {
-                removeItemToValidate(v);
-            }
+            suspendItemToValidate(v);
+            // and now also remove it frmo the list entirely
+            delete _itemsToValidate[v];
         }
         
         protected function setupListeners(v:IEventDispatcher):void
@@ -293,21 +361,11 @@ package com.rpath.raf.util
             v.removeEventListener(FlexEvent.INVALID, handleItemValidationEvent);
             //v.removeEventListener("validChanged", handleItemValidationEvent);
         }
-        
-        private function getKeys(map:Dictionary) : Array
-        {
-            var keys:Array = [];
-            
-            for (var key:* in map)
-            {
-                keys.push( key );
-            }
-            return keys;
-        }
+
         
         public function get itemsToValidate():Array
         {
-            return getKeys(_itemsToValidate);
+            return DictionaryUtils.getKeys(_itemsToValidate);
         }
         
         public function set itemsToValidate(vals:Array):void
@@ -386,7 +444,7 @@ package com.rpath.raf.util
             var item:*;
             var items:Array;
 
-            items = getKeys(_validationStates);
+            items = DictionaryUtils.getKeys(_validationStates);
             
             // recompute validity from the cache
             for each (item in items)
@@ -443,7 +501,7 @@ package com.rpath.raf.util
 
                 var valid:Boolean = false;
                 
-                var results:Array = checkValidity(getKeys(_validators), suppressEvents);
+                var results:Array = checkValidity(DictionaryUtils.getKeys(_validators), suppressEvents);
                 
                 valid = (results.length == 0);
                 
