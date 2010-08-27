@@ -1,9 +1,20 @@
-/**
- * 
+/*
+#
+# Copyright (c) 2009-2010 rPath, Inc.
+#
+# This program is distributed under the terms of the MIT License as found 
+# in a file called LICENSE. If it is not present, the license
+# is always available at http://www.opensource.org/licenses/mit-license.php.
+#
+# This program is distributed in the hope that it will be useful, but
+# without any warranty; without even the implied warranty of merchantability
+# or fitness for a particular purpose. See the MIT License for full details.
+*/
 
- * <!-- Blog entry: http://flexdevtips.blogspot.com/2009/08/always-showing-error-tips-validators.html -->
- * 
- * 
+/*
+    Based on an example for Flex 3 posted at:
+    Blog entry: http://flexdevtips.blogspot.com/2009/08/always-showing-error-tips-validators.html -->
+
  */
 
 
@@ -15,7 +26,6 @@ package com.rpath.raf.util
     import flash.events.IEventDispatcher;
     import flash.geom.Point;
     import flash.geom.Rectangle;
-    import flash.geom.Utils3D;
     import flash.utils.Dictionary;
     import flash.utils.clearTimeout;
     import flash.utils.setTimeout;
@@ -34,7 +44,6 @@ package com.rpath.raf.util
     import mx.managers.SystemManager;
     import mx.managers.ToolTipManager;
     import mx.styles.IStyleClient;
-    import mx.utils.ArrayUtil;
     import mx.validators.Validator;
     
     
@@ -54,6 +63,10 @@ package com.rpath.raf.util
      * 
      * @author Chris Callendar
      * @date August 5th, 2009
+     * 
+     * Extensively modified by Brett Adam to support Flex 4 among other changes.
+     * Now used in conjunction with the smartform/ValidationHelper classes.
+     * 
      */
     [Bindable]
     public class ErrorTipManager
@@ -125,7 +138,7 @@ package com.rpath.raf.util
                 suppressErrors = false;
             }
         }
-
+        
         /**
          * Adds "invalid" and "valid" event listeners which show and hide the error tooltips.
          */
@@ -136,7 +149,7 @@ package com.rpath.raf.util
             
             // Also listen for when the real mouse over error tooltip is shown 
             addValidatorSourceListeners(validator);
-
+            
             // do we already have errorTips for this validators source or listener?
             // if so, show them (resume/scroll back into view case)
             unhideErrorTip(validator.source);

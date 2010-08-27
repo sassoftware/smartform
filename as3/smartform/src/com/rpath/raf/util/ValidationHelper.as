@@ -1,14 +1,6 @@
 /*
 #
-# Copyright (c) 2005-2009 rPath, Inc.
-#
-# All rights reserved
-#
-*/
-
-/*
-#
-# Copyright (c) 2009 rPath, Inc.
+# Copyright (c) 2008-2010 rPath, Inc.
 #
 # This program is distributed under the terms of the MIT License as found 
 # in a file called LICENSE. If it is not present, the license
@@ -21,22 +13,14 @@
 
 package com.rpath.raf.util
 {    
-    import com.rpath.raf.views.SmartFormItem;
-    
     import flash.events.Event;
     import flash.events.IEventDispatcher;
-    import flash.events.MouseEvent;
     import flash.utils.Dictionary;
     
-    import mx.binding.utils.BindingUtils;
-    import mx.binding.utils.ChangeWatcher;
-    import mx.core.UIComponent;
+    import mx.events.DynamicEvent;
     import mx.events.FlexEvent;
     import mx.events.ValidationResultEvent;
-    import mx.managers.ToolTipManager;
-    import mx.utils.ArrayUtil;
     import mx.validators.Validator;
-    import mx.events.DynamicEvent;
     
     
     /** ValidationHelper provides a way to aggregate the checking of multiple

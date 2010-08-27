@@ -1,14 +1,6 @@
 /*
 #
-# Copyright (c) 2005-2009 rPath, Inc.
-#
-# All rights reserved
-#
-*/
-
-/*
-#
-# Copyright (c) 2009 rPath, Inc.
+# Copyright (c) 2008-2010 rPath, Inc.
 #
 # This program is distributed under the terms of the MIT License as found 
 # in a file called LICENSE. If it is not present, the license
