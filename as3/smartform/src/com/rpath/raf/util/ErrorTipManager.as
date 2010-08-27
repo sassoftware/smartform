@@ -15,6 +15,7 @@ package com.rpath.raf.util
     import flash.events.IEventDispatcher;
     import flash.geom.Point;
     import flash.geom.Rectangle;
+    import flash.geom.Utils3D;
     import flash.utils.Dictionary;
     import flash.utils.clearTimeout;
     import flash.utils.setTimeout;
@@ -33,9 +34,8 @@ package com.rpath.raf.util
     import mx.managers.SystemManager;
     import mx.managers.ToolTipManager;
     import mx.styles.IStyleClient;
-    import mx.validators.Validator;
-    import flash.geom.Utils3D;
     import mx.utils.ArrayUtil;
+    import mx.validators.Validator;
     
     
     /**
@@ -284,6 +284,7 @@ package com.rpath.raf.util
                         
                         if (parent is DisplayObjectContainer) {
                             parent.addEventListener(ScrollEvent.SCROLL, parentContainerScrolled, false, 0, true);
+                            parent.addEventListener(MoveEvent.MOVE, parentContainerMoved, false, 0, true);
                             if (!(containersToTargets[parent] is Array)) {
                                 containersToTargets[parent] = [];
                             }
@@ -331,6 +332,7 @@ package com.rpath.raf.util
                     while (parent) {
                         if (parent is DisplayObjectContainer) {
                             parent.removeEventListener(ScrollEvent.SCROLL, parentContainerScrolled);
+                            parent.removeEventListener(MoveEvent.MOVE, parentContainerMoved);
                             if (containersToTargets[parent] is Array) {
                                 var array:Array = (containersToTargets[parent] as Array);
                                 var index:int = array.indexOf(obj);
@@ -435,6 +437,21 @@ package com.rpath.raf.util
             }
         }
         
+        private function parentContainerMoved(event:MoveEvent):void 
+        {
+            var parent:DisplayObjectContainer = (event.target as DisplayObjectContainer);
+            
+            // move all errors tips that are related to objects parented by this parent
+            // TODO: how to figure out which ones?
+            
+            // for now, just move everything
+            for (var target:* in errorTips)
+            {
+                positionErrorTip(errorTips[target], target);
+            }
+            
+        }
+            
         /**
          * When a target is hidden, then make sure the error tip is hidden too.
          */
