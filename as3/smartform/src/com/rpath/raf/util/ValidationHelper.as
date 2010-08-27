@@ -143,7 +143,7 @@ package com.rpath.raf.util
         {
             if (_target)
             {
-                _target.addEventListener(FIND_ERROR_TIP_MANAGER, handleRequestErrorTipManager,false,0,true);
+                _target.removeEventListener(FIND_ERROR_TIP_MANAGER, handleRequestErrorTipManager);
                 _target.removeEventListener(Event.CLOSE, handleTargetRemovedFromStage);
                 _target.removeEventListener(FlexEvent.HIDE, handleTargetRemovedFromStage);
                 _target.removeEventListener(Event.REMOVED_FROM_STAGE, handleTargetRemovedFromStage);
