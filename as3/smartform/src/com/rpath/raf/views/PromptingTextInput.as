@@ -29,7 +29,7 @@ SOFTWARE.
 # is always available at http://www.opensource.org/licenses/mit-license.php.
 #
 # This program is distributed in the hope that it will be useful, but
-# without any waranty; without even the implied warranty of merchantability
+# without any warranty; without even the implied warranty of merchantability
 # or fitness for a particular purpose. See the MIT License for full details.
 */
 
@@ -203,7 +203,7 @@ public class PromptingTextInput extends TextInput
         {
             if ( _promptFormat == "" )
             {
-                super.text = _prompt;
+                super.htmlText = _prompt;
             }
             else
             {
@@ -252,7 +252,7 @@ public class PromptingTextInput extends TextInput
         // If the text is empty, clear the prompt
         if ( _textEmpty )
         {
-            super.htmlText = "";
+            super.text = "";
             // KLUDGE: Have to validate now to avoid a bug where the format
             // gets "stuck" even though the text gets cleared.
             validateNow();

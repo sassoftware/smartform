@@ -1,6 +1,6 @@
 /*
 #
-# Copyright (c) 2009 rPath, Inc.
+# Copyright (c) 2008-2010 rPath, Inc.
 #
 # This program is distributed under the terms of the MIT License as found 
 # in a file called LICENSE. If it is not present, the license
@@ -11,13 +11,26 @@
 # or fitness for a particular purpose. See the MIT License for full details.
 */
 
-package com.rpath.raf.views
+package com.rpath.raf.util
 {
-    [Bindable]
-    public class SmartFormChoice
+import flash.utils.Dictionary;
+
+public class DictionaryUtils
+{
+    public function DictionaryUtils()
     {
-        public var label:String;
-        public var value:Object;
-        public var selected:Boolean;
     }
+    
+    
+    public static function getKeys(map:Dictionary) : Array
+    {
+        var keys:Array = [];
+        
+        for (var key:* in map)
+        {
+            keys.push( key );
+        }
+        return keys;
+    }
+}
 }
