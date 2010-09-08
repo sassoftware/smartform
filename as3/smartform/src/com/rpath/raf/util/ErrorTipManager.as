@@ -1,9 +1,20 @@
-/**
- * 
+/*
+#
+# Copyright (c) 2009-2010 rPath, Inc.
+#
+# This program is distributed under the terms of the MIT License as found 
+# in a file called LICENSE. If it is not present, the license
+# is always available at http://www.opensource.org/licenses/mit-license.php.
+#
+# This program is distributed in the hope that it will be useful, but
+# without any warranty; without even the implied warranty of merchantability
+# or fitness for a particular purpose. See the MIT License for full details.
+*/
 
- * <!-- Blog entry: http://flexdevtips.blogspot.com/2009/08/always-showing-error-tips-validators.html -->
- * 
- * 
+/*
+    Based on an example for Flex 3 posted at:
+    Blog entry: http://flexdevtips.blogspot.com/2009/08/always-showing-error-tips-validators.html -->
+
  */
 
 
@@ -20,7 +31,6 @@ package com.rpath.raf.util
     import flash.utils.setTimeout;
     
     import mx.controls.ToolTip;
-    import mx.core.Container;
     import mx.core.IChildList;
     import mx.core.IInvalidating;
     import mx.core.IToolTip;
@@ -53,7 +63,12 @@ package com.rpath.raf.util
      * 
      * @author Chris Callendar
      * @date August 5th, 2009
+     * 
+     * Extensively modified by Brett Adam to support Flex 4 among other changes.
+     * Now used in conjunction with the smartform/ValidationHelper classes.
+     * 
      */
+    [Bindable]
     public class ErrorTipManager
     {
         
@@ -76,7 +91,34 @@ package com.rpath.raf.util
         /** suppressErrors allows you to control whether validation events pop
         * errors message as they occur or not
         */
-        public var suppressErrors:Boolean = false;
+        private function get suppressErrors():Boolean
+        {
+            return _suppressErrors;
+        }
+        
+        private var _suppressErrors:Boolean = true;
+        public var suppressionCount:int = 0;  // start off suppressed
+        
+        private function set suppressErrors(b:Boolean):void
+        {
+            _suppressErrors = b;
+        }
+        
+        public function increaseSuppressionCount():void
+        {
+            suppressionCount++;
+            suppressErrors = true;
+        }
+        
+        public function decreaseSuppressionCount():void
+        {
+            suppressionCount--;
+            if (suppressionCount <= 0)
+            {
+                suppressionCount = 0;
+                suppressErrors = false;
+            }
+        }
         
         /** showAllErrors controls whether all errors should be shown
         * and scrolling should reveal errors, etc.
@@ -96,17 +138,22 @@ package com.rpath.raf.util
                 suppressErrors = false;
             }
         }
-
+        
         /**
          * Adds "invalid" and "valid" event listeners which show and hide the error tooltips.
          */
         public function registerValidator(validator:Validator):void {
-            validator.addEventListener(ValidationResultEvent.VALID, validHandler, false, 0, true);
-            validator.addEventListener(ValidationResultEvent.INVALID, invalidHandler, false, 0, true);
+            validator.addEventListener(ValidationResultEvent.VALID, validValidationHandler, false, 0, true);
+            validator.addEventListener(ValidationResultEvent.INVALID, invalidValidationHandler, false, 0, true);
             validators[validator] = false;
             
             // Also listen for when the real mouse over error tooltip is shown 
             addValidatorSourceListeners(validator);
+            
+            // do we already have errorTips for this validators source or listener?
+            // if so, show them (resume/scroll back into view case)
+            unhideErrorTip(validator.source);
+            unhideErrorTip(validator.listener);
         }
         
         /**
@@ -117,10 +164,11 @@ package com.rpath.raf.util
             if (!validator)
                 return;
             
-            validator.removeEventListener(ValidationResultEvent.VALID, validHandler);
-            validator.removeEventListener(ValidationResultEvent.INVALID, invalidHandler);
+            validator.removeEventListener(ValidationResultEvent.VALID, validValidationHandler);
+            validator.removeEventListener(ValidationResultEvent.INVALID, invalidValidationHandler);
             // make sure our error tooltip is hidden
-            removeErrorTip(validator.source);
+            hideErrorTip(validator.source);
+            hideErrorTip(validator.listener);
             // stop listening for events on the validator's source
             removeValidatorSourceListeners(validator);
         }
@@ -130,10 +178,20 @@ package com.rpath.raf.util
         
         public function reset():void
         {
+            // remove all errorTips
+            removeAllErrorTips();
+
+            // unregister all validators
             for (var v:* in validators)
             {
-                unregisterValidator(v as Validator);
+                var validator:Validator = v as Validator;
+
+                unregisterValidator(validator);
+                // make sure our error tooltip is actually removed
+                removeErrorTip(validator.source);
+                removeErrorTip(validator.listener);
             }
+            
         }
         
         
@@ -197,79 +255,109 @@ package com.rpath.raf.util
             // make sure the listeners have been added
             if (validator) {
                 var alreadyAdded:Boolean = validators[validator];
-                if (!alreadyAdded && (validator.source is IEventDispatcher)) {
-                    var ed:IEventDispatcher = (validator.source as IEventDispatcher);
-                    // need to listener for when the real tooltip gets shown 
-                    // we'll hide it if is an error tooltip since we are already showing it 
-                    ed.addEventListener(ToolTipEvent.TOOL_TIP_SHOWN, toolTipShown, false, 0, true);
-                    // also need to listen for move and resize events to keep the error tip positioned correctly
-                    ed.addEventListener(MoveEvent.MOVE, targetMoved, false, 0, true);
-                    ed.addEventListener(ResizeEvent.RESIZE, targetMoved, false, 0, true);
-                    ed.addEventListener(FlexEvent.HIDE, targetHidden, false, 0, true);
-                    ed.addEventListener(FlexEvent.REMOVE, targetRemoved, false, 0, true);
+                if (!alreadyAdded)
+                {
                     validators[validator] = true;
-                    
-                    // listen for scroll events on the parent containers
-                    if (validator.source is DisplayObject) {
-                        var obj:DisplayObject = (validator.source as DisplayObject);
-                        var parent:DisplayObjectContainer = obj.parent;
-                        while (parent) {
-                            
-                            //TODO: add in code here to auto discover that we're in a 
-                            // POPUP window and add the required event listeners 
-                            // to handle the popup moving around the screen (user drag)
-                            
-                            if (parent is DisplayObjectContainer) {
-                                parent.addEventListener(ScrollEvent.SCROLL, parentContainerScrolled, false, 0, true);
-                                if (!(containersToTargets[parent] is Array)) {
-                                    containersToTargets[parent] = [];
-                                }
-                                var array:Array = (containersToTargets[parent] as Array);
-                                if (array.indexOf(obj) == -1) {
-                                    array.push(obj);
-                                }
-                            }
-                            parent = parent.parent;
-                        }
-                    }
+                    addComponentListeners(validator.source);
+                    if (validator.source != validator.listener)
+                        addComponentListeners(validator.listener);
                 }
             }
         }
+        
+        private var listened:Dictionary = new Dictionary(true);
+        
+        public function addComponentListeners(source:*):void
+        {
+            var ed:IEventDispatcher = (source as IEventDispatcher);
+            if (ed && !listened[ed])
+            {
+                listened[ed] = true;
+                // need to listener for when the real tooltip gets shown 
+                // we'll hide it if is an error tooltip since we are already showing it 
+                ed.addEventListener(ToolTipEvent.TOOL_TIP_SHOWN, toolTipShown, false, 0, true);
+                // also need to listen for move and resize events to keep the error tip positioned correctly
+                ed.addEventListener(MoveEvent.MOVE, targetMoved, false, 0, true);
+                ed.addEventListener(ResizeEvent.RESIZE, targetMoved, false, 0, true);
+                ed.addEventListener(FlexEvent.HIDE, targetHidden, false, 0, true);
+                ed.addEventListener(FlexEvent.REMOVE, targetRemoved, false, 0, true);
+                ed.addEventListener(Event.REMOVED_FROM_STAGE, targetRemoved, false, 0, true);
+                ed.addEventListener(FlexEvent.VALID, validHandler, false, 0, true);
+                ed.addEventListener(FlexEvent.INVALID, invalidHandler, false, 0, true);
+                
+                // listen for scroll events on the parent containers
+                if (source is DisplayObject) {
+                    var obj:DisplayObject = (source as DisplayObject);
+                    var parent:DisplayObjectContainer = obj.parent;
+                    while (parent) {
+                        
+                        //TODO: add in code here to auto discover that we're in a 
+                        // POPUP window and add the required event listeners 
+                        // to handle the popup moving around the screen (user drag)
+                        
+                        if (parent is DisplayObjectContainer) {
+                            parent.addEventListener(ScrollEvent.SCROLL, parentContainerScrolled, false, 0, true);
+                            parent.addEventListener(MoveEvent.MOVE, parentContainerMoved, false, 0, true);
+                            if (!(containersToTargets[parent] is Array)) {
+                                containersToTargets[parent] = [];
+                            }
+                            var array:Array = (containersToTargets[parent] as Array);
+                            if (array.indexOf(obj) == -1) {
+                                array.push(obj);
+                            }
+                        }
+                        parent = parent.parent;
+                    }
+                }
+            }            
+        }
+        
         
         /**
          * Removes the event listeners that were added to the validator's source.
          */
         private function removeValidatorSourceListeners(validator:Validator):void {
             if (validator && (validators[validator] == true)) {
-                if (validator.source is IEventDispatcher) {
-                    var ed:IEventDispatcher = (validator.source as IEventDispatcher);
-                    ed.removeEventListener(ToolTipEvent.TOOL_TIP_SHOWN, toolTipShown);
-                    ed.removeEventListener(MoveEvent.MOVE, targetMoved);
-                    ed.removeEventListener(ResizeEvent.RESIZE, targetMoved);
-                    ed.removeEventListener(FlexEvent.HIDE, targetHidden);
-                    ed.removeEventListener(FlexEvent.REMOVE, targetRemoved);
-                    ed.removeEventListener(Event.REMOVED_FROM_STAGE, targetRemoved);
-
-                    if (validator.source is DisplayObject) {
-                        var obj:DisplayObject = (validator.source as DisplayObject);
-                        var parent:DisplayObjectContainer = obj.parent;
-                        while (parent) {
-                            if (parent is DisplayObjectContainer) {
-                                parent.removeEventListener(ScrollEvent.SCROLL, parentContainerScrolled);
-                                if (containersToTargets[parent] is Array) {
-                                    var array:Array = (containersToTargets[parent] as Array);
-                                    var index:int = array.indexOf(obj);
-                                    if (index != -1) {
-                                        array.splice(index, 1);
-                                        containersToTargets[parent] = array;
-                                    }
+                removeComponentListeners(validator.source);
+                removeComponentListeners(validator.listener);
+                delete validators[validator];
+            }
+        }
+        
+        public function removeComponentListeners(source:*):void
+        {
+            var ed:IEventDispatcher = (source as IEventDispatcher);
+            if (ed && listened[ed])
+            {
+                delete listened[ed];
+                ed.removeEventListener(ToolTipEvent.TOOL_TIP_SHOWN, toolTipShown);
+                ed.removeEventListener(MoveEvent.MOVE, targetMoved);
+                ed.removeEventListener(ResizeEvent.RESIZE, targetMoved);
+                ed.removeEventListener(FlexEvent.HIDE, targetHidden);
+                ed.removeEventListener(FlexEvent.REMOVE, targetRemoved);
+                ed.removeEventListener(Event.REMOVED_FROM_STAGE, targetRemoved);
+                ed.removeEventListener(FlexEvent.VALID, validHandler);
+                ed.removeEventListener(FlexEvent.INVALID, invalidHandler);
+                
+                if (source is DisplayObject) {
+                    var obj:DisplayObject = (source as DisplayObject);
+                    var parent:DisplayObjectContainer = obj.parent;
+                    while (parent) {
+                        if (parent is DisplayObjectContainer) {
+                            parent.removeEventListener(ScrollEvent.SCROLL, parentContainerScrolled);
+                            parent.removeEventListener(MoveEvent.MOVE, parentContainerMoved);
+                            if (containersToTargets[parent] is Array) {
+                                var array:Array = (containersToTargets[parent] as Array);
+                                var index:int = array.indexOf(obj);
+                                if (index != -1) {
+                                    array.splice(index, 1);
+                                    containersToTargets[parent] = array;
                                 }
                             }
-                            parent = parent.parent;
                         }
+                        parent = parent.parent;
                     }
                 }
-                delete validators[validator];
             }
         }
         
@@ -277,11 +365,11 @@ package com.rpath.raf.util
          * Called when the validator fires the valid event.
          * Hides the error tooltip if it is visible.
          */
-        public function validHandler(event:ValidationResultEvent):void {
+        public function validValidationHandler(event:ValidationResultEvent):void {
             // the target component is valid, so hide the error tooltip
             var validator:Validator = Validator(event.target); 
-            removeErrorTip(validator.source);
-            // ensure that the source listeners were added 
+/*            removeErrorTip(validator.source);
+*/            // ensure that the source listeners were added 
             addValidatorSourceListeners(validator);
         }
         
@@ -289,10 +377,10 @@ package com.rpath.raf.util
          * Called when the validator fires an invalid event.
          * Shows the error tooltip with the ValidatorResultEvent.message as the error String.
          */
-        public function invalidHandler(event:ValidationResultEvent):void {
+        public function invalidValidationHandler(event:ValidationResultEvent):void {
             // the target component is invalid, so show the error tooltip 
             var validator:Validator = Validator(event.target); 
-            
+/*            
             // always create the errorTip
             createErrorTip(validator.source, event.message);
             
@@ -300,9 +388,35 @@ package com.rpath.raf.util
             if (!suppressErrors)
                 showErrorTip(validator.source, event.message);
             
-            // ensure that the source listeners were added 
+*/            // ensure that the source listeners were added 
             addValidatorSourceListeners(validator);
         }
+
+        /**
+         * Called when the validator fires the valid event.
+         * Hides the error tooltip if it is visible.
+         */
+        public function validHandler(event:FlexEvent):void {
+            // the target component is valid, so hide the error tooltip
+            removeErrorTip(event.target);
+        }
+        
+        /**
+         * Called when the validator fires an invalid event.
+         * Shows the error tooltip with the ValidatorResultEvent.message as the error String.
+         */
+        public function invalidHandler(event:FlexEvent):void {
+            // the target component is invalid, so show the error tooltip 
+            
+            // always create the errorTip
+            createErrorTip(event.target, event.target.errorString);
+            
+            // only show if requested
+            if (!suppressErrors)
+                showErrorTip(event.target, event.target.errorString);
+        }
+
+        
         // TODO: make this also work for Spark viewport scrolling which DO NOT
         // appear to dispatch SCROLL events. Instead, we need to listen for 
         // PropertChange events on the verticalScrollPosition and horizontalScrollPosition
@@ -336,6 +450,21 @@ package com.rpath.raf.util
             }
         }
         
+        private function parentContainerMoved(event:MoveEvent):void 
+        {
+            var parent:DisplayObjectContainer = (event.target as DisplayObjectContainer);
+            
+            // move all errors tips that are related to objects parented by this parent
+            // TODO: how to figure out which ones?
+            
+            // for now, just move everything
+            for (var target:* in errorTips)
+            {
+                positionErrorTip(errorTips[target], target);
+            }
+            
+        }
+            
         /**
          * When a target is hidden, then make sure the error tip is hidden too.
          */
@@ -406,15 +535,15 @@ package com.rpath.raf.util
             var errorTip:IToolTip = getErrorTip(event.target);
             if ((style == "errorTip")) //&& (errorTip != null))
             {
+                // register the target for later cleanup
+                addComponentListeners(event.target);
+                
                 // hide this tooltip, ours is already displaying (or is about to display)
-               /* if (errorTip.visible)
-                {*/
-                    event.toolTip.visible = false;
-                    event.toolTip.width = 0;
-                    event.toolTip.height = 0;
-                    event.currentTarget.dispatchEvent(new ToolTipEvent(ToolTipEvent.TOOL_TIP_HIDE, false, false, event.toolTip));
-/*                }
-*/            }
+                event.toolTip.visible = false;
+                event.toolTip.width = 0;
+                event.toolTip.height = 0;
+                event.currentTarget.dispatchEvent(new ToolTipEvent(ToolTipEvent.TOOL_TIP_HIDE, false, false, event.toolTip));
+            }
         }
         
         /**
@@ -443,6 +572,10 @@ package com.rpath.raf.util
         public function createErrorTip(target:Object, error:String = null):IToolTip {
             var errorTip:IToolTip = null;
             var position:Point;
+            
+            // always listen for subsequent lifecycle changes
+            addComponentListeners(target);
+            
             if (target) {
                 // use the errorString property on the target
                 if (!error && (target is UIComponent)) {
@@ -622,6 +755,13 @@ package com.rpath.raf.util
                 errorTip.visible = true;
             }
         }
+
+        public function unhideErrorTip(target:Object):void {
+            var errorTip:IToolTip = getErrorTip(target);
+            if (errorTip) {
+                errorTip.visible = true;
+            }
+        }
         
         /**
          * Hides the existing error tooltip for the target if one exists.
@@ -655,11 +795,26 @@ package com.rpath.raf.util
         } 
         
         /**
+         * Removes all the error tips.
+         */
+        public function removeAllErrorTips():void {
+            //showAllErrors = false;
+            var keys:Array = DictionaryUtils.getKeys(errorTips);
+            for each (var target:Object in keys) 
+            {
+                removeErrorTip(target, false);
+            }
+        }
+
+        
+        /**
          * Hides all the error tips.
          */
         public function hideAllErrorTips():void {
             showAllErrors = false;
-            for (var target:Object in errorTips) {
+            var keys:Array = DictionaryUtils.getKeys(errorTips);
+            for each (var target:Object in keys) 
+            {
                 hideErrorTip(target, false);
             }
         }
@@ -669,7 +824,9 @@ package com.rpath.raf.util
          */
         public function showAllErrorTips():void {
             showAllErrors = true;
-            for (var target:Object in errorTips) {
+            var keys:Array = DictionaryUtils.getKeys(errorTips);
+            for each (var target:Object in keys) 
+            {
                 showErrorTip(target);
             }
         }
@@ -679,7 +836,8 @@ package com.rpath.raf.util
          */
         public function validateAll():void {
             // need to validator to figure out which error tips should be shown
-            for (var validator:Object in validators) {
+            for (var validator:Object in validators)
+            {
                 validator.validate();
             }
         }

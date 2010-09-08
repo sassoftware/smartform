@@ -9,7 +9,7 @@
 # is always available at http://www.opensource.org/licenses/mit-license.php.
 #
 # This program is distributed in the hope that it will be useful, but
-# without fany waranty; without even the implied warranty of merchantability
+# without fany warranty; without even the implied warranty of merchantability
 # or fitness for a particular purpose. See the MIT License for full details.
 */
 -->
@@ -20,6 +20,7 @@
     xmlns:mx="library://ns.adobe.com/flex/mx"
     xmlns:views="com.rpath.raf.views.*"
     initialize="onInitialize(event)"
+    
     width="100%"
     >
     
@@ -29,6 +30,8 @@
 
     <fx:Script>
     <![CDATA[
+        import mx.effects.IAbstractEffect;
+        import com.rpath.raf.util.IValidationAware;
         import com.rpath.raf.util.DescriptorUtil;
         import com.rpath.raf.util.ErrorTipManager;
         import com.rpath.raf.util.ValidationHelper;
@@ -40,7 +43,6 @@
         import mx.events.DynamicEvent;
         import mx.events.FlexEvent;
         import mx.events.ItemClickEvent;
-        import mx.events.ListEvent;
         import mx.events.ToolTipEvent;
         import mx.events.ValidationResultEvent;
         import mx.validators.Validator;
@@ -164,7 +166,7 @@
             isDirty = checkDirty();
         }
         
-        if (_created)
+        /* if (_created)
         {
             // make sure form is marked valid/invalid at all times
             validate(false);
@@ -173,7 +175,7 @@
         {
             // in initialization case, validate without events
             validate(true);
-        }
+        } */
         
     }
     
@@ -287,11 +289,11 @@
         // redispatch to effectively bubble the event, since toolTipShown
         // is NOT a bubbling event by default (bummer)
         dispatchEvent(event);
-    }
+     }
         
     // The workhorse method. Unpacks metadata, decides what effective UI control
-    // to use and then uses the underlying MagicFormItem to instantiate the
-    // correct control type
+    // to use and then sets our state appropriately to cause the right type of
+    // UI element to be added as a child
     
     protected override function createChildren():void
     {        
@@ -652,7 +654,7 @@
         data = e.item;
     }
 
-    private function handleCombobox(e:IndexChangeEvent):void
+    private function handleDropdownList(e:IndexChangeEvent):void
     {
         var newData:*;
         
@@ -718,88 +720,43 @@
     {
         //TODO: make sure we're valid first
     }
-    
-    [Bindable]
-    public function set isValid(b:Boolean):void
-    {
-        _isValid = b;
-        // rethrow the validation event so that our whole form can go invalid
-        this.dispatchEvent(new FlexEvent(_isValid ? FlexEvent.VALID : FlexEvent.INVALID));
-    }
-    
-    private var _isValid:Boolean = true;
-    
-    public function get isValid():Boolean
-    {
-        return _isValid;
-    }
-        
-    private var _directValid:Boolean = true;
-    
-    //---------------------------------------------- VALIDATION
-    
-    private var _validationHelper:ValidationHelper;
-        
-    // optionally, show errors via this manager
-    private var _errorTipManager:ErrorTipManager;
 
-    public function get errorTipManager():ErrorTipManager
-    {
-        return _errorTipManager;
-    }
-
-    public function set errorTipManager(value:ErrorTipManager):void
-    {
-        _errorTipManager = value;
-        if (_validationHelper)
-            _validationHelper.errorTipManager = _errorTipManager;
-    }
-
-        
-    public function handleValidationEvent(event:FlexEvent):void
-    {
-        isValid = (event.type == FlexEvent.VALID) && _directValid;
-        
-        /* if (!isValid)
-        {
-            //TODO: make these proper style properties that can be
-            // set in MXML / CSS
-            if (errorStyleMap[effectiveType])
-            {
-                magic.setStyle("borderStyle", "solid");
-            }
-        }
-        else
-        {
-            magic.setStyle("borderStyle", "none");
-        }
-         */
-    }
-
-    // we also have to look for this FormItem itself being validated
+    /** we need to override validationResultHandler in order to propagate
+     * the validation events from Validators down to the actual UI elements
+     * so they can change state, etc.
+     */
     
     public override function validationResultHandler(event:ValidationResultEvent):void
     {
-        _directValid = (event.type == ValidationResultEvent.VALID);
-        
         // let our specific input control mark itself appropriately
-        /* try
+        var child:UIComponent;
+        
+        // HACK: only pass down the validationResultEvent which will
+        // mark the UI element in RED IF we're not supressing
+        // TODO: cleaner way to track this state which is essentially
+        // the inialization state prior to the user entering data for the
+        // first time
+        
+        if (validationHelper.errorTipManager.suppressionCount < 1)
         {
-            var firstChild:UIComponent = magic.getChildAt(0) as UIComponent;
-            if (firstChild)
+            
+            for (var i:int = 0; i < numElements; i++)
             {
-                firstChild.validationResultHandler(event);
+                child = getElementAt(i) as UIComponent;
+                if (child)
+                {
+                    child.validationResultHandler(event);
+                }
             }
+            
+            super.validationResultHandler(event);
         }
-        catch (e:RangeError)
+        else
         {
-            // must not be fully initialized yet...
-        } */
-        // propagate events beyond ourselves
-        super.validationResultHandler(event);
+            trace("HIT validationResult without validation ready");
+        }
     }
-    
-    
+        
     // --------------------------------------------------- DIRTY HANDLING
     
     [Bindable]
@@ -824,16 +781,17 @@
 
     public function initializeValidators():void
     {
+        // first ensure we have a validation helper to listen
+        validationHelper = new ValidationHelper(validators, this);
+
         var constraints:XMLList = metadata.metadataNS::constraints;
         var descriptions:XMLList = constraints.metadataNS::descriptions;
-        var otherValidator:Boolean;
         
         var x:XMLList;
         
         x = constraints..metadataNS::length;
         if (x.length() > 0)
         {
-            otherValidator = true;
             maxLengthV.enabled = true;
             maxLengthV.maxLength = x;
             maxLengthV.tooLongError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), maxLengthV.tooLongError);
@@ -844,7 +802,6 @@
         x = constraints..metadataNS::range;
         if (x.length() > 0)
         {
-            otherValidator = true;
             rangeV.enabled = true;
             rangeV.minValue = x.metadataNS::min;
             rangeV.maxValue = x.metadataNS::max;
@@ -857,7 +814,6 @@
         x = constraints..metadataNS::regexp;
         if (x.length() > 0)
         {
-            otherValidator = true;
             regExpV.enabled = true;
             regExpV.expression = x.toString();
             regExpV.noMatchError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), regExpV.noMatchError);
@@ -865,46 +821,34 @@
         else
             regExpV.enabled = false;
         
-        
-        // only add the manual required validator if no other validators
-        // were enabled
-        if (required && !otherValidator)
+        if (required)
         {
-            otherValidator = true;
             requiredV.enabled = true;
-            requiredV.requiredFieldError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), requiredV.requiredFieldError)
+            //requiredV.requiredFieldError = requiredV.requiredFieldError)
         }
         else
             requiredV.enabled = false;
         
         // TODO: validate IP addresses, Dates, Times
         
-        _validationHelper = new ValidationHelper(validators, this, "isValid", errorTipManager);
     }
     
     public function showErrors():void
     {
-        if (_validationHelper)
+        if (validationHelper)
         {
-            _validationHelper.showErrors();
+            validationHelper.showErrors();
         }
     }
 
     public function hideErrors():void
     {
-        if (_validationHelper)
+        if (validationHelper)
         {
-            _validationHelper.hideErrors();
+            validationHelper.hideErrors();
         }
     }
-    
-    public function validate(suppressEvents:Boolean=false):void
-    {        
-        if (_validationHelper)
-            _validationHelper.validateNow(suppressEvents);
 
-        //TODO: add validation for IPAddress, Date, Time, Currency
-    }
     
     public override function setFocus():void
     {
@@ -971,39 +915,40 @@
     <fx:Declarations>
         <fx:Array id="validators">
             
-            <mx:Validator id="requiredV" 
-                          source="{this}" property="data"
-                          listener="{magic}"
-                          enabled="false"
-                          required="{required}"
-                          requiredFieldError="Required field"
-                          />
-            
             <!-- the dotall flag (s) *must* be on for ec2 cert/key validation, should not matter for anything else -->
             <mx:RegExpValidator id="regExpV" 
                                 source="{this}" property="data"
+                                triggerEvent="dataChange"
                                 expression=""
                                 flags="s"
-                                listener="{magic}"
                                 enabled="false"
-                                required="{required}"
+                                required="false"
                                 />
             
             <mx:StringValidator id="maxLengthV" 
                                 source="{this}" property="data"
+                                triggerEvent="dataChange"
                                 minLength="0" maxLength="0"
-                                listener="{magic}"
                                 enabled="false"
-                                required="{required}"
+                                required="false"
                                 />
             
             <mx:NumberValidator id="rangeV"
                                 source="{this}" property="data"
+                                triggerEvent="dataChange"
                                 minValue="0" maxValue="0"
-                                listener="{magic}"
                                 enabled="false"
-                                required="{required}"
+                                required="false"
                                 />
+            
+            <mx:Validator id="requiredV" 
+                          source="{this}" property="data"
+                          triggerEvent="dataChange"
+                          enabled="false"
+                          required="true"
+                          requiredFieldError="This field is required"
+                          />
+            
         </fx:Array>
         
     </fx:Declarations>
@@ -1050,14 +995,11 @@
     <!--<mx:NumberValidator id="intValidation" source="{intField}">
     </mx:NumberValidator>-->
     
-   <views:MagicFormItem id="magic"
-        valid="handleValidationEvent(event)"
-        invalid="handleValidationEvent(event)"
-        isValid="{isValid}"
+<!--   <views:MagicFormItem id="magic"
         width="100%"
         toolTipShown="toolTipShown(event)"
         >
-       
+       -->
        <!-- str: 0 -->
        <views:ExtendedTextInput id="strField" text="{data}" 
                                 editable="{editable}" enabled="{enabled}"
@@ -1159,7 +1101,6 @@
 
         <!-- ipAddress: 13 -->
        <views:CompoundInputItem includeIn="ipAddress,ipAddressDisabled"
-                                isValid="{isValid}"
                                 width="100%"
                                 inputFields="{[A, B, C, D]}">
            <s:HGroup width="100%"
@@ -1236,8 +1177,8 @@
        </mx:HBox>
         
         <!-- pulldownchoice: 20 -->
-        <s:ComboBox id="pulldownchoice" toolTip="{prompt}" enabled="{editable &amp;&amp; enabled}"
-                    dataProvider="{choices}" change="handleCombobox(event)" 
+        <s:DropDownList id="pulldownchoice" toolTip="{prompt}" enabled="{editable &amp;&amp; enabled}"
+                    dataProvider="{choices}" change="handleDropdownList(event)" 
                     toolTipShown="toolTipShown(event)"
                     includeIn="pulldownchoice,pulldownchoiceDisabled"
                     />
@@ -1323,7 +1264,6 @@
        
        <!-- longtext: 24 -->
        <views:CompoundInputItem includeIn="longtext, longtextDisabled"
-                                isValid="{isValid}"
                                 minHeight="0"
                                 width="100%"
                                 toolTipShown="toolTipShown(event)"
@@ -1357,7 +1297,6 @@
         
         <!-- radiobool: 26 -->
        <views:CompoundInputItem includeIn="radiobool,radioboolDisabled"
-                                isValid="{isValid}"
                                 toolTipShown="toolTipShown(event)"
                                 width="100%"
                                 minHeight="0"
@@ -1375,6 +1314,6 @@
 
        </views:CompoundInputItem>
 
-    </views:MagicFormItem>
-
+<!--    </views:MagicFormItem>
+-->
 </views:ExtendedFormItem>

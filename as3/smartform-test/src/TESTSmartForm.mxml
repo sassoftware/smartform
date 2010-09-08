@@ -9,7 +9,7 @@
 # is always available at http://www.opensource.org/licenses/mit-license.php.
 #
 # This program is distributed in the hope that it will be useful, but
-# without any waranty; without even the implied warranty of merchantability
+# without any warranty; without even the implied warranty of merchantability
 # or fitness for a particular purpose. See the MIT License for full details.
 */
 -->
@@ -17,7 +17,7 @@
                xmlns:s="library://ns.adobe.com/flex/spark" 
                xmlns:mx="library://ns.adobe.com/flex/mx" 
 
-               xmlns:smartform="http://www.rpath.com/raf/2009/smartform"
+               xmlns:smartform="http://www.rpath.com/2009/smartform"
 
                minWidth="955" minHeight="600">
     
@@ -32,6 +32,7 @@
         <fx:XML id="configure_ec2_metadata" source="/data/test/configure_ec2.xml" />
         <fx:XML id="configure_vsphere_metadata" source="/data/test/configure_vsphere.xml" />
         <fx:XML id="single_metadata" source="/data/test/single.xml" />
+        <fx:XML id="double_metadata" source="/data/test/double.xml" />
         <fx:XML id="booltest_metadata" source="/data/test/booltest.xml" />
         <fx:XML id="conditional_metadata" source="/data/test/conditional.xml" />
         <fx:XML id="large_metadata" source="/data/test/large.xml" />
@@ -40,6 +41,7 @@
         <mx:ArrayCollection id="tests">
             <fx:Object label="" test="" />
             <fx:Object label="Single" test="single_metadata" />
+            <fx:Object label="Double" test="double_metadata" />
             <fx:Object label="Booltest" test="booltest_metadata" />
             <fx:Object label="Large" test="large_metadata" />
             <fx:Object label="Conditional" test="conditional_metadata" />

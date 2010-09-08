@@ -2,28 +2,36 @@
 <flexLibProperties includeAllClasses="false" version="1">
   <includeClasses>
     <classEntry path="com.rpath.raf.SmartformVersion"/>
+    <classEntry path="com.rpath.raf.controls.AdvancedTextArea"/>
+    <classEntry path="com.rpath.raf.controls.AdvancedTextInput"/>
     <classEntry path="com.rpath.raf.events.HelpEvent"/>
+    <classEntry path="com.rpath.raf.skins.AdvancedTextAreaSkin"/>
+    <classEntry path="com.rpath.raf.skins.AdvancedTextInputSkin"/>
     <classEntry path="com.rpath.raf.util.DescriptorUtil"/>
+    <classEntry path="com.rpath.raf.util.DictionaryUtils"/>
+    <classEntry path="com.rpath.raf.util.ErrorTipManager"/>
+    <classEntry path="com.rpath.raf.util.IValidationAware"/>
+    <classEntry path="com.rpath.raf.util.LifecycleObject"/>
     <classEntry path="com.rpath.raf.util.UIHelper"/>
     <classEntry path="com.rpath.raf.util.ValidationHelper"/>
+    <classEntry path="com.rpath.raf.validators.BooleanValidator"/>
+    <classEntry path="com.rpath.raf.validators.CollectionValidator"/>
+    <classEntry path="com.rpath.raf.validators.StringMatchValidator"/>
+    <classEntry path="com.rpath.raf.validators.UniqueElementValidator"/>
+    <classEntry path="com.rpath.raf.views.CompoundInputItem"/>
     <classEntry path="com.rpath.raf.views.ConditionalFormItem"/>
     <classEntry path="com.rpath.raf.views.ExtendedFormItem"/>
     <classEntry path="com.rpath.raf.views.ExtendedText"/>
     <classEntry path="com.rpath.raf.views.ExtendedTextArea"/>
     <classEntry path="com.rpath.raf.views.ExtendedTextInput"/>
-    <classEntry path="com.rpath.raf.views.MagicFormItem"/>
     <classEntry path="com.rpath.raf.views.PromptingTextArea"/>
     <classEntry path="com.rpath.raf.views.PromptingTextInput"/>
     <classEntry path="com.rpath.raf.views.SmartForm"/>
     <classEntry path="com.rpath.raf.views.SmartFormChoice"/>
     <classEntry path="com.rpath.raf.views.SmartFormItem"/>
-    <classEntry path="com.rpath.raf.util.LifecycleObject"/>
-    <classEntry path="com.rpath.raf.views.CompoundInputItem"/>
-    <classEntry path="com.rpath.raf.validators.UniqueElementValidator"/>
-    <classEntry path="com.rpath.raf.validators.StringMatchValidator"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests>
-    <namespaceManifestEntry manifest="smartform-manifest.xml" namespace="http://www.rpath.com/raf/2009/smartform"/>
+    <namespaceManifestEntry manifest="smartform-manifest.xml" namespace="http://www.rpath.com/2009/smartform"/>
   </namespaceManifests>
 </flexLibProperties>

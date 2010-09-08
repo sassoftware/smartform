@@ -9,7 +9,7 @@
 # is always available at http://www.opensource.org/licenses/mit-license.php.
 #
 # This program is distributed in the hope that it will be useful, but
-# without any waranty; without even the implied warranty of merchantability
+# without any warranty; without even the implied warranty of merchantability
 # or fitness for a particular purpose. See the MIT License for full details.
 */
 -->
@@ -21,6 +21,8 @@
     xmlns:mx="library://ns.adobe.com/flex/mx" 
 
     creationComplete="onCreationComplete(event)"
+    
+    implements="com.rpath.raf.util.IValidationAware"
     >
     
     <fx:Metadata>
@@ -32,6 +34,7 @@
 <![CDATA[
     import com.rpath.raf.util.DescriptorUtil;
     import com.rpath.raf.util.ErrorTipManager;
+    import com.rpath.raf.util.IValidationAware;
     import com.rpath.raf.util.ValidationHelper;
     
     import mx.binding.utils.BindingUtils;
@@ -185,9 +188,25 @@
     public var labelLengthThreshold:int = 13;
     
     [Bindable]
-    public var validationHelper:ValidationHelper;
+    public function get validationHelper():ValidationHelper
+    {
+        return _validationHelper;
+    }
+    
+    private var _validationHelper:ValidationHelper;
+    
+    public function set validationHelper(v:ValidationHelper):void
+    {
+        _validationHelper = v;
+    }
     
     private var watchers:Array;
+    
+    /** keep track of our entire data object changing - e.g. during
+    * initialization or re-initialization if the form is reused
+    */
+    
+    private var _dataObjectChanged:Boolean;
     
     [Bindable("dataChange")]
     public override function set data(v:Object):void
@@ -200,6 +219,7 @@
             unbindWatchers();
             super.data = v;
             _needsRebinding = true;
+            _dataObjectChanged = true;
             invalidateProperties();
         }
     }
@@ -328,7 +348,7 @@
             }
         }
         
-        if (_dataChanged)
+        if (_itemDataChanged)
         {
             revisitConditions();
             if (!_childDirtyChanged)
@@ -336,7 +356,7 @@
                 checkDirty();
             }
             
-            _dataChanged = false;
+            _itemDataChanged = false;
         }
         
         if (_childDirtyChanged)
@@ -472,23 +492,36 @@
      */
     private var firstTime:Boolean = true;
     
+    
+    public function get errorTipManager():ErrorTipManager
+    {
+        return _errorTipManager;
+    }
+    
+    private var _errorTipManager:ErrorTipManager;
+    
+    public function set errorTipManager(v:ErrorTipManager):void
+    {
+        _errorTipManager = v;
+        if (validationHelper)
+            validationHelper.errorTipManager = _errorTipManager;
+    }
+    
+    
     /** createFormItems iterates the descriptor and creates, binds and sets 
      * initial default values for every form item described in the descriptor
      */
-    
-    public var errorTipManager:ErrorTipManager;
-    
+
     private function createFormItems():void
     {
-        errorTipManager = new ErrorTipManager();
-        validationHelper = new ValidationHelper(null,this,"isValid", errorTipManager);
+        validationHelper = new ValidationHelper(null,this,"isValid");
         
         // now add any other children
         for each (var item:* in itemsBefore)
         {
             addChild(item);
             
-            validationHelper.addValidator(item);
+            validationHelper.addItemToValidate(item);
         }
         
         
@@ -597,12 +630,12 @@
                     BindingUtils.bindProperty(newItem, "enabled", this, [ "enabled"], false, false);
                     
                     newItem.errorTipManager = errorTipManager;
-                    validationHelper.addValidator(newItem);
+                    validationHelper.addItemToValidate(newItem);
                     
                     //newItem.addEventListener(ValidationResultEvent.VALID, handleValidationEvent,false,0,true);
                     //newItem.addEventListener(ValidationResultEvent.INVALID, handleValidationEvent,false,0,true);
                     
-                    newItem.addEventListener(FlexEvent.DATA_CHANGE, handleDataChange,false,0,true);
+                    newItem.addEventListener(FlexEvent.DATA_CHANGE, handleItemDataChange,false,0,true);
                     newItem.addEventListener("dirtyChanged", handleDirtyEvent,false,0,true);
                     
                     // give the item a chance to stash the orig data value for dirty detection
@@ -637,11 +670,9 @@
         for each (var itemAfter:* in itemsAfter)
         {
             addChild(itemAfter);
+            validationHelper.addItemToValidate(itemAfter);
         }
         
-        // force validate the whole lot
-        //handleValidationEvent();
-        validationHelper.validateNow(true);
     }
     
     private function itemDataSetterWrapper(newItem:SmartFormItem):Function
@@ -701,11 +732,13 @@
         }
     }
     
-    private var _dataChanged:Boolean;
+    /** keep track of data value changes by our form items
+    */
+    private var _itemDataChanged:Boolean;
     
-    private function handleDataChange(event:FlexEvent):void
+    private function handleItemDataChange(event:FlexEvent):void
     {
-        _dataChanged = true;
+        _itemDataChanged = true;
         invalidateProperties();
     }
     
@@ -736,7 +769,18 @@
     // ------------------------------------------------ VALIDATION
     
     [Bindable]
-    public var isValid:Boolean = true;;
+    public function get isValid():Boolean
+    {
+        return _isValid;
+    }
+    
+    private var _isValid:Boolean = true;;
+    
+    public function set isValid(v:Boolean):void
+    {
+        _isValid = v;
+       //dispatchEvent(new FlexEvent(_isValid ? FlexEvent.VALID : FlexEvent.INVALID));
+    }
     
     private var _directValid:Boolean = true;
     
@@ -773,7 +817,7 @@
     
     /** validate forces a validation pass and pops all error flags
      */
-    public function validate():void
+    public function validate(suppressErrors:Boolean=false):void
     {
         if (!isValid)
         {
@@ -781,7 +825,7 @@
             {
                 if (child is SmartFormItem)
                 {
-                    (child as SmartFormItem).validate();
+                    //(child as SmartFormItem).validate();
                 }
             }
         }
@@ -868,14 +912,11 @@
         }
     }
     
-    override public function get defaultButton():IFlexDisplayObject
+/*     override public function get defaultButton():IFlexDisplayObject
     {
         return super.defaultButton;
     }
     
-    /**
-     *  @private
-     */
     
     private var dw:ChangeWatcher;
     
@@ -891,7 +932,7 @@
             dw = BindingUtils.bindProperty(value, "enabled",
                 this, ["isValid"],false,true);
         }
-    }
+    } */
 
     private var firstItem:FormItem;
     
@@ -903,6 +944,9 @@
         // until AFTER the form is fully initialized.
         // So we have to force the issue here
         
+/*         if (validationHelper)
+            validationHelper.errorTipManager.suppressErrors = false;
+ */        
         if (firstItem)
         {
             var oldLabel:String = firstItem.label;
