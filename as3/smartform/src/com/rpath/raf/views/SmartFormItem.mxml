@@ -1268,7 +1268,7 @@
                                 width="100%"
                                 toolTipShown="toolTipShown(event)"
                                 inputFields="{[longtext]}">
-           <s:HGroup width="100%">
+           <s:HGroup width="100%" includeIn="longtext">
                <views:ExtendedTextArea id="longtext" text="{data}"  
                                        editable="{editable}" enabled="{enabled}"
                                        prompt="{prompt}"
