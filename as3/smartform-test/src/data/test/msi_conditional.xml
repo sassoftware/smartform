@@ -1,0 +1,134 @@
+<factory xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/factorydef-1.0.xsd factorydef-1.0.xsd">
+<metadata>
+    <displayName>MSI</displayName>
+    <descriptions>
+      <desc>Import a zip archive into the repository</desc>
+    </descriptions>
+    <supportedFiles>
+      <file>zip</file>
+    </supportedFiles>
+  </metadata>
+<dataFields>
+  <field>
+    <name>name</name>
+    <descriptions><desc>Package name</desc></descriptions>
+    <type>str</type>
+    <constraints>
+      <regexp>^[\w\.\-]+$</regexp>
+    </constraints>
+    <required>true</required>
+  </field>
+  <field>
+    <name>version</name>
+    <descriptions><desc>Package version</desc></descriptions>
+    <type>str</type>
+    <required>true</required>
+  </field>
+  <field>
+    <name>manufacturer</name>
+    <descriptions><desc>Manufacturer</desc></descriptions>
+    <type>str</type>
+    <required>true</required>
+  </field>
+  <field>
+    <name>applicationType</name>
+    <descriptions><desc>Application Type</desc></descriptions>
+    <enumeratedType>
+      <describedValue>
+        <descriptions><desc>Application</desc></descriptions>
+        <key>app</key>
+      </describedValue>
+      <describedValue>
+        <descriptions><desc>Web Application</desc></descriptions>
+        <key>webApp</key>
+      </describedValue>
+    </enumeratedType>
+    <default>app</default>
+    <required>true</required>
+  </field>
+  <field>
+    <name>destdir</name>
+    <descriptions><desc>Where do you want to extract the application?</desc></descriptions>
+    <type>str</type>
+    <required>true</required>
+    <conditional>
+      <fieldName>applicationType</fieldName>
+      <operator>eq</operator>
+      <value>app</value>
+    </conditional>
+  </field>
+  <field>
+    <name>defaultDocument</name>
+    <descriptions><desc>Default Document</desc></descriptions>
+    <type>str</type>
+    <required>true</required>
+    <conditional>
+      <fieldName>applicationType</fieldName>
+      <operator>eq</operator>
+      <value>webApp</value>
+    </conditional>
+  </field>
+  <field>
+    <name>webSite</name>
+    <descriptions><desc>Web Site Name</desc></descriptions>
+    <type>str</type>
+    <required>true</required>
+    <conditional>
+      <fieldName>applicationType</fieldName>
+      <operator>eq</operator>
+      <value>webApp</value>
+    </conditional>
+  </field>
+  <field>
+    <name>alias</name>
+    <descriptions><desc>Web Site Alias</desc></descriptions>
+    <type>str</type>
+    <required>true</required>
+    <conditional>
+      <fieldName>applicationType</fieldName>
+      <operator>eq</operator>
+      <value>webApp</value>
+    </conditional>
+  </field>
+  <field>
+    <name>webSiteDir</name>
+    <descriptions><desc>Where in the web root do you want to extract the application?</desc></descriptions>
+    <type>str</type>
+    <required>true</required>
+    <conditional>
+      <fieldName>applicationType</fieldName>
+      <operator>eq</operator>
+      <value>webApp</value>
+    </conditional>
+  </field>
+  <field>
+    <name>applicationName</name>
+    <descriptions><desc>Application Name</desc></descriptions>
+    <type>str</type>
+    <required>true</required>
+    <conditional>
+      <fieldName>applicationType</fieldName>
+      <operator>eq</operator>
+      <value>webApp</value>
+    </conditional>
+  </field>
+  <field>
+    <name>summary</name>
+    <descriptions><desc>Package summary</desc></descriptions>
+    <type>str</type>
+  </field>
+  <field>
+    <name>description</name>
+    <descriptions><desc>Package description</desc></descriptions>
+    <type>str</type>
+  </field>
+  <field>
+    <name>fileNameTemplate</name>
+    <descriptions><desc>Template for renaming files</desc></descriptions>
+    <type>str</type>
+    <default>%(name)s-%(version)s.zip</default>
+    <required>false</required>
+    <hidden>true</hidden>
+  </field>
+</dataFields>
+</factory>

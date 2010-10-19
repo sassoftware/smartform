@@ -37,6 +37,7 @@
         <fx:XML id="conditional_metadata" source="/data/test/conditional.xml" />
         <fx:XML id="large_metadata" source="/data/test/large.xml" />
         <fx:XML id="complex_metadata" source="/data/test/complex.xml" />
+        <fx:XML id="msi_conditional" source="/data/test/msi_conditional.xml" />
         
         <mx:ArrayCollection id="tests">
             <fx:Object label="" test="" />
@@ -51,6 +52,7 @@
             <fx:Object label="Launch vsphere" test="launch_vsphere_metadata" />
             <fx:Object label="Configure EC2" test="configure_ec2_metadata" />
             <fx:Object label="Configure vsphere" test="configure_vsphere_metadata" />
+            <fx:Object label="MSI Conditional" test="msi_conditional" />
         </mx:ArrayCollection>
         
     </fx:Declarations>
