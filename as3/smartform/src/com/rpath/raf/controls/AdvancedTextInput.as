@@ -47,7 +47,7 @@ public class AdvancedTextInput extends TextInput
     //
     //----------------------------------------------------------------------
     
-    private var _promptText:String
+    private var _promptText:String;
     
     [Bindable]
     
