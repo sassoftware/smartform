@@ -47,7 +47,7 @@ public class AdvancedTextArea extends TextArea
     //
     //----------------------------------------------------------------------
     
-    private var _promptText:String
+    private var _promptText:String;
     
     [Bindable]
     
