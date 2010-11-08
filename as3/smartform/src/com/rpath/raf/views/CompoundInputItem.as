@@ -36,7 +36,8 @@ package com.rpath.raf.views
             // let our specific input controls mark themselves appropriately
             for each (var elem:UIComponent in inputFields)
             {
-                elem.validationResultHandler(event);
+                if (elem)
+                    elem.validationResultHandler(event);
             }
             
             // propagate events beyond ourselves
