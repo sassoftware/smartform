@@ -30,6 +30,7 @@
 
     <fx:Script>
     <![CDATA[
+        import mx.states.State;
         import mx.effects.IAbstractEffect;
         import com.rpath.raf.util.IValidationAware;
         import com.rpath.raf.util.DescriptorUtil;
@@ -410,7 +411,22 @@
         initializeValidators();
         
         var typeString:String = editable ? effectiveType : effectiveType+"Disabled";
-        currentState = typeString;
+        
+        // check resulting type is actually known (i.e. descriptor is valid)
+        if (states.some(
+                function checkStateExists(item:*, index:int, array:Array):Boolean
+                {
+                    return (item as State) ? (item as State).name == typeString : false;
+                }
+                ))
+        {
+            currentState = typeString;
+        }
+        else
+        {
+            currentState = "UNKNOWN";
+        }
+            
         
         // now kick the Magic item to create it's children
         //magic.createComponentsFromDescriptors();
@@ -1000,7 +1016,13 @@
         toolTipShown="toolTipShown(event)"
         >
        -->
-       <!-- str: 0 -->
+    <s:Label text="{data}" backgroundColor="0xFF0000" 
+                  toolTip="{prompt}" 
+                  width="100%"
+                  includeIn="UNKNOWN"
+                  />
+
+    <!-- str: 0 -->
        <views:ExtendedTextInput id="strField" text="{data}" 
                                 editable="{editable}" enabled="{enabled}"
                                 prompt="{prompt}"
