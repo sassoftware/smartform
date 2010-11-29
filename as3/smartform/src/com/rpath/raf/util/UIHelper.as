@@ -196,7 +196,7 @@ package com.rpath.raf.util
         }
         
         // make bytes human readable
-        public static function humanReadableSize(bytes:int, precision:int=1):String
+        public static function humanReadableSize(bytes:Number, precision:int=1):String
         {
             var s:String = bytes + ' bytes';
             
