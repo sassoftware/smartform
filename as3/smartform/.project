@@ -11,8 +11,13 @@
 			</arguments>
 		</buildCommand>
 		<buildCommand>
-			<name>com.elementriver.sourcemate.sourceMateBuilder</name>
+			<name>org.eclipse.ui.externaltools.ExternalToolBuilder</name>
+			<triggers>full,incremental,</triggers>
 			<arguments>
+				<dictionary>
+					<key>LaunchConfigHandle</key>
+					<value>&lt;project&gt;/.externalToolBuilders/com.elementriver.sourcemate.sourceMateBuilder (8).launch</value>
+				</dictionary>
 			</arguments>
 		</buildCommand>
 	</buildSpec>
