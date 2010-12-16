@@ -142,9 +142,9 @@
     		manifest="${smartform.manifest}">
     		
     		<compc-elements>
-                <include-libraries dir="${xobj.lib.dir}">
+                <library-path dir="${xobj.lib.dir}" append="true">
                     <include name="**/*.swc" />
-                </include-libraries>
+                </library-path>
             </compc-elements>
             		
         </flexlib-build>

@@ -41,7 +41,7 @@ public class ExtendedFormItem extends FormItem implements IValidationAware
             var lbl:Label = FormItem(event.currentTarget).itemLabel as Label;
             lbl.selectable = true;
             lbl.enabled = true;
-            lbl.setStyle("color", "blue");
+            lbl.setStyle("color", "#6666ff");
             lbl.setStyle("textDecoration", "underline");
             lbl.toolTip = "Click here for more information";
             lbl.useHandCursor = true;

@@ -13,15 +13,26 @@
 -->
 
 <componentPackage>
-    <component id="HelpEvent" class="com.rpath.raf.events.HelpEvent"/>
-    <component id="DescriptorUtil" class="com.rpath.raf.util.DescriptorUtil"/>
-    <component id="UIHelper" class="com.rpath.raf.util.UIHelper"/>
-    <component id="ValidationHelper" class="com.rpath.raf.util.ValidationHelper"/>
+    
+    <component id="AdvancedTextAreaSkin" class="com.rpath.raf.skins.AdvancedTextAreaSkin"/>
+    <component id="AdvancedTextInputSkin" class="com.rpath.raf.skins.AdvancedTextInputSkin"/>
+    <component id="BooleanValidator" class="com.rpath.raf.validators.BooleanValidator"/>
+    <component id="CollectionValidator" class="com.rpath.raf.validators.CollectionValidator"/>
+    <component id="CompoundInputItem" class="com.rpath.raf.views.CompoundInputItem"/>
     <component id="ConditionalFormItem" class="com.rpath.raf.views.ConditionalFormItem"/>
+    <component id="controls.AdvancedTextArea" class="com.rpath.raf.controls.AdvancedTextArea"/>
+    <component id="controls.AdvancedTextInput" class="com.rpath.raf.controls.AdvancedTextInput"/>
+    <component id="DescriptorUtil" class="com.rpath.raf.util.DescriptorUtil"/>
+    <component id="DictionaryUtils" class="com.rpath.raf.util.DictionaryUtils"/>
+    <component id="ErrorTipManager" class="com.rpath.raf.util.ErrorTipManager"/>
+    <component id="events.HelpEvent" class="com.rpath.raf.events.HelpEvent"/>
     <component id="ExtendedFormItem" class="com.rpath.raf.views.ExtendedFormItem"/>
     <component id="ExtendedText" class="com.rpath.raf.views.ExtendedText"/>
     <component id="ExtendedTextArea" class="com.rpath.raf.views.ExtendedTextArea"/>
     <component id="ExtendedTextInput" class="com.rpath.raf.views.ExtendedTextInput"/>
+    <component id="HelpEvent" class="com.rpath.raf.events.HelpEvent"/>
+    <component id="IValidationAware" class="com.rpath.raf.util.IValidationAware"/>
+    <component id="LifecycleObject" class="com.rpath.raf.util.LifecycleObject"/>
     <component id="PromptingTextArea" class="com.rpath.raf.views.PromptingTextArea"/>
     <component id="PromptingTextInput" class="com.rpath.raf.views.PromptingTextInput"/>
     <component id="SmartForm" class="com.rpath.raf.views.SmartForm"/>
@@ -29,7 +40,8 @@
     <component id="SmartFormItem" class="com.rpath.raf.views.SmartFormItem"/>
     <component id="SmartformVersion" class="com.rpath.raf.SmartformVersion"/>
     <component id="StringMatchValidator" class="com.rpath.raf.validators.StringMatchValidator"/>
+    <component id="UIHelper" class="com.rpath.raf.util.UIHelper"/>
     <component id="UniqueElementValidator" class="com.rpath.raf.validators.UniqueElementValidator"/>
-    <component id="BooleanValidator" class="com.rpath.raf.validators.BooleanValidator"/>
-    <component id="CollectionValidator" class="com.rpath.raf.validators.CollectionValidator"/>
+    <component id="ValidationHelper" class="com.rpath.raf.util.ValidationHelper"/>
+
 </componentPackage>
