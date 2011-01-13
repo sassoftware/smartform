@@ -39,7 +39,7 @@ public class AdvancedTextArea extends TextArea
     //
     //----------------------------------------------------------------------
     
-    [SkinState("focused")];
+    [SkinState("focused")]
     
     //----------------------------------------------------------------------
     //
@@ -50,7 +50,6 @@ public class AdvancedTextArea extends TextArea
     private var _promptText:String;
     
     [Bindable]
-    
     public function get promptText():String
     {
         return _promptText;
