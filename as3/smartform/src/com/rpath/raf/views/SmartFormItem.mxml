@@ -117,7 +117,10 @@
     [Bindable("dataChange")]
     public override function set data(v:Object):void
     {
-        _dataChanged = true;
+        if (super.data == v)
+            return;
+
+       _dataChanged = true;
         
         // this will dispatch the required dataChange event
         super.data = v;
