@@ -114,7 +114,7 @@
     need to preserve that event type to avoid redundant change notifications
     */
     
-    [Bindable]
+    [Bindable("dataChange")]
     public override function set data(v:Object):void
     {
         _dataChanged = true;
