@@ -126,9 +126,9 @@ class DescriptorTest(BaseTest):
         <field>
             <name>cloudType</name>
             <descriptions>
+                <desc>Default lang</desc>
                 <desc lang="lang1">field msg in lang 1</desc>
                 <desc lang="lang2">field msg in lang 2</desc>
-                <desc>Default lang</desc>
             </descriptions>
             <type>str</type>
         </field>
@@ -830,6 +830,15 @@ class DescriptorConstraintTest(BaseTest):
             descriptor.DescriptorData,
             fromStream = xmlDescriptorDataConditional23, descriptor = dsc)
         self.failUnlessEqual(err.args[0], ["Missing field: 'cond-0'"])
+
+    def testDuplicateDescriptions(self):
+        dsc = descriptor.ConfigurationDescriptor()
+        dsc.addDescription("Test 1")
+        dsc.addDescription("Test 2")
+        dlist = dsc._rootObj.get_metadata().get_descriptions().get_desc()
+        self.failUnlessEqual(
+            [(x.get_lang(), x.getValueOf_()) for x in dlist],
+            [(None, 'Test 2')])
 
 xmlDescriptor1 = """<?xml version="1.0" encoding="UTF-8"?>
 <descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd" id="Some-ID">
