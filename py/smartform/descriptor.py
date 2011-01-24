@@ -262,15 +262,18 @@ class BaseDescriptor(_BaseClass):
     def Descriptions(self, values):
         if values is None:
             return None
-        ret = self.xmlFactory().descriptionsTypeSub.factory()
         if not isinstance(values, list):
             values = [ values ]
+        # Eliminate duplicates
+        langMap = {}
         for val in values:
             if isinstance(val, (str, unicode)):
                 val = self.Description(val)
             elif isinstance(val, tuple):
                 val = self.Description(val[0], val[1])
-            ret.add_desc(val)
+            langMap[val.get_lang()] = val
+        ret = self.xmlFactory().descriptionsTypeSub.factory()
+        ret.set_desc([ x[1] for x in sorted(langMap.items()) ])
         return ret
 
     def EnumeratedType(self, values):
@@ -316,12 +319,14 @@ class BaseDescriptor(_BaseClass):
     def addDescription(self, description, lang=None):
         metadata = self._rootObj.get_metadata()
         descriptions = metadata.get_descriptions()
-        d = self.Description(description, lang = lang)
         if descriptions is None:
-            description = self.Descriptions([ d ])
-            metadata.set_descriptions(description)
-            return
-        descriptions.add_desc(d)
+            dlist = []
+        else:
+            dlist = descriptions.get_desc()
+        d = self.Description(description, lang = lang)
+        dlist.append(d)
+        # This also eliminates duplicates
+        metadata.set_descriptions(self.Descriptions(dlist))
 
     def Conditional(self, fieldName, fieldValue, operator = "eq"):
         node = self.xmlFactory().conditionalTypeSub.factory(
