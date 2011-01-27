@@ -19,6 +19,7 @@ public class ExtendedFormItem extends FormItem implements IValidationAware
         super();
         
         this.addEventListener(FlexEvent.CREATION_COMPLETE, onCreationComplete);
+        this.setStyle("backgroundAlpha","0");
     }
     
     [Bindable]
@@ -41,7 +42,7 @@ public class ExtendedFormItem extends FormItem implements IValidationAware
             var lbl:Label = FormItem(event.currentTarget).itemLabel as Label;
             lbl.selectable = true;
             lbl.enabled = true;
-            lbl.setStyle("color", "#6666ff");
+            lbl.setStyle("color", this.getStyle("labelColor"));
             lbl.setStyle("textDecoration", "underline");
             lbl.toolTip = "Click here for more information";
             lbl.useHandCursor = true;
