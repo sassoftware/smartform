@@ -1303,7 +1303,7 @@
                                        width="100%"
                                        minWidth="400"
                                        maxHeight="250"/>
-               <mx:Button label="Open..."
+               <mx:Button styleName="mxButtonStyle" label="Open..."
                           toolTip="Use contents of a local file"
                           includeInLayout="{allowFileContent}"
                           visible="{allowFileContent}"
