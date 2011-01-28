@@ -226,7 +226,7 @@ in accordance with the terms of the license agreement accompanying it.
         top="1"
         lineBreak="explicit"
         visible="{showPrompt(currentState, hostComponent.text)}"
-        color="#666666"
+        color="#999999"
         fontStyle="italic"
         />
     
