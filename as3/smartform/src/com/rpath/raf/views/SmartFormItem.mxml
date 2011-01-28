@@ -1307,7 +1307,6 @@
                           toolTip="Use contents of a local file"
                           includeInLayout="{allowFileContent}"
                           visible="{allowFileContent}"
-                          styleName="mxButtonStyle"
                           click="handleReadFileContent(event)"/>
            </s:HGroup>
            <views:ExtendedTextArea text="{data}" 
