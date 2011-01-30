@@ -398,7 +398,7 @@ package com.rpath.raf.util
             {
                 var v:Validator = validators[i] as Validator;
                 
-                if (v && v.enabled)
+                if (v && v.enabled && v.source)
                 {
                     // Validate with event dispatch so that we and our errorTip
                     // manager get to hear the events.
