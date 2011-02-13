@@ -34,7 +34,8 @@ in accordance with the terms of the license agreement accompanying it.
         private var paddingChanged:Boolean;
         
         /* Define the skin elements that should not be colorized. */
-        static private const exclusions:Array = ["background", "textDisplay"];
+        //static private const exclusions:Array = ["background", "textDisplay"];
+        static private const exclusions:Array = ["textDisplay"];
         
         /**
          * @private
@@ -54,13 +55,13 @@ in accordance with the terms of the license agreement accompanying it.
          */
         override protected function commitProperties():void
         {
-            super.commitProperties();
             
             if (paddingChanged)
             {
                 updatePadding();
                 paddingChanged = false;
             }
+            super.commitProperties();
         }
         
         /**
@@ -209,7 +210,7 @@ in accordance with the terms of the license agreement accompanying it.
     <s:RichEditableText id="textDisplay"
                         verticalAlign="middle"
                         widthInChars="10"
-                        backgroundColor="#464646"
+                        backgroundColor="0x464646"
                         left="1" right="1" top="1" bottom="1" />
     
     <!-- prompt -->
@@ -226,7 +227,7 @@ in accordance with the terms of the license agreement accompanying it.
         top="1"
         lineBreak="explicit"
         visible="{showPrompt(currentState, hostComponent.text)}"
-        color="#999999"
+        color="0x222222"
         fontStyle="italic"
         />
     
