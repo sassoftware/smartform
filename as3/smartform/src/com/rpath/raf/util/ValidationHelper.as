@@ -554,7 +554,6 @@ package com.rpath.raf.util
 
         override protected function commitProperties():void
         {
-            super.commitProperties();
             
             if (_needsValidation)
             {
@@ -578,6 +577,7 @@ package com.rpath.raf.util
                 // start showing the problems hereafter
                 errorTipManager.decreaseSuppressionCount();
             }
+            super.commitProperties();
         }
     }
 }
