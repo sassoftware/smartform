@@ -652,7 +652,7 @@
                     if (firstItem == null)
                         firstItem = newItem;
                 }
-                /* else
+                else
                 {
                     // we did not meet the condition, so REMOVE the property we represent 
                     // from the underlying data object
@@ -660,7 +660,8 @@
                     // TODO: THIS GETS HAIRY because it may be that there's multiple, duplicative fields
                     // that have mutually exclusive conditions. We don't want to delete a property that 
                     // is actually defined by another field in the descriptor
-                } */
+                    delete data[propName];
+                }
             }
             
             firstTime = false;
