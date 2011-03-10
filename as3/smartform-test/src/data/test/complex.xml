@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <cloudDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/factorydef-1.0.xsd factorydef-1.0.xsd">
   <metadata>
       <displayName>CloudInfo</displayName>
