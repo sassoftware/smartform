@@ -1,0 +1,310 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" 
+xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd">
+    <metadata>
+        <displayName>VMware Launch Parameters</displayName>
+        <descriptions>
+            <desc>VMware Launch Parameters</desc>
+        </descriptions>
+    </metadata>
+    <dataFields>
+        <field>
+            <name>imageId</name>
+            <descriptions>
+                <desc>Image ID</desc>
+            </descriptions>
+            <type>str</type>
+            <constraints>
+                <range>
+                    <min>1</min>
+                    <max>32</max>
+                </range>
+            </constraints>
+            <required>true</required>
+            <hidden>true</hidden>
+        </field>
+        <field>
+            <name>instanceName</name>
+            <descriptions>
+                <desc>Instance Name</desc>
+            </descriptions>
+            <help href="http://localhost:26864/TOPLEVEL/clouds/vmware/help/launch/instanceName.html"/>
+            <type>str</type>
+            <constraints>
+                <length>32</length>
+            </constraints>
+            <required>true</required>
+        </field>
+        <field>
+            <name>instanceDescription</name>
+            <descriptions>
+                <desc>Instance Description</desc>
+            </descriptions>
+            <help href="http://localhost:26864/TOPLEVEL/clouds/vmware/help/launch/instanceDescription.html"/>
+            <type>str</type>
+            <constraints>
+                <length>128</length>
+            </constraints>
+        </field>
+        <field>
+            <name>dataCenter</name>
+            <descriptions>
+                <desc>Data Center</desc>
+            </descriptions>
+            <help href="http://localhost:26864/TOPLEVEL/clouds/vmware/help/launch/dataCenter.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>rPath 1</desc>
+                    </descriptions>
+                    <key>datacenter-10</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>rPath 2</desc>
+                    </descriptions>
+                    <key>datacenter-20</key>
+                </describedValue>
+            </enumeratedType>
+            <default>datacenter-10</default>
+            <required>true</required>
+        </field>
+        <field>
+            <name>cr-datacenter-10</name>
+            <descriptions>
+                <desc>Compute Resource</desc>
+            </descriptions>
+            <help href="http://localhost:26864/TOPLEVEL/clouds/vmware/help/launch/computeResource.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>lab 1</desc>
+                    </descriptions>
+                    <key>domain-c10</key>
+                </describedValue>
+            </enumeratedType>
+            <default>domain-c10</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>dataCenter</fieldName>
+                <operator>eq</operator>
+                <value>datacenter-10</value>
+            </conditional>
+        </field>
+        <field>
+            <name>cr-datacenter-20</name>
+            <descriptions>
+                <desc>Compute Resource</desc>
+            </descriptions>
+            <help href="http://localhost:26864/TOPLEVEL/clouds/vmware/help/launch/computeResource.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>lab 2</desc>
+                    </descriptions>
+                    <key>domain-c20</key>
+                </describedValue>
+            </enumeratedType>
+            <default>domain-c20</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>dataCenter</fieldName>
+                <operator>eq</operator>
+                <value>datacenter-20</value>
+            </conditional>
+        </field>
+        <field>
+            <name>network-datacenter-10</name>
+            <descriptions>
+                <desc>Network</desc>
+            </descriptions>
+            <help href="http://localhost:26864/TOPLEVEL/clouds/vmware/help/launch/network.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>VM Network 10</desc>
+                    </descriptions>
+                    <key>network-10</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>Engineering Lab 10</desc>
+                    </descriptions>
+                    <key>dvportgroup-101</key>
+                </describedValue>
+            </enumeratedType>
+            <default>network-10</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>dataCenter</fieldName>
+                <operator>eq</operator>
+                <value>datacenter-10</value>
+            </conditional>
+        </field>
+        <field>
+            <name>network-datacenter-20</name>
+            <descriptions>
+                <desc>Network</desc>
+            </descriptions>
+            <help href="http://localhost:26864/TOPLEVEL/clouds/vmware/help/launch/network.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>VM Network 20</desc>
+                    </descriptions>
+                    <key>network-20</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>Engineering Lab 20</desc>
+                    </descriptions>
+                    <key>dvportgroup-201</key>
+                </describedValue>
+            </enumeratedType>
+            <default>network-20</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>dataCenter</fieldName>
+                <operator>eq</operator>
+                <value>datacenter-20</value>
+            </conditional>
+        </field>
+        <field>
+            <name>dataStore-domain-c10</name>
+            <descriptions>
+                <desc>Data Store</desc>
+            </descriptions>
+            <help href="http://localhost:26864/TOPLEVEL/clouds/vmware/help/launch/dataStore.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>datastore 100 - 381  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-100</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>datastore 101 - 381  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-101</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>datastore 102 - 381  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-102</key>
+                </describedValue>
+            </enumeratedType>
+            <default>datastore-100</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>cr-datacenter-10</fieldName>
+                <operator>eq</operator>
+                <value>domain-c10</value>
+            </conditional>
+        </field>
+        <field>
+            <name>dataStore-domain-c20</name>
+            <descriptions>
+                <desc>Data Store</desc>
+            </descriptions>
+            <help href="http://localhost:26864/TOPLEVEL/clouds/vmware/help/launch/dataStore.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>datastore 200 - 381  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-200</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>datastore 201 - 381  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-201</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>datastore 202 - 381  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-202</key>
+                </describedValue>
+            </enumeratedType>
+            <default>datastore-200</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>cr-datacenter-20</fieldName>
+                <operator>eq</operator>
+                <value>domain-c20</value>
+            </conditional>
+        </field>
+        <field>
+            <name>resourcePool-domain-c10</name>
+            <descriptions>
+                <desc>Resource Pool</desc>
+            </descriptions>
+            <help href="http://localhost:26864/TOPLEVEL/clouds/vmware/help/launch/resourcePool.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>Resource Pool 101</desc>
+                    </descriptions>
+                    <key>resgroup-101</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>Resource Pool 100</desc>
+                    </descriptions>
+                    <key>resgroup-100</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>Resources</desc>
+                    </descriptions>
+                    <key>resgroup-10</key>
+                </describedValue>
+            </enumeratedType>
+            <default>resgroup-100</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>cr-datacenter-10</fieldName>
+                <operator>eq</operator>
+                <value>domain-c10</value>
+            </conditional>
+        </field>
+        <field>
+            <name>resourcePool-domain-c20</name>
+            <descriptions>
+                <desc>Resource Pool</desc>
+            </descriptions>
+            <help href="http://localhost:26864/TOPLEVEL/clouds/vmware/help/launch/resourcePool.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>Resources</desc>
+                    </descriptions>
+                    <key>resgroup-20</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>Resource Pool 200</desc>
+                    </descriptions>
+                    <key>resgroup-200</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>Resource Pool 201</desc>
+                    </descriptions>
+                    <key>resgroup-201</key>
+                </describedValue>
+            </enumeratedType>
+            <default>resgroup-200</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>cr-datacenter-20</fieldName>
+                <operator>eq</operator>
+                <value>domain-c20</value>
+            </conditional>
+        </field>
+    </dataFields>
+</descriptor>
