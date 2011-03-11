@@ -527,6 +527,7 @@
         
         if (metadata)
         {
+            
             //trace("create form items " + this.uid);
             heading = DescriptorUtil.localeDescString(descriptionsList, metadataNS);
             
@@ -539,6 +540,8 @@
             var conditionalList:XMLList;
             for each (var field:XML in fieldsList)
             {
+                // flag to track whether we've defaulted the field or not
+                var hasADefault:Boolean = false;
                 var propName:String = field.metadataNS::name;
                 
                 condition = null;
@@ -606,6 +609,7 @@
                                 setProperty(data, propName, newValue);
                             }
                             
+                            hasADefault = true;
                         }
                     }
                     
@@ -631,6 +635,13 @@
                     
                     newItem.errorTipManager = errorTipManager;
                     validationHelper.addItemToValidate(newItem);
+                    
+                    if (hasADefault)
+                    {
+                        // kick a validation now on this field to ensure default itself is
+                        // valid. See RBL-8357
+                        newItem.validate();
+                    }
                     
                     //newItem.addEventListener(ValidationResultEvent.VALID, handleValidationEvent,false,0,true);
                     //newItem.addEventListener(ValidationResultEvent.INVALID, handleValidationEvent,false,0,true);
