@@ -94,10 +94,17 @@ public class ExtendedFormItem extends FormItem implements IValidationAware
         _validationHelper = v;
     }
     
+    private var _pendingValidation:Boolean;
+    
     public function validate(suppressEvents:Boolean=false):void
     {        
         if (validationHelper)
             validationHelper.validate(suppressEvents);
+        else
+        {
+            _pendingValidation = true;
+            invalidateProperties();
+        }
     }
     
     // optionally, show errors via this manager
@@ -114,6 +121,20 @@ public class ExtendedFormItem extends FormItem implements IValidationAware
         if (_validationHelper)
             _validationHelper.errorTipManager = _errorTipManager;
     }
+    
+    override protected function commitProperties():void
+    {
+        if (_pendingValidation && validationHelper != null
+        && validationHelper.errorTipManager.suppressionCount < 1)
+        {
+            _pendingValidation = false;
+            validationHelper.showErrors();
+        }
+        
+        super.commitProperties();
+    }
+    
+    
 
 }
 }

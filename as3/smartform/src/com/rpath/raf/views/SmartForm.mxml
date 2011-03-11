@@ -528,6 +528,7 @@
         
         if (metadata)
         {
+            
             //trace("create form items " + this.uid);
             heading = DescriptorUtil.localeDescString(descriptionsList, metadataNS);
             
@@ -540,6 +541,8 @@
             var conditionalList:XMLList;
             for each (var field:XML in fieldsList)
             {
+                // flag to track whether we've defaulted the field or not
+                var hasADefault:Boolean = false;
                 var propName:String = field.metadataNS::name;
                 
                 condition = null;
@@ -607,6 +610,7 @@
                                 setProperty(data, propName, newValue);
                             }
                             
+                            hasADefault = true;
                         }
                     }
                     
@@ -633,6 +637,13 @@
                     newItem.errorTipManager = errorTipManager;
                     validationHelper.addItemToValidate(newItem);
                     
+                    if (hasADefault)
+                    {
+                        // kick a validation now on this field to ensure default itself is
+                        // valid. See RBL-8357
+                        newItem.validate();
+                    }
+                    
                     //newItem.addEventListener(ValidationResultEvent.VALID, handleValidationEvent,false,0,true);
                     //newItem.addEventListener(ValidationResultEvent.INVALID, handleValidationEvent,false,0,true);
                     
@@ -653,7 +664,7 @@
                     if (firstItem == null)
                         firstItem = newItem;
                 }
-                /* else
+                else
                 {
                     // we did not meet the condition, so REMOVE the property we represent 
                     // from the underlying data object
@@ -661,7 +672,8 @@
                     // TODO: THIS GETS HAIRY because it may be that there's multiple, duplicative fields
                     // that have mutually exclusive conditions. We don't want to delete a property that 
                     // is actually defined by another field in the descriptor
-                } */
+                    delete data[propName];
+                }
             }
             
             firstTime = false;
