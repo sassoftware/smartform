@@ -660,7 +660,8 @@
                     // TODO: THIS GETS HAIRY because it may be that there's multiple, duplicative fields
                     // that have mutually exclusive conditions. We don't want to delete a property that 
                     // is actually defined by another field in the descriptor
-                    delete data[propName];
+                    if (data)
+                        delete data[propName];
                 }
             }
             
