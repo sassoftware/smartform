@@ -27,7 +27,7 @@
     <fx:Metadata>
         [Event(name="dirtyChanged", type="mx.events.DynamicEvent")]
     </fx:Metadata>
-
+    
     <fx:Script>
     <![CDATA[
         import mx.states.State;
@@ -49,881 +49,884 @@
         import mx.validators.Validator;
         
         import spark.events.IndexChangeEvent;
-    
-    /** SmartFormItems are used exclusively within a SmartForm and rely on the
-    * metadata structure supported by SmartForm for their behaviour.
-    */
-    
-    /** metadata holds the XML <field> structure that defines what kind of
-    * data entry control, labelling, data binding and validation a SmartFormItem
-    * instance should provide
-    */
-    
-    [Bindable]
-    public var metadata:XML;
-
-
-    public function get metadataNS():Namespace
-    {
-        if (!_metadataNS)
+        
+        /** SmartFormItems are used exclusively within a SmartForm and rely on the
+         * metadata structure supported by SmartForm for their behaviour.
+         */
+        
+        /** metadata holds the XML <field> structure that defines what kind of
+         * data entry control, labelling, data binding and validation a SmartFormItem
+         * instance should provide
+         */
+        
+        [Bindable]
+        public var metadata:XML;
+        
+        
+        public function get metadataNS():Namespace
         {
-            _metadataNS = new Namespace();
-        }
-        
-        return _metadataNS;
-    }
-        
-    private var _metadataNS:Namespace;
-
-    public function set metadataNS(value:Namespace):void
-    {
-        _metadataNS = value;
-    }
-
-
-    /** smartForm points to the form we're included in
-    */
-    
-    [Bindable]
-    public var smartForm:SmartForm;
-    
-    /** choices is an Array holding the set of enumeratedType values allowed for this 
-    * SmartFormItem
-    */
-    
-    [Bindable]
-    public var choices:ArrayCollection = new ArrayCollection();
-    
-    [Bindable]
-    protected var effectiveType:String;
-    
-    
-    /** defaultValue is drawn from metadata.default. Currently unused
-    */
-    
-    [Bindable]
-    public var defaultValue:String ="";
-
-    [Bindable]
-    public var displayAsPassword:Boolean;
-
-    private var _initializingControls:Boolean;
-    private var _dataChanged:Boolean;
-    
-    /* NOTE: Container declares this with a specified change event so we 
-    need to preserve that event type to avoid redundant change notifications
-    */
-    
-    [Bindable]
-    public override function set data(v:Object):void
-    {
-        _dataChanged = true;
-        
-        // this will dispatch the required dataChange event
-        super.data = v;
-        
-        // trigger commitProperties so that we check validation flags
-        invalidateProperties();
-    }
-
-    private var _origData:Object;
-    
-    public override function get data():Object
-    {
-        return super.data;
-    }
-
-    public function snapshotData():void
-    {
-        _origData = data;
-    }
-    
-    
-    private var _created:Boolean;
-        
-    protected override function commitProperties():void
-    {
-        try
-        {
-            // now commit super to pick up changes to styles, etc.
-            super.commitProperties();
-        }
-        catch (e:TypeError)
-        {
-            // this is here because if label is set before createChildren 
-            // has created the private labelObj in FormItem, commit will 
-            // blow up
-        }
-        
-        if (_dataChanged)
-        {
-            _dataChanged = false;
-            // refresh our controls to display new data
-            if (!_initializingControls)
+            if (!_metadataNS)
             {
-                initializeControls();
+                _metadataNS = new Namespace();
             }
             
-            isDirty = checkDirty();
+            return _metadataNS;
         }
         
-        /* if (_created)
+        private var _metadataNS:Namespace;
+        
+        public function set metadataNS(value:Namespace):void
         {
+            _metadataNS = value;
+        }
+        
+        
+        /** smartForm points to the form we're included in
+         */
+        
+        [Bindable]
+        public var smartForm:SmartForm;
+        
+        /** choices is an Array holding the set of enumeratedType values allowed for this 
+         * SmartFormItem
+         */
+        
+        [Bindable]
+        public var choices:ArrayCollection = new ArrayCollection();
+        
+        [Bindable]
+        protected var effectiveType:String;
+        
+        
+        /** defaultValue is drawn from metadata.default. Currently unused
+         */
+        
+        [Bindable]
+        public var defaultValue:String ="";
+        
+        [Bindable]
+        public var displayAsPassword:Boolean;
+        
+        private var _initializingControls:Boolean;
+        private var _dataChanged:Boolean;
+        
+        /* NOTE: Container declares this with a specified change event so we 
+        need to preserve that event type to avoid redundant change notifications
+        */
+        
+        [Bindable("dataChange")]
+        public override function set data(v:Object):void
+        {
+            if (super.data == v)
+                return;
+            
+            _dataChanged = true;
+            
+            // this will dispatch the required dataChange event
+            super.data = v;
+            
+            // trigger commitProperties so that we check validation flags
+            invalidateProperties();
+        }
+        
+        private var _origData:Object;
+        
+        public override function get data():Object
+        {
+            return super.data;
+        }
+        
+        public function snapshotData():void
+        {
+            _origData = data;
+        }
+        
+        
+        private var _created:Boolean;
+        
+        protected override function commitProperties():void
+        {
+            try
+            {
+                // now commit super to pick up changes to styles, etc.
+                super.commitProperties();
+            }
+            catch (e:TypeError)
+            {
+                // this is here because if label is set before createChildren 
+                // has created the private labelObj in FormItem, commit will 
+                // blow up
+            }
+            
+            if (_dataChanged)
+            {
+                _dataChanged = false;
+                // refresh our controls to display new data
+                if (!_initializingControls)
+                {
+                    initializeControls();
+                }
+                
+                isDirty = checkDirty();
+            }
+            
+            /* if (_created)
+            {
             // make sure form is marked valid/invalid at all times
             validate(false);
-        }
-        else
-        {
+            }
+            else
+            {
             // in initialization case, validate without events
             validate(true);
-        } */
-        
-    }
-    
-    private function checkDirty():Boolean
-    {
-        var newData:Object = data;
-        
-        if ((_origData == "" || _origData == null)
-            && (newData == "" || newData == null))
-        {
-            return false;
-        }
-        else
-        {
-            return _origData != newData;
-        }
-        
-    }
-    
-    
-    public function initializeControls():void
-    {
-        _initializingControls = true;
-        // when the data changes, we need to refresh the current control
-        switch (effectiveType)
-        {
-            case "multilist":
-                initListSelection(multilist);
-                break;
-
-            case "radiochoice":
-                initRadioChoiceSelection();
-                break;
-
-            case "multicheck":
-                initMultiCheckSelection();
-                break;
+            } */
             
-            case "listbox":
-                initListSelection(listbox);
-                break;
-            
-            case "pulldownchoice":
-                initComboBoxSelection();
-                break;
-                
-            case "ipAddress":
-                initIPAddress();
-                break;
-        }
-        _initializingControls = false;
-    }
-    
-    [Bindable]
-    public function set editable(v:Boolean):void
-    {
-        _itemEditable = v;
-    }
-
-    private var _itemEditable:Boolean = true;
-    
-    public function get editable():Boolean
-    {
-        // only enable fields that the metadata says should be enabled
-        if (metadata && !(metadata..metadataNS::readonly == true))
-            return _itemEditable;
-        else
-            return false;
-    }
-
-    
-    /** prompt is for use with the PromptingTextArea controls
-    */
-    
-    [Bindable]
-    public var prompt:String;
-
-    [Bindable]
-    public var allowFileContent:Boolean;
-    
-    private function extractChoices(describedValues:XMLList):void
-    {
-        var newChoices:ArrayCollection = new ArrayCollection();
-        var newChoice:SmartFormChoice;
-        
-        for each (var v:* in describedValues)
-        {
-            newChoice = new SmartFormChoice();
-            newChoice.label = DescriptorUtil.localeDescString(v.metadataNS::descriptions, metadataNS);
-            newChoice.value = v.metadataNS::key.toString();
-            newChoices.addItem(newChoice);
         }
         
-        // now sort them for finesse (RBL-3883)
-        var sort:Sort = new Sort();
-        
-        sort.fields = [new SortField("label",true)];
-        newChoices.sort = sort;
-        newChoices.refresh();
-        
-        choices = newChoices;
-    }
-    
-    
-    public function onInitialize(event:FlexEvent):void
-    {
-    }
-
-    private function toolTipShown(event:ToolTipEvent):void
-    {
-        // redispatch to effectively bubble the event, since toolTipShown
-        // is NOT a bubbling event by default (bummer)
-        dispatchEvent(event);
-     }
-        
-    // The workhorse method. Unpacks metadata, decides what effective UI control
-    // to use and then sets our state appropriately to cause the right type of
-    // UI element to be added as a child
-    
-    protected override function createChildren():void
-    {        
-        super.createChildren();
-        
-        // process the XML metadata, set our own props and create the appropriate items
-        
-        label = DescriptorUtil.localeDescString(metadata.metadataNS::descriptions, metadataNS);
-        prompt = DescriptorUtil.localeDescString(metadata.metadataNS::prompt, metadataNS);
-        
-        // make the formitem itself show the same tooltip as the control 
-        toolTip = prompt;
-        
-        helpLink = DescriptorUtil.localHelpHref(metadata.metadataNS::help, metadataNS);
-        helpNode = DescriptorUtil.localHelpNode(metadata.metadataNS::help, metadataNS);
-        
-        required = metadata.metadataNS::required.toString().toLowerCase() == "true";
-        allowFileContent = metadata.metadataNS::allowFileContent.toString().toLowerCase() == "true";
-        displayAsPassword = metadata.metadataNS::password.toString().toLowerCase() == "true";
-        
-        var lengthConstraint:int = metadata..metadataNS::constraints.metadataNS::length;
-        
-        var enumerated:Boolean = metadata..metadataNS::enumeratedType.length() > 0;
-        var count:int = metadata..metadataNS::enumeratedType.metadataNS::describedValue.length();
-        
-        defaultValue = metadata.metadataNS::default;
-
-        effectiveType = metadata.metadataNS::type;
-        
-        // is this an enumerated type?
-        if (enumerated)
+        private function checkDirty():Boolean
         {
-            // populate the choices array
-            extractChoices(metadata..metadataNS::describedValue);
+            var newData:Object = data;
             
-            // edge case: enumerated type with no valid choices
-            if (choices.length == 0)
+            if ((_origData == "" || _origData == null)
+                && (newData == "" || newData == null))
             {
-                // skip this field entirely
-                this.visible= false;
-                this.includeInLayout = false;
-                return;
+                return false;
+            }
+            else
+            {
+                return _origData != newData;
             }
             
-            if (metadata.metadataNS::multiple.toString().toLowerCase() == "true" )
+        }
+        
+        
+        public function initializeControls():void
+        {
+            _initializingControls = true;
+            // when the data changes, we need to refresh the current control
+            switch (effectiveType)
             {
-                if (count < smartForm.discreteControlThreshold)
+                case "multilist":
+                    initListSelection(multilist);
+                    break;
+                
+                case "radiochoice":
+                    initRadioChoiceSelection();
+                    break;
+                
+                case "multicheck":
+                    initMultiCheckSelection();
+                    break;
+                
+                case "listbox":
+                    initListSelection(listbox);
+                    break;
+                
+                case "pulldownchoice":
+                    initComboBoxSelection();
+                    break;
+                
+                case "ipAddress":
+                    initIPAddress();
+                    break;
+            }
+            _initializingControls = false;
+        }
+        
+        [Bindable]
+        public function set editable(v:Boolean):void
+        {
+            _itemEditable = v;
+        }
+        
+        private var _itemEditable:Boolean = true;
+        
+        public function get editable():Boolean
+        {
+            // only enable fields that the metadata says should be enabled
+            if (metadata && !(metadata..metadataNS::readonly == true))
+                return _itemEditable;
+            else
+                return false;
+        }
+        
+        
+        /** prompt is for use with the PromptingTextArea controls
+         */
+        
+        [Bindable]
+        public var prompt:String;
+        
+        [Bindable]
+        public var allowFileContent:Boolean;
+        
+        private function extractChoices(describedValues:XMLList):void
+        {
+            var newChoices:ArrayCollection = new ArrayCollection();
+            var newChoice:SmartFormChoice;
+            
+            for each (var v:* in describedValues)
+            {
+                newChoice = new SmartFormChoice();
+                newChoice.label = DescriptorUtil.localeDescString(v.metadataNS::descriptions, metadataNS);
+                newChoice.value = v.metadataNS::key.toString();
+                newChoices.addItem(newChoice);
+            }
+            
+            // now sort them for finesse (RBL-3883)
+            var sort:Sort = new Sort();
+            
+            sort.fields = [new SortField("label",true)];
+            newChoices.sort = sort;
+            newChoices.refresh();
+            
+            choices = newChoices;
+        }
+        
+        
+        public function onInitialize(event:FlexEvent):void
+        {
+        }
+        
+        private function toolTipShown(event:ToolTipEvent):void
+        {
+            // redispatch to effectively bubble the event, since toolTipShown
+            // is NOT a bubbling event by default (bummer)
+            dispatchEvent(event);
+        }
+        
+        // The workhorse method. Unpacks metadata, decides what effective UI control
+        // to use and then sets our state appropriately to cause the right type of
+        // UI element to be added as a child
+        
+        protected override function createChildren():void
+        {        
+            super.createChildren();
+            
+            // process the XML metadata, set our own props and create the appropriate items
+            
+            label = DescriptorUtil.localeDescString(metadata.metadataNS::descriptions, metadataNS);
+            prompt = DescriptorUtil.localeDescString(metadata.metadataNS::prompt, metadataNS);
+            
+            // make the formitem itself show the same tooltip as the control 
+            toolTip = prompt;
+            
+            helpLink = DescriptorUtil.localHelpHref(metadata.metadataNS::help, metadataNS);
+            helpNode = DescriptorUtil.localHelpNode(metadata.metadataNS::help, metadataNS);
+            
+            required = metadata.metadataNS::required.toString().toLowerCase() == "true";
+            allowFileContent = metadata.metadataNS::allowFileContent.toString().toLowerCase() == "true";
+            displayAsPassword = metadata.metadataNS::password.toString().toLowerCase() == "true";
+            
+            var lengthConstraint:int = metadata..metadataNS::constraints.metadataNS::length;
+            
+            var enumerated:Boolean = metadata..metadataNS::enumeratedType.length() > 0;
+            var count:int = metadata..metadataNS::enumeratedType.metadataNS::describedValue.length();
+            
+            defaultValue = metadata.metadataNS::default;
+            
+            effectiveType = metadata.metadataNS::type;
+            
+            // is this an enumerated type?
+            if (enumerated)
+            {
+                // populate the choices array
+                extractChoices(metadata..metadataNS::describedValue);
+                
+                // edge case: enumerated type with no valid choices
+                if (choices.length == 0)
                 {
-                    // check whether the length of the labels is too large for 
-                    // checkbox style UI
-                    for each (var choice:SmartFormChoice in choices)
+                    // skip this field entirely
+                    this.visible= false;
+                    this.includeInLayout = false;
+                    return;
+                }
+                
+                if (metadata.metadataNS::multiple.toString().toLowerCase() == "true" )
+                {
+                    if (count < smartForm.discreteControlThreshold)
                     {
-                        if (choice.label.length > smartForm.multiCheckLabelLengthThreshold)
+                        // check whether the length of the labels is too large for 
+                        // checkbox style UI
+                        for each (var choice:SmartFormChoice in choices)
                         {
-                            effectiveType = "multilist";
-                            break;
+                            if (choice.label.length > smartForm.multiCheckLabelLengthThreshold)
+                            {
+                                effectiveType = "multilist";
+                                break;
+                            }
+                            else
+                            {
+                                effectiveType = "multicheck";
+                            }
                         }
-                        else
-                        {
-                        effectiveType = "multicheck";
-                        }
+                    }
+                    else
+                    {
+                        effectiveType = "multilist";
                     }
                 }
                 else
                 {
-                    effectiveType = "multilist";
-                }
-            }
-            else
-            {
-                // decide how many choices are allowed
-                if (count < smartForm.discreteControlThreshold)
-                {
-                    // check whether the length of the labels is too large for 
-                    // radiobutton style UI
-                    for each (choice in choices)
+                    // decide how many choices are allowed
+                    if (count < smartForm.discreteControlThreshold)
                     {
-                        // don't make this smaller than 15
-                        if (choice.label.length > smartForm.labelLengthThreshold)
+                        // check whether the length of the labels is too large for 
+                        // radiobutton style UI
+                        for each (choice in choices)
                         {
-                            effectiveType = "pulldownchoice";
-                            break;
-                        }
-                        else
-                        {
-                        effectiveType = "radiochoice";
+                            // don't make this smaller than 15
+                            if (choice.label.length > smartForm.labelLengthThreshold)
+                            {
+                                effectiveType = "pulldownchoice";
+                                break;
+                            }
+                            else
+                            {
+                                effectiveType = "radiochoice";
+                            }
                         }
                     }
-                }
-                else if (count < smartForm.menuControlThreshold)
-                {
-                    effectiveType = "pulldownchoice";
-                }
-                else 
-                {
-                    effectiveType = "listbox";
+                    else if (count < smartForm.menuControlThreshold)
+                    {
+                        effectiveType = "pulldownchoice";
+                    }
+                    else 
+                    {
+                        effectiveType = "listbox";
+                    }
                 }
             }
-        }
-        else if (effectiveType == "bool" && required)
-        {
-            // a required BOOL means we have to use radio button TRUE and FALSE
-            // and have NEITHER selected to start with
-            effectiveType = "radiobool";
-        }
-        else if (effectiveType == "str" && metadata..metadataNS::constraints.length)
-        {
-            if (lengthConstraint > smartForm.longTextThreshold)
+            else if (effectiveType == "bool" && required)
             {
-                effectiveType = "longtext";
+                // a required BOOL means we have to use radio button TRUE and FALSE
+                // and have NEITHER selected to start with
+                effectiveType = "radiobool";
             }
-        }
-
-        initializeValidators();
-        
-        var typeString:String = editable ? effectiveType : effectiveType+"Disabled";
-        
-        // check resulting type is actually known (i.e. descriptor is valid)
-        if (states.some(
+            else if (effectiveType == "str" && metadata..metadataNS::constraints.length)
+            {
+                if (lengthConstraint > smartForm.longTextThreshold)
+                {
+                    effectiveType = "longtext";
+                }
+            }
+            
+            initializeValidators();
+            
+            var typeString:String = editable ? effectiveType : effectiveType+"Disabled";
+            
+            // check resulting type is actually known (i.e. descriptor is valid)
+            if (states.some(
                 function checkStateExists(item:*, index:int, array:Array):Boolean
                 {
                     return (item as State) ? (item as State).name == typeString : false;
                 }
-                ))
-        {
-            currentState = typeString;
-        }
-        else
-        {
-            currentState = "UNKNOWN";
-        }
-            
-        
-        // now kick the Magic item to create it's children
-        //magic.createComponentsFromDescriptors();
-        
-        _dataChanged = true;
-        invalidateProperties();
-        
-        // and make sure we start off clean
-        isDirty = false;
-        
-        // stash the original data value (if any)
-        _origData = data;
-        
-    }
-   
-    override public function onCreationComplete(event:FlexEvent):void
-    {
-        super.onCreationComplete(event);
-        if (helpNode && helpNode.length() > 0)
-        {
-            helpLink = helpNode.@href;
-            if (helpLink == "")
+            ))
             {
-                helpKey = helpNode.toString();
-                if (helpKey.substring(0, 1) == "@")
-                {
-                    helpKey = helpKey.slice(1, -1);
-                }
-            }
-        }
-        
-        _created = true;
-    }
-
-    // ----------------------------------------------------- INITIALIZERS
-    
-    /*
-        All of these functions load the data object into the various UI control
-        types that the SmartFormItem supports
-    */
-    
-    private function initListSelection(list:spark.components.List):void
-    {
-        var newList:Vector.<Object> = new Vector.<Object>();
-        
-        for each (var v:SmartFormChoice in choices)
-        {
-            if (isChoiceInData(v.value.toString()))
-            {
-                newList.push(v);
-                v.selected = true;
-            }
-        }
-        
-        list.selectedItems = newList;
-    }
-
-    
-    private function initMultiCheckSelection():void
-    {
-        
-        for (var i:int=0; i<choices.length; i++)
-        {
-            var checkbox:spark.components.CheckBox = multiCheckDG.getElementAt(i) as spark.components.CheckBox;
-            if (checkbox)
-            {
-                var b:Boolean = isChoiceInData(choiceForLabel(checkbox.label).value);
-                checkbox.selected = b;
-            }
-        }
-        
-    }
-
-    private function initRadioChoiceSelection():void
-    {
-        
-        for (var i:int=0; i<choices.length; i++)
-        {
-            var b:Boolean = isChoiceInData(rb[i].value);
-            rb[i].selected = b;
-        }
-        
-    }
-
-
-    private function initComboBoxSelection():void
-    {
-        pulldownchoice.selectedIndex = -1;
-        pulldownchoice.selectedItem = null;
-        for each (var v:SmartFormChoice in choices)
-        {
-            if (isChoiceInData(v.value.toString()))
-                pulldownchoice.selectedItem = v;
-        }
-    }
-
-
-    private function initIPAddress():void
-    {
-        if (!data)
-            return;
-        
-        var octets:Array = data.split(".");
-        
-        try 
-        {
-            A.text = octets[0];
-            B.text = octets[1];
-            C.text = octets[2];
-            D.text = octets[3];
-        }
-        catch (e:Error){}
-    }
-               
-               
-               
-    // -------------------------------------------------- INPUT HANDLERS
-    
-    /*
-        All of these functions handle input into the various control
-        types such that we can simply rely on the data object being updated
-        regardless of UI control style used.
-    */
-    
-    
-    private function handleIntField(e:Event):void
-    {
-        var newData:*;
-        
-        newData = intField.text;
-        if (newData is XML)
-            newData = newData.toString();
-        data = newData;
-
-    }
-
-    private function handleStrField(e:Event):void
-    {
-        var newData:*;
-        
-        newData = strField.text;
-        if (newData is XML)
-            newData = newData.toString();
-        data = newData;
-        
-    }
-
-    private function handleCheckbox(e:Event):void
-    {
-        data = checkbox.selected;
-
-    }
-
-    public function handleMulticheck(e:Event):void
-    {
-        var newData:Array = new Array();
-        var bFoundIt:Boolean = false;
-        
-        var choice:* = choiceForLabel(e.target.label);
-        
-        // couldn't find choice? ignore it
-        if (!choice)
-            return;
-            
-        // loop through whatever data we already have assembled
-        for each (var v:* in data)
-        {
-            // is this one ours?
-            if (v == choice.value)
-            {
-                if (e.target.selected)
-                {
-                    bFoundIt = true;
-                    newData.push(v);
-                }
+                currentState = typeString;
             }
             else
             {
-                // not ours, so push it back
-                newData.push(v);
+                currentState = "UNKNOWN";
             }
+            
+            
+            // now kick the Magic item to create it's children
+            //magic.createComponentsFromDescriptors();
+            
+            _dataChanged = true;
+            invalidateProperties();
+            
+            // and make sure we start off clean
+            isDirty = false;
+            
+            // stash the original data value (if any)
+            _origData = data;
+            
         }
         
-        // if we didn't find it and we need it, add it now
-        if (!bFoundIt && e.target.selected)
+        override public function onCreationComplete(event:FlexEvent):void
         {
-            newData.push(choice.value);
-        }
-        
-        data = newData;
-
-    }
-
-    private function choiceForLabel(l:String):*
-    {
-        for each (var c:SmartFormChoice in choices)
-        {
-            if (c.label == l)
+            super.onCreationComplete(event);
+            if (helpNode && helpNode.length() > 0)
             {
-                return c;
+                helpLink = helpNode.@href;
+                if (helpLink == "")
+                {
+                    helpKey = helpNode.toString();
+                    if (helpKey.substring(0, 1) == "@")
+                    {
+                        helpKey = helpKey.slice(1, -1);
+                    }
+                }
+            }
+            
+            _created = true;
+        }
+        
+        // ----------------------------------------------------- INITIALIZERS
+        
+        /*
+        All of these functions load the data object into the various UI control
+        types that the SmartFormItem supports
+        */
+        
+        private function initListSelection(list:spark.components.List):void
+        {
+            var newList:Vector.<Object> = new Vector.<Object>();
+            
+            for each (var v:SmartFormChoice in choices)
+            {
+                if (isChoiceInData(v.value.toString()))
+                {
+                    newList.push(v);
+                    v.selected = true;
+                }
+            }
+            
+            list.selectedItems = newList;
+        }
+        
+        
+        private function initMultiCheckSelection():void
+        {
+            
+            for (var i:int=0; i<choices.length; i++)
+            {
+                var checkbox:spark.components.CheckBox = multiCheckDG.getElementAt(i) as spark.components.CheckBox;
+                if (checkbox)
+                {
+                    var b:Boolean = isChoiceInData(choiceForLabel(checkbox.label).value);
+                    checkbox.selected = b;
+                }
+            }
+            
+        }
+        
+        private function initRadioChoiceSelection():void
+        {
+            
+            for (var i:int=0; i<choices.length; i++)
+            {
+                var b:Boolean = isChoiceInData(rb[i].value);
+                rb[i].selected = b;
+            }
+            
+        }
+        
+        
+        private function initComboBoxSelection():void
+        {
+            pulldownchoice.selectedIndex = -1;
+            pulldownchoice.selectedItem = null;
+            for each (var v:SmartFormChoice in choices)
+            {
+                if (isChoiceInData(v.value.toString()))
+                    pulldownchoice.selectedItem = v;
             }
         }
-        return null;
-    }
-    
-    
-    private function isChoiceInData(o:String):Boolean
-    {
-        if (!data)
-            return false;
         
-        if (data is Array)
+        
+        private function initIPAddress():void
         {
-            // check if the given choice is in the data assuming data is now an array
+            if (!data)
+                return;
+            
+            var octets:Array = data.split(".");
+            
+            try 
+            {
+                A.text = octets[0];
+                B.text = octets[1];
+                C.text = octets[2];
+                D.text = octets[3];
+            }
+            catch (e:Error){}
+        }
+        
+        
+        
+        // -------------------------------------------------- INPUT HANDLERS
+        
+        /*
+        All of these functions handle input into the various control
+        types such that we can simply rely on the data object being updated
+        regardless of UI control style used.
+        */
+        
+        
+        private function handleIntField(e:Event):void
+        {
+            var newData:*;
+            
+            newData = intField.text;
+            if (newData is XML)
+                newData = newData.toString();
+            data = newData;
+            
+        }
+        
+        private function handleStrField(e:Event):void
+        {
+            var newData:*;
+            
+            newData = strField.text;
+            if (newData is XML)
+                newData = newData.toString();
+            data = newData;
+            
+        }
+        
+        private function handleCheckbox(e:Event):void
+        {
+            data = checkbox.selected;
+            
+        }
+        
+        public function handleMulticheck(e:Event):void
+        {
+            var newData:Array = new Array();
+            var bFoundIt:Boolean = false;
+            
+            var choice:* = choiceForLabel(e.target.label);
+            
+            // couldn't find choice? ignore it
+            if (!choice)
+                return;
+            
+            // loop through whatever data we already have assembled
             for each (var v:* in data)
             {
-                if (v is XML)
-                    v = v.toString();
-                if (v == o)
+                // is this one ours?
+                if (v == choice.value)
                 {
+                    if (e.target.selected)
+                    {
+                        bFoundIt = true;
+                        newData.push(v);
+                    }
+                }
+                else
+                {
+                    // not ours, so push it back
+                    newData.push(v);
+                }
+            }
+            
+            // if we didn't find it and we need it, add it now
+            if (!bFoundIt && e.target.selected)
+            {
+                newData.push(choice.value);
+            }
+            
+            data = newData;
+            
+        }
+        
+        private function choiceForLabel(l:String):*
+        {
+            for each (var c:SmartFormChoice in choices)
+            {
+                if (c.label == l)
+                {
+                    return c;
+                }
+            }
+            return null;
+        }
+        
+        
+        private function isChoiceInData(o:String):Boolean
+        {
+            if (!data)
+                return false;
+            
+            if (data is Array)
+            {
+                // check if the given choice is in the data assuming data is now an array
+                for each (var v:* in data)
+                {
+                    if (v is XML)
+                        v = v.toString();
+                    if (v == o)
+                    {
+                        return true;
+                    }
+                }
+            }
+            else 
+            {
+                if (data.toString() == o)
                     return true;
-                }
             }
-        }
-        else 
-        {
-            if (data.toString() == o)
-                return true;
-        }
-        return false;
-    }
-
-
-    private function handleRadioBool(e:ItemClickEvent):void
-    {
-        data = e.item;
-    }
-
-    private function handleRadioChoice(e:ItemClickEvent):void
-    {
-        data = e.item;
-    }
-
-    private function handleDropdownList(e:IndexChangeEvent):void
-    {
-        var newData:*;
-        
-        newData = pulldownchoice.selectedItem;
-        data = newData ? newData.value : null;
-    }
-
-
-    private function handleList(e:IndexChangeEvent):void
-    {
-        var newData:*;
-        
-        newData = listbox.selectedItem;
-        data = newData ? newData.value : null;
-    }
-
-   
-    private function handleMultiList(e:MouseEvent=null):void
-    {
-        // allow the click/change events to all happen first
-        callLater(deferredHandleMultiList, [e]);
-    }
-    
-    private function deferredHandleMultiList(e:MouseEvent=null):void
-    {
-        var newData:Array = [];
-        var newSelection:Vector.<Object> = new Vector.<Object>();
-        
-        for each (var i:SmartFormChoice in choices)
-        {
-            if (i.selected)
-            {
-                newData.push(i.value);
-                newSelection.push(i);
-            }
+            return false;
         }
         
-        multilist.selectedItems = newSelection;
         
-        data = newData;
-    }
-    
-    private function handleIPAddress(e:Event):void
-    {
-        //TODO: make sure we're valid first
-        data = A.text + "." + B.text + "." + C.text + "." + D.text;
-    }
-
-
-    private function handleLongtext(e:Event):void
-    {
-        //TODO: make sure we're valid first
-        data = longtext.text;
-    }
-    
-    private function handleCurrency(e:Event):void
-    {
-        //TODO: make sure we're valid first
-    }
-    
-    
-    private function handleFile(e:Event):void
-    {
-        //TODO: make sure we're valid first
-    }
-
-    /** we need to override validationResultHandler in order to propagate
-     * the validation events from Validators down to the actual UI elements
-     * so they can change state, etc.
-     */
-    
-    public override function validationResultHandler(event:ValidationResultEvent):void
-    {
-        // let our specific input control mark itself appropriately
-        var child:UIComponent;
-        
-        // HACK: only pass down the validationResultEvent which will
-        // mark the UI element in RED IF we're not supressing
-        // TODO: cleaner way to track this state which is essentially
-        // the inialization state prior to the user entering data for the
-        // first time
-        
-        if (validationHelper.errorTipManager.suppressionCount < 1)
+        private function handleRadioBool(e:ItemClickEvent):void
         {
+            data = e.item;
+        }
+        
+        private function handleRadioChoice(e:ItemClickEvent):void
+        {
+            data = e.item;
+        }
+        
+        private function handleDropdownList(e:IndexChangeEvent):void
+        {
+            var newData:*;
             
-            for (var i:int = 0; i < numElements; i++)
+            newData = pulldownchoice.selectedItem;
+            data = newData ? newData.value : null;
+        }
+        
+        
+        private function handleList(e:IndexChangeEvent):void
+        {
+            var newData:*;
+            
+            newData = listbox.selectedItem;
+            data = newData ? newData.value : null;
+        }
+        
+        
+        private function handleMultiList(e:MouseEvent=null):void
+        {
+            // allow the click/change events to all happen first
+            callLater(deferredHandleMultiList, [e]);
+        }
+        
+        private function deferredHandleMultiList(e:MouseEvent=null):void
+        {
+            var newData:Array = [];
+            var newSelection:Vector.<Object> = new Vector.<Object>();
+            
+            for each (var i:SmartFormChoice in choices)
             {
-                child = getElementAt(i) as UIComponent;
-                if (child)
+                if (i.selected)
                 {
-                    child.validationResultHandler(event);
+                    newData.push(i.value);
+                    newSelection.push(i);
                 }
             }
             
-            super.validationResultHandler(event);
-        }
-        else
-        {
-            trace("HIT validationResult without validation ready");
-        }
-    }
-        
-    // --------------------------------------------------- DIRTY HANDLING
-    
-    [Bindable]
-    public function set isDirty(b:Boolean):void
-    {
-        _isDirty = b;
-        // rethrow the validation event so that our whole form can go invalid
-        this.dispatchEvent(new DynamicEvent("dirtyChanged"));
-    }
-    
-    private var _isDirty:Boolean = false;
-    
-    public function get isDirty():Boolean
-    {
-        return _isDirty;
-    }
-
-    private function getDescription(value:String, defaultVal:String):String
-    {
-        return (value != "") ? value : defaultVal;
-    }
-
-    public function initializeValidators():void
-    {
-        // first ensure we have a validation helper to listen
-        validationHelper = new ValidationHelper(validators, this);
-
-        var constraints:XMLList = metadata.metadataNS::constraints;
-        var descriptions:XMLList = constraints.metadataNS::descriptions;
-        
-        var x:XMLList;
-        
-        x = constraints..metadataNS::length;
-        if (x.length() > 0)
-        {
-            maxLengthV.enabled = true;
-            maxLengthV.maxLength = x;
-            maxLengthV.tooLongError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), maxLengthV.tooLongError);
-        }
-        else
-            maxLengthV.enabled = false;
+            multilist.selectedItems = newSelection;
             
-        x = constraints..metadataNS::range;
-        if (x.length() > 0)
-        {
-            rangeV.enabled = true;
-            rangeV.minValue = x.metadataNS::min;
-            rangeV.maxValue = x.metadataNS::max;
-            rangeV.exceedsMaxError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), rangeV.exceedsMaxError);
-            rangeV.lowerThanMinError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), rangeV.lowerThanMinError);
+            data = newData;
         }
-        else
-            rangeV.enabled = false;
-
-        x = constraints..metadataNS::regexp;
-        if (x.length() > 0)
+        
+        private function handleIPAddress(e:Event):void
         {
-            regExpV.enabled = true;
-            regExpV.expression = x.toString();
-            regExpV.noMatchError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), regExpV.noMatchError);
+            //TODO: make sure we're valid first
+            data = A.text + "." + B.text + "." + C.text + "." + D.text;
         }
-        else
-            regExpV.enabled = false;
         
-        if (required)
+        
+        private function handleLongtext(e:Event):void
         {
-            requiredV.enabled = true;
-            //requiredV.requiredFieldError = requiredV.requiredFieldError)
+            //TODO: make sure we're valid first
+            data = longtext.text;
         }
-        else
-            requiredV.enabled = false;
         
-        // TODO: validate IP addresses, Dates, Times
-        
-    }
-    
-    public function showErrors():void
-    {
-        if (validationHelper)
+        private function handleCurrency(e:Event):void
         {
-            validationHelper.showErrors();
+            //TODO: make sure we're valid first
         }
-    }
-
-    public function hideErrors():void
-    {
-        if (validationHelper)
+        
+        
+        private function handleFile(e:Event):void
         {
-            validationHelper.hideErrors();
+            //TODO: make sure we're valid first
         }
-    }
-
-    
-    public override function setFocus():void
-    {
-        super.setFocus();
-        //magic.setFocus();
-    }
-
-    private var errorStyleMap:Object = 
-    {
-// primitives we will see in the metadata
-        str: false,
-        int: false,
-        bool: true,
-        date: false,
-        time: false,
-        datetime: false,
-        timeDelta: false,
-        ipAddress: true,
-        currency: false,
-        file: false,
         
-        // user interaction based effective types here
-        radiochoice: true,
-        pulldownchoice: false,
-        listbox: false,
+        /** we need to override validationResultHandler in order to propagate
+         * the validation events from Validators down to the actual UI elements
+         * so they can change state, etc.
+         */
         
-        multicheck: true,
-        multilist: false,
-
-        longtext: true,
-        radiobool: true
-    };
-    
-    // we need to keep this ref to prevent the fileRef getting GC'd
-    // cause the docs say that if it goes out of scope, you' won't get the
-    // completion events
-    
-    private var fileRef:FileReference;
-    
-    public function handleReadFileContent(event:Event):void
-    {
-        fileRef = new FileReference();
-        fileRef.addEventListener( Event.SELECT, onFileSelect ,false,0,true);
-        fileRef.addEventListener( Event.COMPLETE, onFileComplete ,false,0,true);
-        fileRef.browse();
-    }
-    
-    private function onFileSelect( event:Event ):void
-    {
-        fileRef.load();
-    }
-    
-    private function onFileComplete( event:Event ):void
-    {
-        var content:ByteArray = fileRef.data as ByteArray;
+        public override function validationResultHandler(event:ValidationResultEvent):void
+        {
+            // let our specific input control mark itself appropriately
+            var child:UIComponent;
+            
+            // HACK: only pass down the validationResultEvent which will
+            // mark the UI element in RED IF we're not supressing
+            // TODO: cleaner way to track this state which is essentially
+            // the inialization state prior to the user entering data for the
+            // first time
+            
+            if (validationHelper.errorTipManager.suppressionCount < 1)
+            {
+                
+                for (var i:int = 0; i < numElements; i++)
+                {
+                    child = getElementAt(i) as UIComponent;
+                    if (child)
+                    {
+                        child.validationResultHandler(event);
+                    }
+                }
+                
+                super.validationResultHandler(event);
+            }
+            else
+            {
+                trace("HIT validationResult without validation ready");
+            }
+        }
         
-        data = content.toString();
-    }
-
+        // --------------------------------------------------- DIRTY HANDLING
+        
+        [Bindable]
+        public function set isDirty(b:Boolean):void
+        {
+            _isDirty = b;
+            // rethrow the validation event so that our whole form can go invalid
+            this.dispatchEvent(new DynamicEvent("dirtyChanged"));
+        }
+        
+        private var _isDirty:Boolean = false;
+        
+        public function get isDirty():Boolean
+        {
+            return _isDirty;
+        }
+        
+        private function getDescription(value:String, defaultVal:String):String
+        {
+            return (value != "") ? value : defaultVal;
+        }
+        
+        public function initializeValidators():void
+        {
+            // first ensure we have a validation helper to listen
+            validationHelper = new ValidationHelper(validators, this);
+            
+            var constraints:XMLList = metadata.metadataNS::constraints;
+            var descriptions:XMLList = constraints.metadataNS::descriptions;
+            
+            var x:XMLList;
+            
+            x = constraints..metadataNS::length;
+            if (x.length() > 0)
+            {
+                maxLengthV.enabled = true;
+                maxLengthV.maxLength = x;
+                maxLengthV.tooLongError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), maxLengthV.tooLongError);
+            }
+            else
+                maxLengthV.enabled = false;
+            
+            x = constraints..metadataNS::range;
+            if (x.length() > 0)
+            {
+                rangeV.enabled = true;
+                rangeV.minValue = x.metadataNS::min;
+                rangeV.maxValue = x.metadataNS::max;
+                rangeV.exceedsMaxError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), rangeV.exceedsMaxError);
+                rangeV.lowerThanMinError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), rangeV.lowerThanMinError);
+            }
+            else
+                rangeV.enabled = false;
+            
+            x = constraints..metadataNS::regexp;
+            if (x.length() > 0)
+            {
+                regExpV.enabled = true;
+                regExpV.expression = x.toString();
+                regExpV.noMatchError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), regExpV.noMatchError);
+            }
+            else
+                regExpV.enabled = false;
+            
+            if (required)
+            {
+                requiredV.enabled = true;
+                //requiredV.requiredFieldError = requiredV.requiredFieldError)
+            }
+            else
+                requiredV.enabled = false;
+            
+            // TODO: validate IP addresses, Dates, Times
+            
+        }
+        
+        public function showErrors():void
+        {
+            if (validationHelper)
+            {
+                validationHelper.showErrors();
+            }
+        }
+        
+        public function hideErrors():void
+        {
+            if (validationHelper)
+            {
+                validationHelper.hideErrors();
+            }
+        }
+        
+        
+        public override function setFocus():void
+        {
+            super.setFocus();
+            //magic.setFocus();
+        }
+        
+        private var errorStyleMap:Object = 
+            {
+                // primitives we will see in the metadata
+                str: false,
+                int: false,
+                bool: true,
+                date: false,
+                time: false,
+                datetime: false,
+                timeDelta: false,
+                ipAddress: true,
+                currency: false,
+                file: false,
+                
+                // user interaction based effective types here
+                radiochoice: true,
+                pulldownchoice: false,
+                listbox: false,
+                
+                multicheck: true,
+                multilist: false,
+                
+                longtext: true,
+                radiobool: true
+            };
+        
+        // we need to keep this ref to prevent the fileRef getting GC'd
+        // cause the docs say that if it goes out of scope, you' won't get the
+        // completion events
+        
+        private var fileRef:FileReference;
+        
+        public function handleReadFileContent(event:Event):void
+        {
+            fileRef = new FileReference();
+            fileRef.addEventListener( Event.SELECT, onFileSelect ,false,0,true);
+            fileRef.addEventListener( Event.COMPLETE, onFileComplete ,false,0,true);
+            fileRef.browse();
+        }
+        
+        private function onFileSelect( event:Event ):void
+        {
+            fileRef.load();
+        }
+        
+        private function onFileComplete( event:Event ):void
+        {
+            var content:ByteArray = fileRef.data as ByteArray;
+            
+            data = content.toString();
+        }
+        
     ]]>
     </fx:Script>
     
@@ -968,7 +971,7 @@
         </fx:Array>
         
     </fx:Declarations>
-        
+    
     <views:states>
         <s:State name="UNKNOWN" />
         <s:State name="str" />
@@ -1005,215 +1008,244 @@
         <s:State name="longtextDisabled" />
         <s:State name="radiobool" />
         <s:State name="radioboolDisabled" />
- 
+        
     </views:states>
-
+    
     <!--<mx:NumberValidator id="intValidation" source="{intField}">
     </mx:NumberValidator>-->
     
-<!--   <views:MagicFormItem id="magic"
-        width="100%"
-        toolTipShown="toolTipShown(event)"
-        >
-       -->
+    <!--   <views:MagicFormItem id="magic"
+    width="100%"
+    toolTipShown="toolTipShown(event)"
+    >
+    -->
     <s:Label text="{data}" backgroundColor="0xFF0000" 
+             toolTip="{prompt}" 
+             width="100%"
+             includeIn="UNKNOWN"
+             />
+    
+    <!-- str: 0 -->
+    <views:ExtendedTextInput id="strField" text="{data}" 
+                             editable="{editable}" enabled="{enabled}"
+                             prompt="{prompt}"
+                             change="handleStrField(event)"
+                             displayAsPassword="{displayAsPassword}"
+                             width="100%"
+                             toolTipShown="toolTipShown(event)"
+                             includeIn="str"
+
+                             />
+    <mx:TextInput text="{data}" 
+                  selectable="true"
+                  editable="false"
+                  borderStyle="none"
+                  displayAsPassword="{displayAsPassword}"
                   toolTip="{prompt}" 
                   width="100%"
-                  includeIn="UNKNOWN"
+                  includeIn="strDisabled"
                   />
-
-    <!-- str: 0 -->
-       <views:ExtendedTextInput id="strField" text="{data}" 
-                                editable="{editable}" enabled="{enabled}"
-                                prompt="{prompt}"
-                                change="handleStrField(event)"
-                                displayAsPassword="{displayAsPassword}"
-                                width="100%"
-                                toolTipShown="toolTipShown(event)"
-                                includeIn="str"
-                                />
-       <mx:TextInput text="{data}" 
-                     selectable="true"
-                     editable="false"
-                     borderStyle="none"
-                     displayAsPassword="{displayAsPassword}"
-                     toolTip="{prompt}" 
-                     width="100%"
-                     includeIn="strDisabled"
-                     />
-
-       <!-- int: 2 -->
-        <views:ExtendedTextInput id="intField" text="{data}" maxChars="20" 
-            editable="{editable}" enabled="{enabled}"
-            prompt="{prompt}"
-            change="handleIntField(event)"
-            displayAsPassword="{displayAsPassword}"
-            toolTipShown="toolTipShown(event)"
-            width="100%"
-            includeIn="int"
-           />
-        <mx:Label text="{data}" 
-            selectable="true"
-            width="100%"
-            toolTip="{prompt}" 
-            includeIn="intDisabled"
-            />
-
-        <!-- bool: 4 -->
-        <s:CheckBox id="checkbox" selected="{data}" enabled="{editable &amp;&amp; enabled}"
-            width="100%"
-            includeIn="bool,boolDisabled"
-            toolTipShown="toolTipShown(event)"
-            toolTip="{prompt}"  change="handleCheckbox(event)" />
-        
-        <!-- TODO: Date, Time, ITmeDelta all need to be implemented -->
-        
-        <!-- date: 5 -->
-        <mx:Label text="date"
-            width="100%"
-            toolTipShown="toolTipShown(event)"
-            includeIn="date"
-            />
-        <mx:Label text="{data}" 
-            selectable="true"
-            toolTip="{prompt}" 
-            width="100%"
-            toolTipShown="toolTipShown(event)"
-            includeIn="dateDisabled"
-            />
-
-        <!-- time: 7 -->
-        <mx:Label text="time"
-            width="100%"
-            toolTipShown="toolTipShown(event)"
-            includeIn="time"
-            />
-        <mx:Label text="{data}" 
-            selectable="true"
-            toolTip="{prompt}" 
-            width="100%"
-            includeIn="timeDisabled"
-            />
-
-        <!-- datetime: 9 -->
-        <mx:Label text="datetime"
-            width="100%"
-            toolTipShown="toolTipShown(event)"
-            includeIn="datetime"
-            />
-        <mx:Label text="{data}" 
-            selectable="true"
-            toolTip="{prompt}" 
-            width="100%"
-            includeIn="datetimeDisabled"
-            />
-
-        <!-- timeDelta: 11 -->
-        <mx:Label text="timeDelta"
-            width="100%"
-            toolTipShown="toolTipShown(event)"
-            includeIn="timeDelta"
-            />
-        <mx:Label text="{data}" 
-            selectable="true"
-            toolTip="{prompt}" 
-            width="100%"
-            includeIn="timeDeltaDisabled"
-            />
-
-        <!-- ipAddress: 13 -->
-       <views:CompoundInputItem includeIn="ipAddress,ipAddressDisabled"
-                                width="100%"
-                                inputFields="{[A, B, C, D]}">
-           <s:HGroup width="100%"
-                     toolTip="{prompt}" includeIn="ipAddress">
-               <views:ExtendedTextInput maxChars="3" id="A" editable="{editable}" enabled="{enabled}"
-                                        toolTipShown="toolTipShown(event)"
-                                        change="handleIPAddress(event)" />
-               <mx:Label text="."/>
-               <views:ExtendedTextInput maxChars="3" id="B" editable="{editable}" enabled="{enabled}"
-                                        toolTipShown="toolTipShown(event)"
-                                        change="handleIPAddress(event)" />
-               <mx:Label text="."/>
-               <views:ExtendedTextInput maxChars="3" id="C" editable="{editable}" enabled="{enabled}"
-                                        toolTipShown="toolTipShown(event)"
-                                        change="handleIPAddress(event)" />
-               <mx:Label text="."/>
-               <views:ExtendedTextInput maxChars="3" id="D" editable="{editable}" enabled="{enabled}"
-                                        toolTipShown="toolTipShown(event)"
-                                        change="handleIPAddress(event)" />
-           </s:HGroup>
-           <mx:Label text="{data}" 
-                     width="100%"
-                     selectable="true"
-                     toolTip="{prompt}"
-                     includeIn="ipAddressDisabled"
-                     />
-       </views:CompoundInputItem>
-       
-       <!-- currency: 15 -->
-       <views:ExtendedTextInput id="currency" text="{data}" 
-                                editable="{editable}" 
-                                enabled="{enabled}"
-                                prompt="{prompt}"
-                                change="handleCurrency(event)"
-                                toolTipShown="toolTipShown(event)"
-                                width="100%"
-                                includeIn="currency"
-                                />
-       <mx:Label text="{data}" 
-                 selectable="true"
-                 toolTip="{prompt}" 
-                 toolTipShown="toolTipShown(event)"
-                 width="100%"
-                 includeIn="currencyDisabled"
-                 />
-
-       <!-- file: 17 -->
-       <views:ExtendedTextInput id="file" text="{data}"
-                                editable="{editable}" 
-                                enabled="{enabled}"
-                                prompt="{prompt}"
-                                change="handleFile(event)"
-                                width="100%"
-                                toolTipShown="toolTipShown(event)"
-                                includeIn="file"
-                                />
-       <mx:Label text="{data}" 
-                 selectable="true"
-                 toolTip="{prompt}" 
-                 width="100%"
-                 includeIn="fileDisabled"
-                 />
-       
-       <!-- radiochoice: 19 -->
-       <mx:HBox toolTip="{prompt}" horizontalScrollPolicy="off"
+    
+    <!-- int: 2 -->
+    <views:ExtendedTextInput id="intField" text="{data}" maxChars="20" 
+                             editable="{editable}" enabled="{enabled}"
+                             prompt="{prompt}"
+                             change="handleIntField(event)"
+                             displayAsPassword="{displayAsPassword}"
+                             toolTipShown="toolTipShown(event)"
+                             width="100%"
+                             includeIn="int"
+                             />
+    <mx:Label text="{data}" 
+              selectable="true"
+              width="100%"
+              toolTip="{prompt}" 
+              includeIn="intDisabled"
+              />
+    
+    <!-- bool: 4 -->
+    <s:CheckBox id="checkbox" selected="{data}" enabled="{editable &amp;&amp; enabled}"
                 width="100%"
-                includeIn="radiochoice, radiochoiceDisabled"
-                >
-           <mx:RadioButtonGroup id="radiochoice" itemClick="handleRadioChoice(event)"/>
-           <mx:Repeater id="rep1" dataProvider="{choices}" width="100%">
-               <mx:RadioButton id="rb" label="{rep1.currentItem.label}" enabled="{editable &amp;&amp; enabled}" 
-                               value="{rep1.currentItem.value}" groupName="radiochoice" />
-           </mx:Repeater>
-       </mx:HBox>
-        
-        <!-- pulldownchoice: 20 -->
-        <s:DropDownList id="pulldownchoice" toolTip="{prompt}" enabled="{editable &amp;&amp; enabled}"
+                includeIn="bool,boolDisabled"
+                toolTipShown="toolTipShown(event)"
+                toolTip="{prompt}"  change="handleCheckbox(event)" />
+    
+    <!-- TODO: Date, Time, ITmeDelta all need to be implemented -->
+    
+    <!-- date: 5 -->
+    <mx:Label text="date"
+              width="100%"
+              toolTipShown="toolTipShown(event)"
+              includeIn="date"
+              />
+    <mx:Label text="{data}" 
+              selectable="true"
+              toolTip="{prompt}" 
+              width="100%"
+              toolTipShown="toolTipShown(event)"
+              includeIn="dateDisabled"
+              />
+    
+    <!-- time: 7 -->
+    <mx:Label text="time"
+              width="100%"
+              toolTipShown="toolTipShown(event)"
+              includeIn="time"
+              />
+    <mx:Label text="{data}" 
+              selectable="true"
+              toolTip="{prompt}" 
+              width="100%"
+              includeIn="timeDisabled"
+              />
+    
+    <!-- datetime: 9 -->
+    <mx:Label text="datetime"
+              width="100%"
+              toolTipShown="toolTipShown(event)"
+              includeIn="datetime"
+              />
+    <mx:Label text="{data}" 
+              selectable="true"
+              toolTip="{prompt}" 
+              width="100%"
+              includeIn="datetimeDisabled"
+              />
+    
+    <!-- timeDelta: 11 -->
+    <mx:Label text="timeDelta"
+              width="100%"
+              toolTipShown="toolTipShown(event)"
+              includeIn="timeDelta"
+              />
+    <mx:Label text="{data}" 
+              selectable="true"
+              toolTip="{prompt}" 
+              width="100%"
+              includeIn="timeDeltaDisabled"
+              />
+    
+    <!-- ipAddress: 13 -->
+    <views:CompoundInputItem includeIn="ipAddress,ipAddressDisabled"
+                             width="100%"
+                             inputFields="{[A, B, C, D]}">
+        <s:HGroup width="100%"
+                  toolTip="{prompt}" includeIn="ipAddress">
+            <views:ExtendedTextInput maxChars="3" id="A" editable="{editable}" enabled="{enabled}"
+                                     toolTipShown="toolTipShown(event)"
+                                     change="handleIPAddress(event)" />
+            <mx:Label text="."/>
+            <views:ExtendedTextInput maxChars="3" id="B" editable="{editable}" enabled="{enabled}"
+                                     toolTipShown="toolTipShown(event)"
+                                     change="handleIPAddress(event)" />
+            <mx:Label text="."/>
+            <views:ExtendedTextInput maxChars="3" id="C" editable="{editable}" enabled="{enabled}"
+                                     toolTipShown="toolTipShown(event)"
+                                     change="handleIPAddress(event)" />
+            <mx:Label text="."/>
+            <views:ExtendedTextInput maxChars="3" id="D" editable="{editable}" enabled="{enabled}"
+                                     toolTipShown="toolTipShown(event)"
+                                     change="handleIPAddress(event)" />
+        </s:HGroup>
+        <mx:Label text="{data}" 
+                  width="100%"
+                  selectable="true"
+                  toolTip="{prompt}"
+                  includeIn="ipAddressDisabled"
+                  />
+    </views:CompoundInputItem>
+    
+    <!-- currency: 15 -->
+    <views:ExtendedTextInput id="currency" text="{data}" 
+                             editable="{editable}" 
+                             enabled="{enabled}"
+                             prompt="{prompt}"
+                             change="handleCurrency(event)"
+                             toolTipShown="toolTipShown(event)"
+                             width="100%"
+                             includeIn="currency"
+                             />
+    <mx:Label text="{data}" 
+              selectable="true"
+              toolTip="{prompt}" 
+              toolTipShown="toolTipShown(event)"
+              width="100%"
+              includeIn="currencyDisabled"
+              />
+    
+    <!-- file: 17 -->
+    <views:ExtendedTextInput id="file" text="{data}"
+                             editable="{editable}" 
+                             enabled="{enabled}"
+                             prompt="{prompt}"
+                             change="handleFile(event)"
+                             width="100%"
+                             toolTipShown="toolTipShown(event)"
+                             includeIn="file"
+                            />
+    <mx:Label text="{data}" 
+              selectable="true"
+              toolTip="{prompt}" 
+              width="100%"
+              includeIn="fileDisabled"
+              />
+    
+    <!-- radiochoice: 19 -->
+    <mx:HBox toolTip="{prompt}" horizontalScrollPolicy="off"
+             width="100%"
+             includeIn="radiochoice, radiochoiceDisabled"
+             >
+        <mx:RadioButtonGroup id="radiochoice" itemClick="handleRadioChoice(event)"/>
+        <mx:Repeater id="rep1" dataProvider="{choices}" width="100%">
+            <mx:RadioButton id="rb" label="{rep1.currentItem.label}" enabled="{editable &amp;&amp; enabled}" 
+                            value="{rep1.currentItem.value}" groupName="radiochoice" />
+        </mx:Repeater>
+    </mx:HBox>
+    
+    <!-- pulldownchoice: 20 -->
+    <s:DropDownList id="pulldownchoice" toolTip="{prompt}" enabled="{editable &amp;&amp; enabled}"
                     dataProvider="{choices}" change="handleDropdownList(event)" 
                     toolTipShown="toolTipShown(event)"
                     includeIn="pulldownchoice,pulldownchoiceDisabled"
                     />
-
-        
-        <!-- listbox: 21 -->
-        <s:List id="listbox"  dataProvider="{choices}" toolTip="{prompt}"
+    
+    
+    <!-- listbox: 21 -->
+    <s:List id="listbox"  dataProvider="{choices}" toolTip="{prompt}"
             width="100%" 
             minHeight="0"
             maxHeight="100"
             change="handleList(event)" enabled="{editable &amp;&amp; enabled}" 
             toolTipShown="toolTipShown(event)"
             includeIn="listbox,listboxDisabled">
+        <s:itemRenderer>
+            <fx:Component>
+                <s:ItemRenderer width="100%">
+                    <s:states>
+                        <s:State name="normal" />
+                        <s:State name="hovered" />
+                    </s:states>
+                    <s:Label text="{data.label}"/>
+                </s:ItemRenderer>
+            </fx:Component>
+        </s:itemRenderer>
+        
+    </s:List>
+    
+    <!-- multicheck: 22 -->
+    <s:BorderContainer
+        borderVisible="{errorString}"
+        toolTipShown="toolTipShown(event)"
+        minHeight="0"
+        width="100%"
+        includeIn="multicheck,multicheckDisabled">
+        <s:DataGroup id="multiCheckDG" dataProvider="{choices}" toolTip="{prompt}"
+                     width="100%"
+                     toolTipShown="toolTipShown(event)"
+                     >
+            <s:layout>
+                <s:HorizontalLayout />
+            </s:layout>
             <s:itemRenderer>
                 <fx:Component>
                     <s:ItemRenderer width="100%">
@@ -1221,44 +1253,16 @@
                             <s:State name="normal" />
                             <s:State name="hovered" />
                         </s:states>
-                        <s:Label text="{data.label}"/>
+                        <s:CheckBox label="{data.label}" enabled="{parentDocument.editable &amp;&amp; parentDocument.enabled}"
+                                    change="parentDocument.handleMulticheck(event)"/>
                     </s:ItemRenderer>
                 </fx:Component>
             </s:itemRenderer>
-            
-        </s:List>
-        
-        <!-- multicheck: 22 -->
-        <s:BorderContainer
-            borderVisible="{errorString}"
-            toolTipShown="toolTipShown(event)"
-            minHeight="0"
-            width="100%"
-            includeIn="multicheck,multicheckDisabled">
-                <s:DataGroup id="multiCheckDG" dataProvider="{choices}" toolTip="{prompt}"
-                         width="100%"
-                         toolTipShown="toolTipShown(event)"
-                         >
-                <s:layout>
-                    <s:HorizontalLayout />
-                </s:layout>
-                <s:itemRenderer>
-                    <fx:Component>
-                        <s:ItemRenderer width="100%">
-                            <s:states>
-                                <s:State name="normal" />
-                                <s:State name="hovered" />
-                            </s:states>
-                            <s:CheckBox label="{data.label}" enabled="{parentDocument.editable &amp;&amp; parentDocument.enabled}"
-                                        change="parentDocument.handleMulticheck(event)"/>
-                        </s:ItemRenderer>
-                    </fx:Component>
-                </s:itemRenderer>
-            </s:DataGroup>
-        </s:BorderContainer>
-       
-        <!-- multilist: 23 -->
-        <s:List id="multilist"  dataProvider="{choices}" toolTip="{prompt}"
+        </s:DataGroup>
+    </s:BorderContainer>
+    
+    <!-- multilist: 23 -->
+    <s:List id="multilist"  dataProvider="{choices}" toolTip="{prompt}"
             width="100%"
             minHeight="0"
             enabled="{editable &amp;&amp; enabled}"
@@ -1269,73 +1273,75 @@
             toolTipShown="toolTipShown(event)"
             includeIn="multilist,multilistDisabled"
             >
-            <s:itemRenderer>
-                <fx:Component>
-                    <s:ItemRenderer width="100%">
-                        <s:states>
-                            <s:State name="normal" />
-                            <s:State name="hovered" />
-                        </s:states>
-                        <s:CheckBox label="{data.label}" selected="{data.selected}"
-                                    change="data.selected = !data.selected">
-                        </s:CheckBox>
-                    </s:ItemRenderer>
-                </fx:Component>
-            </s:itemRenderer>
-        </s:List>
-       
-       <!-- longtext: 24 -->
-       <views:CompoundInputItem includeIn="longtext, longtextDisabled"
-                                minHeight="0"
-                                width="100%"
-                                toolTipShown="toolTipShown(event)"
-                                inputFields="{[longtext]}">
-           <s:HGroup width="100%" includeIn="longtext">
-               <views:ExtendedTextArea id="longtext" text="{data}"  
-                                       editable="{editable}" enabled="{enabled}"
-                                       prompt="{prompt}"
-                                       displayAsPassword="{displayAsPassword}"
-                                       change="handleLongtext(event)"
-                                       toolTipShown="toolTipShown(event)"
-                                       width="100%"
-                                       minWidth="400"
-                                       maxHeight="250"/>
-               <mx:Button label="Open..."
-                          toolTip="Use contents of a local file"
-                          includeInLayout="{allowFileContent}"
-                          visible="{allowFileContent}"
-                          click="handleReadFileContent(event)"/>
-           </s:HGroup>
-           <views:ExtendedTextArea text="{data}" 
-                                   selectable="true"
-                                   editable="false"
-                                   displayAsPassword="{displayAsPassword}"
-                                   prompt="{prompt}"
-                                   toolTip="{prompt}"
-                                   minWidth="400"
-                                   maxHeight="250"
-                                   includeIn="longtextDisabled"/>
-       </views:CompoundInputItem>
+        <s:itemRenderer>
+            <fx:Component>
+                <s:ItemRenderer width="100%">
+                    <s:states>
+                        <s:State name="normal" />
+                        <s:State name="hovered" />
+                    </s:states>
+                    <s:CheckBox label="{data.label}" selected="{data.selected}"
+                                change="data.selected = !data.selected">
+                    </s:CheckBox>
+                </s:ItemRenderer>
+            </fx:Component>
+        </s:itemRenderer>
+    </s:List>
+    
+    <!-- longtext: 24 -->
+    <views:CompoundInputItem includeIn="longtext, longtextDisabled"
+                             minHeight="0"
+                             width="100%"
+                             toolTipShown="toolTipShown(event)"
+                             inputFields="{[longtext]}">
+        <s:HGroup width="100%" includeIn="longtext">
+            <views:ExtendedTextArea id="longtext" text="{data}"  
+                                    editable="{editable}" enabled="{enabled}"
+                                    prompt="{prompt}"
+                                    displayAsPassword="{displayAsPassword}"
+                                    change="handleLongtext(event)"
+                                    toolTipShown="toolTipShown(event)"
+                                    width="100%"
+                                    minWidth="400"
+                                    maxHeight="250"
+                                    />
+            <s:Button label="Open..."
+                      toolTip="Use contents of a local file"
+                      includeInLayout="{allowFileContent}"
+                      visible="{allowFileContent}"
+                      click="handleReadFileContent(event)"/>
+        </s:HGroup>
+        <views:ExtendedTextArea text="{data}" 
+                                selectable="true"
+                                editable="false"
+                                displayAsPassword="{displayAsPassword}"
+                                prompt="{prompt}"
+                                toolTip="{prompt}"
+                                minWidth="400"
+                                maxHeight="250"
+                                includeIn="longtextDisabled"
+                                />
+    </views:CompoundInputItem>
+    
+    <!-- radiobool: 26 -->
+    <views:CompoundInputItem includeIn="radiobool,radioboolDisabled"
+                             toolTipShown="toolTipShown(event)"
+                             width="100%"
+                             minHeight="0"
+                             inputFields="{[YESbool, NObool]}">
+        <mx:HBox width="100%">
+            <mx:RadioButtonGroup id="radiobool" itemClick="handleRadioBool(event)" />
+            
+            <mx:RadioButton id="YESbool" label="YES" value="true"
+                            toolTipShown="toolTipShown(event)"
+                            enabled="{editable &amp;&amp; enabled}" groupName="radiobool" />
+            <mx:RadioButton id="NObool" label="NO" value="false"
+                            toolTipShown="toolTipShown(event)"
+                            enabled="{editable &amp;&amp; enabled}" groupName="radiobool" />
+        </mx:HBox>
         
-        <!-- radiobool: 26 -->
-       <views:CompoundInputItem includeIn="radiobool,radioboolDisabled"
-                                toolTipShown="toolTipShown(event)"
-                                width="100%"
-                                minHeight="0"
-                                inputFields="{[YESbool, NObool]}">
-           <mx:HBox width="100%">
-               <mx:RadioButtonGroup id="radiobool" itemClick="handleRadioBool(event)" />
-               
-               <mx:RadioButton id="YESbool" label="YES" value="true"
-                               toolTipShown="toolTipShown(event)"
-                               enabled="{editable &amp;&amp; enabled}" groupName="radiobool" />
-               <mx:RadioButton id="NObool" label="NO" value="false"
-                               toolTipShown="toolTipShown(event)"
-                               enabled="{editable &amp;&amp; enabled}" groupName="radiobool" />
-           </mx:HBox>
-
-       </views:CompoundInputItem>
-
-<!--    </views:MagicFormItem>
--->
+    </views:CompoundInputItem>
+    
+    <!--    </views:MagicFormItem>
+    -->
 </views:ExtendedFormItem>

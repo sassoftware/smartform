@@ -53,8 +53,19 @@ package com.rpath.raf.util
         {
             for each (var b:* in args)
             {
-                if (b)
+                if (b is Array || b is ArrayCollection)
+                {
+                    for each (var c:* in b)
+                    {
+                        // allow for nested arrays
+                        if (checkOneOf(c))
+                            return true;
+                    }
+                }
+                else if (b)
+                {
                     return true;
+                }
             }
             return false;
         }

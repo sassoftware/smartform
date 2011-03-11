@@ -23,6 +23,7 @@
     creationComplete="onCreationComplete(event)"
     
     implements="com.rpath.raf.util.IValidationAware"
+    backgroundAlpha="0"
     >
     
     <fx:Metadata>
