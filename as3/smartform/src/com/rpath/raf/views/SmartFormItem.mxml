@@ -1305,11 +1305,11 @@
                                     minWidth="400"
                                     maxHeight="250"
                                     />
-            <mx:Button styleName="mxButtonStyle" label="Open..."
-                       toolTip="Use contents of a local file"
-                       includeInLayout="{allowFileContent}"
-                       visible="{allowFileContent}"
-                       click="handleReadFileContent(event)"/>
+            <s:Button label="Open..."
+                      toolTip="Use contents of a local file"
+                      includeInLayout="{allowFileContent}"
+                      visible="{allowFileContent}"
+                      click="handleReadFileContent(event)"/>
         </s:HGroup>
         <views:ExtendedTextArea text="{data}" 
                                 selectable="true"
