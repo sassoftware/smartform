@@ -798,10 +798,12 @@
             return (value != "") ? value : defaultVal;
         }
         
-        public function initializeValidators():void
+        override public function initializeValidators():void
         {
+            super.initializeValidators();
+            
             // first ensure we have a validation helper to listen
-            validationHelper = new ValidationHelper(validators, this);
+            validationHelper.itemsToValidate = validationHelper.itemsToValidate.concat(validators);
             
             var constraints:XMLList = metadata.metadataNS::constraints;
             var descriptions:XMLList = constraints.metadataNS::descriptions;

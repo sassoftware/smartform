@@ -94,6 +94,14 @@ public class ExtendedFormItem extends FormItem implements IValidationAware
         _validationHelper = v;
     }
     
+    public function initializeValidators():void
+    {
+        // first ensure we have a validation helper to listen
+        validationHelper = new ValidationHelper(validators, this);
+    }
+    
+    public var validators:Array;
+    
     private var _pendingValidation:Boolean;
     
     public function validate(suppressEvents:Boolean=false):void
@@ -124,6 +132,11 @@ public class ExtendedFormItem extends FormItem implements IValidationAware
     
     override protected function commitProperties():void
     {
+        if (validationHelper == null)
+        {
+            initializeValidators();
+        }
+        
         if (_pendingValidation && validationHelper != null
         && validationHelper.errorTipManager.suppressionCount < 1)
         {
