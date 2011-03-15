@@ -1240,6 +1240,7 @@
         toolTipShown="toolTipShown(event)"
         minHeight="0"
         width="100%"
+        backgroundAlpha="0"
         includeIn="multicheck,multicheckDisabled">
         <s:DataGroup id="multiCheckDG" dataProvider="{choices}" toolTip="{prompt}"
                      width="100%"
@@ -1250,11 +1251,7 @@
             </s:layout>
             <s:itemRenderer>
                 <fx:Component>
-                    <s:ItemRenderer width="100%">
-                        <s:states>
-                            <s:State name="normal" />
-                            <s:State name="hovered" />
-                        </s:states>
+                    <s:ItemRenderer width="100%" autoDrawBackground="false" contentBackgroundAlpha="0">
                         <s:CheckBox label="{data.label}" enabled="{parentDocument.editable &amp;&amp; parentDocument.enabled}"
                                     change="parentDocument.handleMulticheck(event)"/>
                     </s:ItemRenderer>
