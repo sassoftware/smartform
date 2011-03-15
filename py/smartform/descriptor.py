@@ -379,7 +379,7 @@ class DescriptorData(_BaseClass):
     def _postprocess(self):
         if self._rootObj.tag != self._rootElement:
             raise errors.DataValidationError("Expected node %s, got %s"
-                % (self._rootElement, self._rootObj.tag()))
+                % (self._rootElement, self._rootObj.tag))
         for child in self._rootObj:
             nodeName = child.tag
             # Grab the descriptor for this field
@@ -460,7 +460,7 @@ class DescriptorData(_BaseClass):
             return True
         condFieldName = field.conditional.fieldName
         if condFieldName not in self._fieldsMap:
-            return True
+            return False
         return (self._fieldsMap[condFieldName].getValue() ==
                 field.conditional.value)
 

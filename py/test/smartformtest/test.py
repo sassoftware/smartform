@@ -831,6 +831,12 @@ class DescriptorConstraintTest(BaseTest):
             fromStream = xmlDescriptorDataConditional23, descriptor = dsc)
         self.failUnlessEqual(err.args[0], ["Missing field: 'cond-0'"])
 
+    def testConditional3(self):
+        dsc = descriptor.ConfigurationDescriptor(fromStream=xmlDescriptorConditional3)
+        dsc.setRootElement('newInstance')
+        data = descriptor.DescriptorData(fromStream=xmlDescriptorDataConditional3,
+            descriptor=dsc)
+
     def testDuplicateDescriptions(self):
         dsc = descriptor.ConfigurationDescriptor()
         dsc.addDescription("Test 1")
@@ -1274,6 +1280,726 @@ xmlDescriptorDataConditional23= """\
 <newInstance>
   <switchField>val-0</switchField>
   <cond-1>val-1-0</cond-1>
+</newInstance>
+"""
+
+xmlDescriptorConditional3 = """\
+<?xml version='1.0' encoding='UTF-8'?>
+<descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd">
+    <metadata>
+        <displayName>VMware Launch Parameters</displayName>
+        <descriptions>
+            <desc>VMware Launch Parameters</desc>
+        </descriptions>
+    </metadata>
+    <dataFields>
+        <field>
+            <name>imageId</name>
+            <descriptions>
+                <desc>Image ID</desc>
+            </descriptions>
+            <type>str</type>
+            <constraints>
+                <range>
+                    <min>1</min>
+                    <max>32</max>
+                </range>
+            </constraints>
+            <required>true</required>
+            <hidden>true</hidden>
+        </field>
+        <field>
+            <name>instanceName</name>
+            <descriptions>
+                <desc>Instance Name</desc>
+            </descriptions>
+            <help href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/help/launch/instanceName.html"/>
+            <type>str</type>
+            <constraints>
+                <length>32</length>
+            </constraints>
+            <required>true</required>
+        </field>
+        <field>
+            <name>instanceDescription</name>
+            <descriptions>
+                <desc>Instance Description</desc>
+            </descriptions>
+            <help href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/help/launch/instanceDescription.html"/>
+            <type>str</type>
+            <constraints>
+                <length>128</length>
+            </constraints>
+        </field>
+        <field>
+            <name>dataCenter</name>
+            <descriptions>
+                <desc>Data Center</desc>
+            </descriptions>
+            <help href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/help/launch/dataCenter.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>DR-Non-prod-DC2</desc>
+                    </descriptions>
+                    <key>datacenter-689</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>LISP-Metro-DC</desc>
+                    </descriptions>
+                    <key>datacenter-2</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>DC-network-designs</desc>
+                    </descriptions>
+                    <key>datacenter-654</key>
+                </describedValue>
+            </enumeratedType>
+            <default>datacenter-689</default>
+            <required>true</required>
+        </field>
+        <field>
+            <name>cr-datacenter-689</name>
+            <descriptions>
+                <desc>Compute Resource</desc>
+            </descriptions>
+            <help href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/help/launch/computeResource.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>SVL-DR1</desc>
+                    </descriptions>
+                    <key>domain-c694</key>
+                </describedValue>
+            </enumeratedType>
+            <default>domain-c694</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>dataCenter</fieldName>
+                <operator>eq</operator>
+                <value>datacenter-689</value>
+            </conditional>
+        </field>
+        <field>
+            <name>cr-datacenter-2</name>
+            <descriptions>
+                <desc>Compute Resource</desc>
+            </descriptions>
+            <help href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/help/launch/computeResource.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>LISP-Pod-DC1</desc>
+                    </descriptions>
+                    <key>domain-c341</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>LISP-Pod-DC2</desc>
+                    </descriptions>
+                    <key>domain-c343</key>
+                </describedValue>
+            </enumeratedType>
+            <default>domain-c341</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>dataCenter</fieldName>
+                <operator>eq</operator>
+                <value>datacenter-2</value>
+            </conditional>
+        </field>
+        <field>
+            <name>cr-datacenter-654</name>
+            <descriptions>
+                <desc>Compute Resource</desc>
+            </descriptions>
+            <help href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/help/launch/computeResource.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>ntlab-server2.cisco.com</desc>
+                    </descriptions>
+                    <key>domain-s675</key>
+                </describedValue>
+            </enumeratedType>
+            <default>domain-s675</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>dataCenter</fieldName>
+                <operator>eq</operator>
+                <value>datacenter-654</value>
+            </conditional>
+        </field>
+        <field>
+            <name>network-datacenter-689</name>
+            <descriptions>
+                <desc>Network</desc>
+            </descriptions>
+            <help href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/help/launch/network.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>N1KV-Control_vl90</desc>
+                    </descriptions>
+                    <key>network-711</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>N1KV-MGMT_vl91</desc>
+                    </descriptions>
+                    <key>network-712</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>N1KV-Packet_vl92</desc>
+                    </descriptions>
+                    <key>network-713</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>VM Network</desc>
+                    </descriptions>
+                    <key>network-698</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>Unused_Or_Quarantine_Veth</desc>
+                    </descriptions>
+                    <key>dvportgroup-727</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>vmw-mgmt-v93</desc>
+                    </descriptions>
+                    <key>dvportgroup-728</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>dr1_dmz_webserver_vl400</desc>
+                    </descriptions>
+                    <key>dvportgroup-731</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>vmk-vmkernel-v94</desc>
+                    </descriptions>
+                    <key>dvportgroup-734</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>n1k-ctrl-v90</desc>
+                    </descriptions>
+                    <key>dvportgroup-735</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>n1k-mgmt-v91</desc>
+                    </descriptions>
+                    <key>dvportgroup-736</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>n1k-pkt-v92</desc>
+                    </descriptions>
+                    <key>dvportgroup-737</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>dr1_VMK_NFS_vl40</desc>
+                    </descriptions>
+                    <key>dvportgroup-743</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>Gen-Client1-vl110</desc>
+                    </descriptions>
+                    <key>dvportgroup-744</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>svldr1_webserver_vl250</desc>
+                    </descriptions>
+                    <key>dvportgroup-750</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>svl-dr1-webserver-nonprod-vl200</desc>
+                    </descriptions>
+                    <key>dvportgroup-784</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>dr1_dmz_webserver_client_vl449</desc>
+                    </descriptions>
+                    <key>dvportgroup-788</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>svldr1_webserver_client_vl299</desc>
+                    </descriptions>
+                    <key>dvportgroup-789</key>
+                </describedValue>
+            </enumeratedType>
+            <default>network-711</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>dataCenter</fieldName>
+                <operator>eq</operator>
+                <value>datacenter-689</value>
+            </conditional>
+        </field>
+        <field>
+            <name>network-datacenter-2</name>
+            <descriptions>
+                <desc>Network</desc>
+            </descriptions>
+            <help href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/help/launch/network.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>LISP-Client1-v70</desc>
+                    </descriptions>
+                    <key>network-500</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>Unused_Or_Quarantine_Veth</desc>
+                    </descriptions>
+                    <key>dvportgroup-456</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>VMW-MGMT-DC2-v22</desc>
+                    </descriptions>
+                    <key>dvportgroup-480</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>VMW-VMotion-DC2-v23</desc>
+                    </descriptions>
+                    <key>dvportgroup-481</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>VMW-NFS-DC2-v34</desc>
+                    </descriptions>
+                    <key>dvportgroup-482</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>VMW-MGMT-DC1-v93</desc>
+                    </descriptions>
+                    <key>dvportgroup-483</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>VMW-VMotion-DC1-v94</desc>
+                    </descriptions>
+                    <key>dvportgroup-484</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>VMW-NFS-DC1-v12</desc>
+                    </descriptions>
+                    <key>dvportgroup-485</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>LISP-Client1-v70</desc>
+                    </descriptions>
+                    <key>dvportgroup-569</key>
+                </describedValue>
+            </enumeratedType>
+            <default>network-500</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>dataCenter</fieldName>
+                <operator>eq</operator>
+                <value>datacenter-2</value>
+            </conditional>
+        </field>
+        <field>
+            <name>network-datacenter-654</name>
+            <descriptions>
+                <desc>Network</desc>
+            </descriptions>
+            <help href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/help/launch/network.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>Test-VMs-V100</desc>
+                    </descriptions>
+                    <key>network-688</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>VM Network</desc>
+                    </descriptions>
+                    <key>network-680</key>
+                </describedValue>
+            </enumeratedType>
+            <default>network-688</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>dataCenter</fieldName>
+                <operator>eq</operator>
+                <value>datacenter-654</value>
+            </conditional>
+        </field>
+        <field>
+            <name>dataStore-domain-c694</name>
+            <descriptions>
+                <desc>Data Store</desc>
+            </descriptions>
+            <help href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/help/launch/dataStore.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>NFS-DATA-01 - 0  bytes free</desc>
+                    </descriptions>
+                    <key>datastore-741</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>DS_NETWORK_ACE (2) - 212  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-841</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>datastore1 (2) - 272  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-703</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>DS_NETWORK_ACE - 0  bytes free</desc>
+                    </descriptions>
+                    <key>datastore-706</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>DS_NETWORK_ACE (1) - 212  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-830</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>NFS-DATA-01 (1) - 231  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-829</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>datastore1 - 272  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-705</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>datastore1 (1) - 272  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-758</key>
+                </describedValue>
+            </enumeratedType>
+            <default>datastore-741</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>cr-datacenter-689</fieldName>
+                <operator>eq</operator>
+                <value>domain-c694</value>
+            </conditional>
+        </field>
+        <field>
+            <name>dataStore-domain-c341</name>
+            <descriptions>
+                <desc>Data Store</desc>
+            </descriptions>
+            <help href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/help/launch/dataStore.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>NFS-SNAP-SRC-02 - 162  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-645</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>NFS-FLEX-01 - 250  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-563</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>NFS-FLEX-02 - 289  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-588</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>Local - 122  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-488</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>SAN-VPLEX-00 - 259  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-605</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>SAN-VPLEX-01 - 259  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-606</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>SAN-VPLEX-02 - 271  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-607</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>SAN-VPLEX-03 - 271  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-608</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>snap-7d4d6769-SAN-SRDF-01 - 260  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-637</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>snap-12965a56-SAN-SRDF-02 - 260  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-646</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>Storage2 (1) - 122  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-585</key>
+                </describedValue>
+            </enumeratedType>
+            <default>datastore-645</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>cr-datacenter-2</fieldName>
+                <operator>eq</operator>
+                <value>domain-c341</value>
+            </conditional>
+        </field>
+        <field>
+            <name>dataStore-domain-s675</name>
+            <descriptions>
+                <desc>Data Store</desc>
+            </descriptions>
+            <help href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/help/launch/dataStore.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>datastore1 - 63  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-678</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>datastore2 - 11  GiB free</desc>
+                    </descriptions>
+                    <key>datastore-679</key>
+                </describedValue>
+            </enumeratedType>
+            <default>datastore-678</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>cr-datacenter-654</fieldName>
+                <operator>eq</operator>
+                <value>domain-s675</value>
+            </conditional>
+        </field>
+        <field>
+            <name>resourcePool-domain-c694</name>
+            <descriptions>
+                <desc>Resource Pool</desc>
+            </descriptions>
+            <help href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/help/launch/resourcePool.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>non-prod</desc>
+                    </descriptions>
+                    <key>resgroup-794</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>Resources</desc>
+                    </descriptions>
+                    <key>resgroup-695</key>
+                </describedValue>
+                <describedValue>
+                    <descriptions>
+                        <desc>Prod</desc>
+                    </descriptions>
+                    <key>resgroup-793</key>
+                </describedValue>
+            </enumeratedType>
+            <default>resgroup-793</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>cr-datacenter-689</fieldName>
+                <operator>eq</operator>
+                <value>domain-c694</value>
+            </conditional>
+        </field>
+        <field>
+            <name>resourcePool-domain-c341</name>
+            <descriptions>
+                <desc>Resource Pool</desc>
+            </descriptions>
+            <help href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/help/launch/resourcePool.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>Resources</desc>
+                    </descriptions>
+                    <key>resgroup-342</key>
+                </describedValue>
+            </enumeratedType>
+            <default>resgroup-342</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>cr-datacenter-2</fieldName>
+                <operator>eq</operator>
+                <value>domain-c341</value>
+            </conditional>
+        </field>
+        <field>
+            <name>resourcePool-domain-c343</name>
+            <descriptions>
+                <desc>Resource Pool</desc>
+            </descriptions>
+            <help href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/help/launch/resourcePool.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>Resources</desc>
+                    </descriptions>
+                    <key>resgroup-344</key>
+                </describedValue>
+            </enumeratedType>
+            <default>resgroup-344</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>cr-datacenter-2</fieldName>
+                <operator>eq</operator>
+                <value>domain-c343</value>
+            </conditional>
+        </field>
+        <field>
+            <name>resourcePool-domain-s675</name>
+            <descriptions>
+                <desc>Resource Pool</desc>
+            </descriptions>
+            <help href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/help/launch/resourcePool.html"/>
+            <enumeratedType>
+                <describedValue>
+                    <descriptions>
+                        <desc>Resources</desc>
+                    </descriptions>
+                    <key>resgroup-676</key>
+                </describedValue>
+            </enumeratedType>
+            <default>resgroup-676</default>
+            <required>true</required>
+            <conditional>
+                <fieldName>cr-datacenter-654</fieldName>
+                <operator>eq</operator>
+                <value>domain-s675</value>
+            </conditional>
+        </field>
+    </dataFields>
+</descriptor>
+"""
+
+xmlDescriptorDataConditional3 = """\
+<?xml version="1.0"?>
+<newInstance>
+  <cr-datacenter-2>domain-c341</cr-datacenter-2>
+  <dataCenter>datacenter-2</dataCenter>
+  <dataStore-domain-c341>datastore-588</dataStore-domain-c341>
+  <description/>
+  <descriptor/>
+  <history/>
+  <id/>
+  <image xmlNodeHash="52425d8d813674d7c7ad4aff39eccd1404fc4656">
+    <architecture>x86_64</architecture>
+    <baseFileName>newappliance-1-x86_64</baseFileName>
+    <buildDescription/>
+    <buildId>12</buildId>
+    <buildName>newappliance-VMware ESX ESX (x86_64)</buildName>
+    <cloudAlias>design-vc2</cloudAlias>
+    <cloudName>design-vc2.cisco.com</cloudName>
+    <cloudType>vmware</cloudType>
+    <downloadUrl>https://rpath-bld-001.cisco.com/downloadImage?fileId=15</downloadUrl>
+    <id>https://rpath-bld-001.cisco.com/catalog/clouds/vmware/instances/design-vc2.cisco.com/images/0ac74fef-0fe4-c56a-ab49-c2000dcacb6e</id>
+    <imageId>0ac74fef-0fe4-c56a-ab49-c2000dcacb6e</imageId>
+    <isDeployed>false</isDeployed>
+    <isPrivate_rBuilder>false</isPrivate_rBuilder>
+    <is_rBuilderImage>true</is_rBuilderImage>
+    <longName>12/newappliance-1-x86_64</longName>
+    <productDescription/>
+    <productName>widgetappliance</productName>
+    <publisher>admin</publisher>
+    <role>Product Owner</role>
+    <shortName>newappliance-1-x86_64</shortName>
+    <description>12/newappliance-1-x86_64</description>
+    <isPublic>false</isPublic>
+    <libraryId/>
+    <location>12/newappliance-1-x86_64</location>
+    <myRating>-1</myRating>
+    <name>newappliance-VMware ESX ESX (x86_64)</name>
+    <ownerId/>
+    <productCode/>
+    <productCodes/>
+    <rating>5</rating>
+    <state/>
+  </image>
+  <imageId>https://rpath-bld-001.cisco.com/catalog/clouds/vmware/instances/design-vc2.cisco.com/images/0ac74fef-0fe4-c56a-ab49-c2000dcacb6e</imageId>
+  <instanceDescription>widget-1</instanceDescription>
+  <instanceName>widget-1</instanceName>
+  <name/>
+  <network-datacenter-2>dvportgroup-569</network-datacenter-2>
+  <remoteIp>64.102.35.119</remoteIp>
+  <resourcePool-domain-c341>resgroup-342</resourcePool-domain-c341>
+  <resultResource/>
+  <securityGroups/>
+  <system/>
+  <target id="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/instances/design-vc2.cisco.com">
+    <activeJobs href="https://rpath-bld-001.cisco.com/catalog/jobs/types/instance-launch/jobs?cloudName=design-vc2.cisco.com&amp;cloudType=vmware&amp;status=Running"/>
+    <cloudAlias>design-vc2</cloudAlias>
+    <cloudName>design-vc2.cisco.com</cloudName>
+    <configuration href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/instances/design-vc2.cisco.com/configuration"/>
+    <description>Design VC-2</description>
+    <descriptorLaunch href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/instances/design-vc2.cisco.com/descriptor/launch"/>
+    <images href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/instances/design-vc2.cisco.com/images"/>
+    <instances href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/instances/design-vc2.cisco.com/instances"/>
+    <type href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware">vmware</type>
+    <userCredentials href="https://rpath-bld-001.cisco.com/catalog/clouds/vmware/instances/design-vc2.cisco.com/users/admin/credentials"/>
+    <cloudType>vmware</cloudType>
+    <fullDescription>design-vc2 (Design VC-2)</fullDescription>
+    <instanceDescription>design-vc2 (design-vc2.cisco.com)</instanceDescription>
+    <instanceFullDescription>Design VC-2 (design-vc2.cisco.com)</instanceFullDescription>
+    <isCreatable>false</isCreatable>
+    <isRemovable>false</isRemovable>
+    <isUpdatable>false</isUpdatable>
+    <launchEnvironmentRef/>
+    <name>Design VC-2</name>
+  </target>
 </newInstance>
 """
 
