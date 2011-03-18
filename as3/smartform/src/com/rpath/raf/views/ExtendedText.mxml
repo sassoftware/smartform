@@ -61,7 +61,6 @@
     
     override protected function commitProperties():void
     {
-        super.commitProperties();
         if (_conditional)
         {
             var vis:Boolean;
@@ -71,6 +70,7 @@
             this.includeInLayout = vis;
             this.visible = vis;
         }
+        super.commitProperties();
     }
     
     ]]>
