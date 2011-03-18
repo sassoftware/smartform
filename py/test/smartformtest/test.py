@@ -834,7 +834,7 @@ class DescriptorConstraintTest(BaseTest):
     def testConditional3(self):
         dsc = descriptor.ConfigurationDescriptor(fromStream=xmlDescriptorConditional3)
         dsc.setRootElement('newInstance')
-        data = descriptor.DescriptorData(fromStream=xmlDescriptorDataConditional3,
+        descriptor.DescriptorData(fromStream=xmlDescriptorDataConditional3,
             descriptor=dsc)
 
     def testDuplicateDescriptions(self):
