@@ -23,12 +23,13 @@
     creationComplete="onCreationComplete(event)"
     
     implements="com.rpath.raf.util.IValidationAware"
+    backgroundAlpha="0"
     >
     
     <fx:Metadata>
         [Event(name="dirtyChanged", type="mx.events.DynamicEvent")]
-    </fx:Metadata>
-    
+        [DefaultProperty("itemsAfter")]
+    </fx:Metadata>  
     
     <fx:Script>
 <![CDATA[
@@ -965,6 +966,16 @@
             var oldLabel:String = firstItem.label;
             firstItem.label = "";
             firstItem.label = oldLabel;
+        }
+        
+        // allow for a SmartForm with NO metadata but just hard wired items
+        
+        if (metadata == null && ((itemsAfter && itemsAfter.length > 0)
+            || (itemsBefore && itemsBefore.length > 0)))
+        {
+            _needsRebuilding = true;
+            _needsRebinding = true;
+            invalidateProperties();
         }
     }
     

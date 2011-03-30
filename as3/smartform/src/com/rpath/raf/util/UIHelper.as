@@ -53,8 +53,19 @@ package com.rpath.raf.util
         {
             for each (var b:* in args)
             {
-                if (b)
+                if (b is Array || b is ArrayCollection)
+                {
+                    for each (var c:* in b)
+                    {
+                        // allow for nested arrays
+                        if (checkOneOf(c))
+                            return true;
+                    }
+                }
+                else if (b)
+                {
                     return true;
+                }
             }
             return false;
         }
@@ -221,5 +232,33 @@ package com.rpath.raf.util
             
             return s;
         }
+        
+        public static function titleCase(s:String):String
+        {
+            return s.substr(0,1).toUpperCase() + s.substr(1);
+        }
+        
+        public static function pluralize(s:String, length:int):String
+        {
+            if (length == 0)
+            {
+                if (s.charAt(s.length - 1) != 's')
+                    s = s + 's';
+            }
+            else if (length == 1)
+            {
+                if (s.charAt(s.length - 1) == 's')
+                    s = s.substring(0, s.length-1);
+            }
+            else
+            {
+                if (s.charAt(s.length - 1) != 's')
+                    s = s + 's';
+            }
+            
+            return s;
+        }
+        
+        
     }
 }

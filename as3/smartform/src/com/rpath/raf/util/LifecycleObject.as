@@ -16,8 +16,9 @@ package com.rpath.raf.util
     import flash.utils.Dictionary;
     
     import mx.core.FlexGlobals;
+    import flash.events.EventDispatcher;
 
-    public class LifecycleObject
+    public class LifecycleObject extends EventDispatcher
     {
         public function LifecycleObject()
         {
