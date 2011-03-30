@@ -123,9 +123,10 @@
             _dataChanged = true;
             
             // this will dispatch the required dataChange event
-            var value:Object;
-            value = v.valueOf();
-            super.data = value != null ? v : "N/A";
+            //var value:Object;
+            //value = v.valueOf();
+            //super.data = value != null ? v : "N/A";
+            super.data = v;
             
             // trigger commitProperties so that we check validation flags
             invalidateProperties();
