@@ -30,22 +30,22 @@
     
     <fx:Script>
     <![CDATA[
-        import mx.states.State;
-        import mx.effects.IAbstractEffect;
-        import com.rpath.raf.util.IValidationAware;
         import com.rpath.raf.util.DescriptorUtil;
         import com.rpath.raf.util.ErrorTipManager;
+        import com.rpath.raf.util.IValidationAware;
         import com.rpath.raf.util.ValidationHelper;
         
         import mx.collections.ArrayCollection;
         import mx.collections.Sort;
         import mx.collections.SortField;
         import mx.core.UIComponent;
+        import mx.effects.IAbstractEffect;
         import mx.events.DynamicEvent;
         import mx.events.FlexEvent;
         import mx.events.ItemClickEvent;
         import mx.events.ToolTipEvent;
         import mx.events.ValidationResultEvent;
+        import mx.states.State;
         import mx.validators.Validator;
         
         import spark.events.IndexChangeEvent;
@@ -123,7 +123,9 @@
             _dataChanged = true;
             
             // this will dispatch the required dataChange event
-            super.data = v;
+            var value:Object;
+            value = v.valueOf();
+            super.data = value != null ? v : "N/A";
             
             // trigger commitProperties so that we check validation flags
             invalidateProperties();
