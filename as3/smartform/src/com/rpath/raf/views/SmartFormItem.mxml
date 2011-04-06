@@ -1274,11 +1274,7 @@
             >
         <s:itemRenderer>
             <fx:Component>
-                <s:ItemRenderer width="100%">
-                    <s:states>
-                        <s:State name="normal" />
-                        <s:State name="hovered" />
-                    </s:states>
+                <s:ItemRenderer width="100%" autoDrawBackground="false" contentBackgroundAlpha="0">
                     <s:CheckBox label="{data.label}" selected="{data.selected}"
                                 change="data.selected = !data.selected">
                     </s:CheckBox>
