@@ -636,13 +636,14 @@
                     
                     newItem.errorTipManager = errorTipManager;
                     validationHelper.addItemToValidate(newItem);
-                    
-                    if (hasADefault)
-                    {
-                        // kick a validation now on this field to ensure default itself is
-                        // valid. See RBL-8357
-                        newItem.validate();
-                    }
+  
+                    // updated - 2011-04-07 - RBL-8357                    
+//                    if (hasADefault)
+//                    {
+//                        // kick a validation now on this field to ensure default itself is
+//                        // valid. See RBL-8357
+//                        newItem.validate();
+//                    }
                     
                     //newItem.addEventListener(ValidationResultEvent.VALID, handleValidationEvent,false,0,true);
                     //newItem.addEventListener(ValidationResultEvent.INVALID, handleValidationEvent,false,0,true);
