@@ -356,6 +356,7 @@ class DescriptorTest(BaseTest):
 
         data = """<descriptorData><multiField><item>small</item><item>medium</item></multiField></descriptorData>"""
         ddata = descriptor.DescriptorData(fromStream=data, descriptor=dsc)
+        self.failUnlessEqual(ddata.getField('multiField'), ['small', 'medium'])
 
 class DescriptorConstraintTest(BaseTest):
     def testIntType(self):
