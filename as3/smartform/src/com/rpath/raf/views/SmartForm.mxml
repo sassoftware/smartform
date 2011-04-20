@@ -67,14 +67,6 @@
      *     <descriptions>
      *       <desc>Tooltip to be displayed on this constraint</desc>
      *     </descriptions>
-     *     <legalValues>
-     *       <value>EC2</value>
-     *       <value>Globus</value>
-     *       <value>Citrix XenServer</value>
-     *       <value>VMware Infrastructure</value>
-     *     </legalValues>
-     *   </constraints>
-     *   <allowFileContent>true</allowFileContent>
      * </field>
      * 
      * The specific constraints, etc. available are:
