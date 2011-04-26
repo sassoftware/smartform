@@ -58,7 +58,7 @@
         <sequential>
             <!-- Build the lib -->
             <echo>Building @{title} flex lib...</echo>
-            <compc output="@{outputLib}">
+            <compc output="@{outputLib}" debug="true">
                 <load-config filename="@{config}"/>
                 <source-path path-element="@{srcDir}"/>
                 <compc-elements/>
@@ -142,9 +142,9 @@
     		manifest="${smartform.manifest}">
     		
     		<compc-elements>
-                <include-libraries dir="${xobj.lib.dir}">
+                <library-path dir="${xobj.lib.dir}" append="true">
                     <include name="**/*.swc" />
-                </include-libraries>
+                </library-path>
             </compc-elements>
             		
         </flexlib-build>

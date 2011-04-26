@@ -351,6 +351,13 @@ class DescriptorTest(BaseTest):
         ddata.serialize(sio)
         self.assertXMLEquals(sio.getvalue(), xml)
 
+    def testDescriptorDataMultiField(self):
+        dsc = descriptor.ConfigurationDescriptor(fromStream = xmlDescriptor2)
+
+        data = """<descriptorData><multiField><item>small</item><item>medium</item></multiField></descriptorData>"""
+        ddata = descriptor.DescriptorData(fromStream=data, descriptor=dsc)
+        self.failUnlessEqual(ddata.getField('multiField'), ['small', 'medium'])
+
 class DescriptorConstraintTest(BaseTest):
     def testIntType(self):
         # only a partial def for the pieces we care about
@@ -834,7 +841,7 @@ class DescriptorConstraintTest(BaseTest):
     def testConditional3(self):
         dsc = descriptor.ConfigurationDescriptor(fromStream=xmlDescriptorConditional3)
         dsc.setRootElement('newInstance')
-        data = descriptor.DescriptorData(fromStream=xmlDescriptorDataConditional3,
+        descriptor.DescriptorData(fromStream=xmlDescriptorDataConditional3,
             descriptor=dsc)
 
     def testDuplicateDescriptions(self):

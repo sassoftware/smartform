@@ -23,12 +23,13 @@
     creationComplete="onCreationComplete(event)"
     
     implements="com.rpath.raf.util.IValidationAware"
+    backgroundAlpha="0"
     >
     
     <fx:Metadata>
         [Event(name="dirtyChanged", type="mx.events.DynamicEvent")]
-    </fx:Metadata>
-    
+        [DefaultProperty("itemsAfter")]
+    </fx:Metadata>  
     
     <fx:Script>
 <![CDATA[
@@ -47,51 +48,174 @@
     import mx.events.ValidationResultEvent;
     import mx.utils.ArrayUtil;
     
-    /** metadata drives the SmartForm
-     * 
-     * metadata must be an XML object that declares <datafield>
-     * element that contains a set of <field> elements each of which defines
-     * a FormItem for the Form.
-     * 
-     * Each <field> entry looks something like:
-     * 
-     * <field>
-     *   <name>propertyName of resulting data object</name>
-     *   <descriptions>
-     *     <desc>Label form FormItem</desc>
-     *   </descriptions>
-     *   <type>str</type>
-     *   <required>true</required>
-     *   <constraints>
-     *     <descriptions>
-     *       <desc>Tooltip to be displayed on this constraint</desc>
-     *     </descriptions>
-     *     <legalValues>
-     *       <value>EC2</value>
-     *       <value>Globus</value>
-     *       <value>Citrix XenServer</value>
-     *       <value>VMware Infrastructure</value>
-     *     </legalValues>
-     *   </constraints>
-     *   <allowFileContent>true</allowFileContent>
-     * </field>
-     * 
-     * The specific constraints, etc. available are:
-     * 
-     * DOCUMENT CONSTRAINTS HERE?
-     * 
-     * The XML must also contain a <metadata> element 
-     * that provides a Form Heading
-     * 
-     * <metadata>
-     *   <displayName>CloudInfo</displayName>
-     *   <descriptions>
-     *     <desc>The Form Heading text you want</desc>
-     *   </descriptions>
-     * </metadata>
-     * 
-     */
+    /*
     
+    SmartForms are metadata driven dynamic UI forms
+    
+    There are a number of places in the rPath API where it is important for the
+    client to have information about what data is expected to be sent to the API.
+    For example, configuration of targets or of deployed systems are classic cases
+    where the client may have to provide quite a lot of specific information to
+    effect the configuration.
+    
+    One of the interesting challenges in this area is how the client *knows* what
+    specific data is needed. Rather than hard code the clients to all have
+    knowledge of the fact that configuring a VMware target needs name, password,
+    resource pool, etc., it is far better for the server to provide some
+    additional metadata at *runtime* that describes what is needed. This allows
+    each new target, e.g. Eucalyptus and OpenStack, to have entirely different
+    configuration information without changing the client code.
+    
+    The rPath API has evolved a particular construct for this purpose that we call
+    a "descriptor".
+    
+    These descriptors are now used throughout the API including for defining the
+    options available for image generation, target configuration settings and,
+    with rPath X6, for declaring the configurable properties of a deployed system
+    as well as the parameters available for querying the inventory of all deployed
+    systems.
+    
+    A descriptor provides information about a collection of *fields* that make up
+    a given data structure required for a given API call. Each field can be
+    required or optional, can have a data type (including an enumerated type), can
+    be marked as conditional (only relevant if other fields have certain values)
+    and can also be constrained in various ways (must match a pattern, etc.)
+    
+    To keep this to a relatively simple scope, we decided to go with an XML
+    representation of these descriptors that looks like this:
+    
+    <descriptor>
+    
+       <dataFields>
+    
+           <field>
+               <name>displayName</name>
+               <required>true</required>
+               <descriptions>
+                   <desc>Image name</desc>
+               </descriptions>
+               <prompt>
+                   <desc>Example: Example System Image for VMware</desc>
+               </prompt>
+               <type>str</type>
+           </field>
+    
+           <field>
+               <name>container.options.swapSize</name>
+               <required>false</required>
+               <descriptions>
+                   <desc>Swap space</desc>
+               </descriptions>
+               <prompt>
+                   <desc>Example: 512</desc>
+               </prompt>
+               <type>int</type>
+               <default>512</default>
+           </field>
+    
+    
+           <field>
+               <name>container.options.diskAdapter</name>
+               <required>true</required>
+               <descriptions>
+                   <desc>Disk driver</desc>
+               </descriptions>
+               <prompt>
+                   <desc>Select the disk driver that the VM should use.</desc>
+               </prompt>
+    
+               <enumeratedType>
+    
+                 <describedValue>
+                   <descriptions>
+                     <desc>IDE</desc>
+                   </descriptions>
+                   <key>ide</key>
+                 </describedValue>
+    
+                 <describedValue>
+                   <descriptions>
+                     <desc>SCSI (LSILogic)</desc>
+                   </descriptions>
+                   <key>lsilogic</key>
+                 </describedValue>
+    
+                </enumeratedType>
+               <default>lsilogic</default>
+           </field>   
+    
+         </dataFields>
+    
+    
+    Basically, a descriptor consists of a collection of <field> elements grouped
+    under a <dataFields> element.
+    
+    A <field> describes a single property of the resulting data structure. The
+    property is identified by the <name> element. For example, the descriptor
+    above describes three fields - displayName, container.options.swapSize and
+    container.options.diskAdapter.
+    
+    Each <field> declares a <type> which is one of [int, bool, str]. If omitted,
+    <type> is assumed to be a str. A <default> value can also be provided.
+    
+    Where a defined set of values are allowed, the <enumeratedType> element is a
+    collection of <describedValue> elements, each of which defines a permitted
+    value for this field as the <key> element.
+    
+    Note that in order to support user interfaces to work easily with descriptors,
+    there are also many elements present that provide human readable labels for
+    these various elements. Anticipating multi-language requirements, a <desc>
+    element is used which supports an optional lang="en_US" style language
+    identifier as an attribute. (Currently, the rPath UI does not support
+    languages other than en_US)
+    
+    Beyond these basic elements, a <field> can also be marked as <conditional>
+    with multiple <condition> :
+    
+    <conditional>
+        <condition>
+            <fieldName>container.options.diskAdapter</fieldName>
+            <operator>noteq</operator>
+            <value>lsilogic</value>
+        </condition>
+    
+        <condition>
+    ....
+        </condition>
+    
+    </conditional>
+    
+    This would make the <field> that contained this element only appear in the UI
+    (and only be expected by the server) if the container.options.diskAdapter
+    property was not equal to the value 'lsilogic' (and then whatever other
+    conditions were in the second <condition> element)
+    
+    <fields> can also be marked with any number of <constraints> as follows:
+    
+    <constraints>
+        <length>128</length>
+        <range>
+            <min>0</min>
+            <max>2313</max>
+        </range>
+        <regexp>^.*foo.*$</regexp>
+    </constraints>
+    
+    This allows for user interfaces that provide validation and flagging of user
+    errors.
+
+    Finally, the descriptor must also contain a <metadata> element that provides 
+    a Form Heading
+      
+      <metadata>
+        <displayName>CloudInfo</displayName>
+        <descriptions>
+          <desc>The Form Heading text you want</desc>
+        </descriptions>
+      </metadata>
+    
+    */
+
     [Bindable]
     public function get metadata():XML
     {
@@ -635,13 +759,14 @@
                     
                     newItem.errorTipManager = errorTipManager;
                     validationHelper.addItemToValidate(newItem);
-                    
-                    if (hasADefault)
-                    {
-                        // kick a validation now on this field to ensure default itself is
-                        // valid. See RBL-8357
-                        newItem.validate();
-                    }
+  
+                    // updated - 2011-04-07 - RBL-8357                    
+//                    if (hasADefault)
+//                    {
+//                        // kick a validation now on this field to ensure default itself is
+//                        // valid. See RBL-8357
+//                        newItem.validate();
+//                    }
                     
                     //newItem.addEventListener(ValidationResultEvent.VALID, handleValidationEvent,false,0,true);
                     //newItem.addEventListener(ValidationResultEvent.INVALID, handleValidationEvent,false,0,true);
@@ -965,6 +1090,16 @@
             var oldLabel:String = firstItem.label;
             firstItem.label = "";
             firstItem.label = oldLabel;
+        }
+        
+        // allow for a SmartForm with NO metadata but just hard wired items
+        
+        if (metadata == null && ((itemsAfter && itemsAfter.length > 0)
+            || (itemsBefore && itemsBefore.length > 0)))
+        {
+            _needsRebuilding = true;
+            _needsRebinding = true;
+            invalidateProperties();
         }
     }
     

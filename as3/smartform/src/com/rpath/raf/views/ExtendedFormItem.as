@@ -19,6 +19,7 @@ public class ExtendedFormItem extends FormItem implements IValidationAware
         super();
         
         this.addEventListener(FlexEvent.CREATION_COMPLETE, onCreationComplete);
+        this.setStyle("backgroundAlpha","0");
     }
     
     [Bindable]
@@ -41,7 +42,7 @@ public class ExtendedFormItem extends FormItem implements IValidationAware
             var lbl:Label = FormItem(event.currentTarget).itemLabel as Label;
             lbl.selectable = true;
             lbl.enabled = true;
-            lbl.setStyle("color", "blue");
+            lbl.setStyle("color", this.getStyle("labelColor"));
             lbl.setStyle("textDecoration", "underline");
             lbl.toolTip = "Click here for more information";
             lbl.useHandCursor = true;
@@ -93,6 +94,14 @@ public class ExtendedFormItem extends FormItem implements IValidationAware
         _validationHelper = v;
     }
     
+    public function initializeValidators():void
+    {
+        // first ensure we have a validation helper to listen
+        validationHelper = new ValidationHelper(validators, this);
+    }
+    
+    public var validators:Array;
+    
     private var _pendingValidation:Boolean;
     
     public function validate(suppressEvents:Boolean=false):void
@@ -123,6 +132,11 @@ public class ExtendedFormItem extends FormItem implements IValidationAware
     
     override protected function commitProperties():void
     {
+        if (validationHelper == null)
+        {
+            initializeValidators();
+        }
+        
         if (_pendingValidation && validationHelper != null
         && validationHelper.errorTipManager.suppressionCount < 1)
         {

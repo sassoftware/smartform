@@ -39,7 +39,8 @@ in accordance with the terms of the license agreement accompanying it.
         
         /* Define the skin elements that should not be colorized. 
         For text area, the skin itself is colorized but the individual parts are not. */
-        static private const exclusions:Array = ["background", "scroller"];
+        //static private const exclusions:Array = ["background", "scroller"];
+        static private const exclusions:Array = [ "scroller"];
         
         /**
          * @private
@@ -59,7 +60,6 @@ in accordance with the terms of the license agreement accompanying it.
          */
         override protected function commitProperties():void
         {
-            super.commitProperties();
             
             if (lineBreakChanged)
             {
@@ -76,6 +76,7 @@ in accordance with the terms of the license agreement accompanying it.
                 updateStringStyle("verticalAlign");
                 verticalAlignChanged = false;
             }
+            super.commitProperties();
         }
         
         /**
@@ -233,7 +234,7 @@ in accordance with the terms of the license agreement accompanying it.
     <s:Rect id="background" left="1" right="1" top="1" bottom="1">
         <s:fill>
             <!--- @private Defines the background fill color. -->
-            <s:SolidColor id="bgFill" color="0xFFFFFF" />
+            <s:SolidColor id="bgFill" color="0x666666" />
         </s:fill>
     </s:Rect>
     
@@ -241,7 +242,7 @@ in accordance with the terms of the license agreement accompanying it.
     <!--- @private -->
     <s:Rect id="shadow" left="1" top="1" right="1" height="1">
         <s:fill>
-            <s:SolidColor color="0x000000" alpha="0.12" />
+            <s:SolidColor color="0x464646" alpha="0.12" />
         </s:fill>
     </s:Rect>
     
@@ -269,8 +270,7 @@ in accordance with the terms of the license agreement accompanying it.
         top="1"
         lineBreak="explicit"
         visible="{showPrompt(currentState, hostComponent.text)}"
-        color="#999999"
-        fontStyle="italic"
+        styleName="formItemPromptText"
         />
     
 </s:SparkSkin>
