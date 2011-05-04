@@ -166,7 +166,9 @@ in accordance with the terms of the license agreement accompanying it.
     
     <s:states>
         <s:State name="normal"/>
-        <s:State name="disabled"/>
+        <s:State name="normalWithPrompt" />
+        <s:State name="disabled" />
+        <s:State name="disabledWithPrompt"/>
         <s:State name="focused"/>
     </s:states>
     
@@ -216,7 +218,7 @@ in accordance with the terms of the license agreement accompanying it.
     <!-- prompt -->
     <s:Label 
         id="promptView"
-        text="{hostComponent.promptText}"
+        text="{hostComponent.prompt}"
         bottom="1"
         left="1"
         paddingBottom="3"

@@ -47,7 +47,7 @@ public class AdvancedTextInput extends TextInput
     //
     //----------------------------------------------------------------------
     
-    private var _promptText:String;
+/*    private var _promptText:String;
     
     [Bindable]
     public function get promptText():String
@@ -70,7 +70,18 @@ public class AdvancedTextInput extends TextInput
     {
         promptText = v;
     }
+    */
     
+    [Bindable]
+    override public function get prompt():String
+    {
+        return super.prompt;
+    }
+    
+    override public function set prompt(value:String):void
+    {
+        super.prompt = value;
+    }
     
     //----------------------------------------------------------------------
     //

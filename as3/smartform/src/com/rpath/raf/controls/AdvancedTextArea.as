@@ -47,7 +47,7 @@ public class AdvancedTextArea extends TextArea
     //
     //----------------------------------------------------------------------
     
-    private var _promptText:String;
+/*    private var _promptText:String;
     
     [Bindable]
     public function get promptText():String
@@ -69,6 +69,16 @@ public class AdvancedTextArea extends TextArea
     public function set prompt(v:String):void
     {
         promptText = v;
+    }*/
+    [Bindable]
+    override public function get prompt():String
+    {
+        return super.prompt;
+    }
+    
+    override public function set prompt(value:String):void
+    {
+        super.prompt = value;
     }
     
     /** autoResize controls the dynamic expand/contract behavior
