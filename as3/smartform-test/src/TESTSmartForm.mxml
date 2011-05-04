@@ -62,6 +62,7 @@
     
     <fx:Script>
 <![CDATA[
+    import com.rpath.xobj.XObjQName;
     import com.rpath.xobj.XObjXMLDecoder;
     import com.rpath.xobj.XObjXMLEncoder;
     
@@ -153,7 +154,7 @@
         var xmlNode:XMLNode;
         var newXML:String;
         
-        xmlNode = xmlEncoder.encodeValue(testObject,new QName("local","foo"),new XMLNode(5,"root"));
+        xmlNode = xmlEncoder.encodeObject(testObject,new XMLNode(5,"root"), "root", new XObjQName("local","foo"));
         newXML = new XML(xmlNode.toString()).toString();
         objectXML = newXML;
         refreshingXML = false;
