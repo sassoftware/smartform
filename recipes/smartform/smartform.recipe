@@ -16,7 +16,7 @@ class Smartform(PackageRecipe):
     version = '0'
 
     buildRequires = [ 'flexsdk', 'xobj', 'make:runtime',
-        'procps:runtime', 'sun-jre', 'sun-jdk', 'ant:runtime', 'ant:java',
+        'procps:runtime', 'sun-jdk', 'ant:runtime', 'ant:java',
         'xorg-server:runtime', 'util-linux:runtime', 'lxml:python', 
         'xkeyboard-config', 'xkbcomp', 'xfs', 'group-xorg-fonts',
     ]
