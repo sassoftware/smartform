@@ -31,7 +31,8 @@ class Smartform(PackageRecipe):
         r.Make()
 
         # install the as3 libs
-        r.Install('as3/smartform/bin/*.swc', '/opt/smartform/as3/lib/')
+        # as3 code is now in flexlibs
+        #r.Install('as3/smartform/bin/*.swc', '/opt/smartform/as3/lib/')
 
         # Install the python module
         r.MakeInstall()
