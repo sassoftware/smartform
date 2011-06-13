@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+#
+# Copyright (c) 2008-2011 rPath, Inc.
+#
+# All rights reserved
+#
+-->
+
+<s:Panel xmlns:fx="http://ns.adobe.com/mxml/2009" 
+         xmlns:s="library://ns.adobe.com/flex/spark" 
+         xmlns:mx="library://ns.adobe.com/flex/mx"
+         xmlns:smartform="http://www.rpath.com/2009/smartform.mxml"
+         >
+    
+    <s:layout>
+        <s:VerticalLayout />
+    </s:layout>
+    
+    <fx:Declarations>
+        <!-- Place non-visual elements (e.g., services, value objects) here -->
+        
+        <fx:XML id="smartFormFieldDescriptor">
+            <descriptor>
+                <metadata>
+                    <displayName>Add Field</displayName>
+                    <descriptions>
+                        <desc>Add a field</desc>
+                    </descriptions>
+                </metadata>
+                
+                <dataFields>
+                    
+                    <field>
+                        <name>name</name>
+                        <type>str</type>
+                        <descriptions>
+                            <desc lang="en_US">Name</desc>
+                        </descriptions>
+                        <required>true</required>
+                    </field>
+                    
+                    <field>
+                        <name>type</name>
+                        <type>str</type>
+                        <descriptions>
+                            <desc lang="en_US">Type</desc>
+                        </descriptions>
+                        <required>true</required>
+                        
+                        <enumeratedType>
+                            <describedValue>
+                                <key>str</key>
+                                <descriptions>
+                                    <desc>String</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>bool</key>
+                                <descriptions>
+                                    <desc>Boolean</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>int</key>
+                                <descriptions>
+                                    <desc>Integer</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>date</key>
+                                <descriptions>
+                                    <desc>Date</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>time</key>
+                                <descriptions>
+                                    <desc>Time</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>datetime</key>
+                                <descriptions>
+                                    <desc>Datetime</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>timeDelta</key>
+                                <descriptions>
+                                    <desc>Time Delta</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>ipAddress</key>
+                                <descriptions>
+                                    <desc>IPV4 Address</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>currency</key>
+                                <descriptions>
+                                    <desc>Currency</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>file</key>
+                                <descriptions>
+                                    <desc>File content</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>enum</key>
+                                <descriptions>
+                                    <desc>Enumerated Type</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                        </enumeratedType>
+                    </field>
+                    
+                    <field>
+                        <name>required</name>
+                        <type>bool</type>
+                        <descriptions>
+                            <desc lang="en_US">Required?</desc>
+                        </descriptions>
+                    </field>
+                    
+                    <field>
+                        <name>constraints.range.min</name>
+                        <type>int</type>
+                        <descriptions>
+                            <desc lang="en_US">Range:Min</desc>
+                        </descriptions>
+                        <conditional>
+                            <fieldName>type</fieldName>
+                            <operator>eq</operator>
+                            <value>int</value>
+                        </conditional>
+                    </field>
+                    
+                    <field>
+                        <name>constraints.range.max</name>
+                        <type>int</type>
+                        <descriptions>
+                            <desc lang="en_US">Range:Max</desc>
+                        </descriptions>
+                        <conditional>
+                            <fieldName>type</fieldName>
+                            <operator>eq</operator>
+                            <value>int</value>
+                        </conditional>
+                    </field>
+                    
+                    <field>
+                        <name>constraints.regexp</name>
+                        <type>int</type>
+                        <descriptions>
+                            <desc lang="en_US">Regexp</desc>
+                        </descriptions>
+                        <conditional>
+                            <fieldName>type</fieldName>
+                            <operator>eq</operator>
+                            <value>str</value>
+                        </conditional>
+                    </field>
+                    
+                    <field>
+                        <name>default</name>
+                        <type>str</type>
+                        <descriptions>
+                            <desc lang="en_US">Default value</desc>
+                        </descriptions>
+                    </field>
+                    
+                </dataFields>
+            </descriptor>
+        </fx:XML>
+        
+    </fx:Declarations>
+    
+    <fx:Script>
+    <![CDATA[
+        import com.rpath.raf.models.FieldDescriptor;
+        
+        import mx.collections.ArrayCollection;
+        
+        [Bindable]
+        public var field:FieldDescriptor = new FieldDescriptor();
+        
+        [Bindable]
+        public var enumTypeEntries:ArrayCollection = new ArrayCollection();
+        
+    ]]>
+    </fx:Script>
+    
+    <s:Group>
+        
+        <smartform:SmartForm id="addFieldForm"
+                             metadata="{smartFormFieldDescriptor}"
+                             data="{field}" 
+                             editable="true"
+                             >
+            
+            <smartform:itemsAfter>
+                <!-- put in a bunch of enum type entries here -->
+                <s:DataGroup id="enumTG"
+                             dataProvider="{enumTypeEntries}"
+                             includeInLayout="{field.type == 'enum'}"
+                             visible="{enumTG.includeInLayout}"
+                             >
+                    
+                </s:DataGroup>
+            </smartform:itemsAfter>
+        </smartform:SmartForm>
+    </s:Group>
+    
+</s:Panel>

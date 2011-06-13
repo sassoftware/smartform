@@ -62,14 +62,20 @@
     
     <fx:Script>
 <![CDATA[
+    import com.rpath.raf.models.Descriptor;
     import com.rpath.xobj.XObjQName;
     import com.rpath.xobj.XObjXMLDecoder;
     import com.rpath.xobj.XObjXMLEncoder;
     
+    import mx.core.IFlexDisplayObject;
     import mx.events.PropertyChangeEvent;
+    import mx.managers.PopUpManager;
     
     [Bindable]    
     public var metadata:XML;
+    
+    [Bindable]
+    public var smartFormDescriptor:Descriptor;
     
     [Bindable]
     public function get testObject():TestObject
@@ -106,6 +112,8 @@
     public function editMetadata(event:Event):void
     {
         try { metadata = new XML(mdInput.text); } catch (e:Error) {}
+        
+        
         getObjectXML();
     }
     
@@ -166,6 +174,18 @@
     private function setMetadata(name:String):void
     {
         metadata = this[name];
+        
+        // try parsing into a new Descriptor structure...
+        var xmlNode:XMLNode = new XMLDocument(metadata);
+        var xmlDecoder:XObjXMLDecoder = new XObjXMLDecoder({descriptor:Descriptor});
+        var newObject:*;
+        
+        // force decoding
+        oldTestObject = testObject;
+        
+        var decode:* = xmlDecoder.decodeXML(xmlNode);
+        newObject = decode.root;
+        
     }
     
     public function handleTestChange(event:Event):void
@@ -175,6 +195,14 @@
         
         // start with a fresh testObject
         testObject = new TestObject();
+    }
+    
+    protected function handleAddField(event:MouseEvent):void
+    {
+        // popup a field picker panel
+        
+        var popup:AddFieldPanel = PopUpManager.createPopUp(this, AddFieldPanel, true) as AddFieldPanel;
+        PopUpManager.centerPopUp(popup);
     }
     
 ]]>
@@ -227,6 +255,7 @@
             </s:Scroller>-->
         </mx:VDividedBox>
         <s:VGroup height="100%">
+            <s:Button label="Add Field" click="handleAddField(event)"/>
             <s:Button label="REFRESH" click="getObjectXML()"/>
             <s:TextArea id="objView" text="{objectXML}" height="100%" change="{objectXML = objView.text}"/>
        </s:VGroup>
