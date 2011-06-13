@@ -44,4 +44,10 @@
     <component id="UniqueElementValidator" class="com.rpath.raf.validators.UniqueElementValidator"/>
     <component id="ValidationHelper" class="com.rpath.raf.util.ValidationHelper"/>
 
+    <component id="Descriptor" class="com.rpath.raf.models.Descriptor"/>
+    <component id="FieldDescriptor" class="com.rpath.raf.models.FieldDescriptor"/>
+    <component id="MetadataDescriptor" class="com.rpath.raf.models.MetadataDescriptor"/>
+    <component id="EnumDescriptor" class="com.rpath.raf.models.EnumDescriptor"/>
+    <component id="Description" class="com.rpath.raf.models.Description"/>
+
 </componentPackage>
