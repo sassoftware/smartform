@@ -212,9 +212,9 @@ in accordance with the terms of the license agreement accompanying it.
     <s:RichEditableText id="textDisplay"
                         verticalAlign="middle"
                         widthInChars="10"
-                        backgroundColor="0x464646"
                         left="1" right="1" top="1" bottom="1" />
-    
+    <!--                         backgroundColor="0x464646" -->
+
     <!-- prompt -->
     <s:Label 
         id="promptView"
