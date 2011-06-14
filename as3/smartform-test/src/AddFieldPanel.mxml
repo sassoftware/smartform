@@ -8,13 +8,17 @@
 #
 -->
 
-<s:Panel xmlns:fx="http://ns.adobe.com/mxml/2009" 
-         xmlns:s="library://ns.adobe.com/flex/spark" 
-         xmlns:mx="library://ns.adobe.com/flex/mx"
-         xmlns:smartform="http://www.rpath.com/2009/smartform.mxml"
-         
-         preinitialize="preinitializeHandler(event)"
-         >
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+               xmlns:s="library://ns.adobe.com/flex/spark" 
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:smartform="http://www.rpath.com/2009/smartform.mxml"
+               
+               preinitialize="preinitializeHandler(event)"
+               
+               maxHeight="500"
+               minWidth="700"
+               close="closeHandler(event)"
+               >
     
     <s:layout>
         <s:VerticalLayout />
@@ -42,13 +46,15 @@
         import com.rpath.xobj.XObjXMLEncoder;
         
         import mx.collections.ArrayCollection;
+        import mx.events.CloseEvent;
         import mx.events.FlexEvent;
+        import mx.managers.PopUpManager;
         
         [Bindable]
         public var field:FieldDescriptor;
         
         [Bindable]
-        public var testData:Object = {};
+        public var testData:Object;
         
         [Bindable]
         public var enumTypeEntries:ArrayCollection = new ArrayCollection();
@@ -62,9 +68,14 @@
             field.prompt = new Description();
         }
         
+        protected function closeHandler(event:CloseEvent):void
+        {
+            PopUpManager.removePopUp(this);
+        }
+        
         protected function saveClick(event:MouseEvent):void
         {
-            // what to do here?
+            dispatchEvent(new FlexEvent("addFieldToForm"));
         }
         
         
@@ -76,6 +87,7 @@
             // prepare a form descriptor
             var newMetadata:Descriptor = new Descriptor();
             
+            newMetadata.metadata.descriptions[0].value = "Test Form";
             newMetadata.dataFields.addItem(field);
             
             var myXML:XMLDocument = new XMLDocument();
@@ -90,40 +102,46 @@
             newXML = new XML(xmlNode.toString());
             
             testFormDescriptor = newXML;
+            testData = new Object();
         }
         
         
     ]]>
     </fx:Script>
     
-    <smartform:SmartForm id="addFieldForm"
-                             metadata="{smartFormFieldDescriptor}"
-                             data="{field}" 
-                             editable="true"
-                             >
+    <s:Scroller width="100%" height="100%">
+        <s:HGroup width="100%">
             
-            <smartform:itemsAfter>
-                <!-- put in a bunch of enum type entries here -->
-                <s:DataGroup id="enumTG"
-                             dataProvider="{enumTypeEntries}"
-                             includeInLayout="{field.type == 'enum'}"
-                             visible="{enumTG.includeInLayout}"
-                             >
-                    
-                </s:DataGroup>
-            </smartform:itemsAfter>
-        </smartform:SmartForm>
+            <smartform:SmartForm id="addFieldForm"
+                                 metadata="{smartFormFieldDescriptor}"
+                                 data="{field}" 
+                                 editable="true"
+                                 >
+                
+                <smartform:itemsAfter>
+                    <!-- put in a bunch of enum type entries here -->
+                    <s:DataGroup id="enumTG"
+                                 dataProvider="{enumTypeEntries}"
+                                 includeInLayout="{field.type == 'enum'}"
+                                 visible="{enumTG.includeInLayout}"
+                                 >
+                        
+                    </s:DataGroup>
+                </smartform:itemsAfter>
+            </smartform:SmartForm>
+            
+            <smartform:SmartForm id="testForm"
+                                 metadata="{testFormDescriptor}"
+                                 data="{testData}" 
+                                 editable="true"
+                                 >
+                
+            </smartform:SmartForm>
+        </s:HGroup>
         
-        <s:Button label="Save" click="saveClick(event)" />
+    </s:Scroller>
+    
+    <s:Button label="Save" click="saveClick(event)" enabled="{addFieldForm.isValid}"/>
     <s:Button label="Test" click="testClick(event)" />
-
-    <smartform:SmartForm id="testForm"
-                         metadata="{testFormDescriptor}"
-                         data="{testData}" 
-                         editable="true"
-                         >
-        
-    </smartform:SmartForm>
     
-    
-</s:Panel>
+</s:TitleWindow>
