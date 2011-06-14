@@ -8,8 +8,8 @@
     </metadata>
   <dataFields>
     <field>
-      <name>String</name>
-      <descriptions><desc>String</desc></descriptions>
+      <name>prop1</name>
+      <descriptions><desc>String 1</desc></descriptions>
       <prompt><desc>Any old string</desc></prompt>
       <type>str</type>
       <constraints>
@@ -18,8 +18,8 @@
        <required>true</required>
     </field>
     <field>
-      <name>String</name>
-      <descriptions><desc>String</desc></descriptions>
+      <name>prop2</name>
+      <descriptions><desc>String 2</desc></descriptions>
       <prompt><desc>Any old string</desc></prompt>
       <type>str</type>
       <constraints>

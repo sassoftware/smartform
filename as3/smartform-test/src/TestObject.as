@@ -17,9 +17,5 @@ package
     [Bindable]
     public dynamic class TestObject extends Object
     {        
-        public var multicheck:Array;
-        
-        public var name:String;
-        
     }
 }

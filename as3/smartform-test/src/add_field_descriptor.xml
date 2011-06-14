@@ -219,6 +219,14 @@
 			</conditional>
 		</field>
 
+        <field>
+            <name>constraints.description</name>
+            <type>desc</type>
+            <descriptions>
+                <desc lang="en_US">Constraint explanation</desc>
+            </descriptions>
+        </field>
+        
 		<field>
 			<name>default</name>
 			<type>str</type>

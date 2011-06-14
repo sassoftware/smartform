@@ -65,6 +65,7 @@
             field = new FieldDescriptor();
             field.constraints = new ConstraintDescriptor();
             field.constraints.range = new RangeDescriptor();
+            field.constraints.description = new Description();
             field.prompt = new Description();
         }
         
