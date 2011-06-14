@@ -231,7 +231,7 @@
     
     public function set metadata(m:XML):void
     {
-        if (_metadata != m)
+        if (!(_metadata === m))
         {
             //trace("metadata change " + this.uid);
             _metadata = m;
@@ -554,6 +554,9 @@
     
     private function addCondition(prop:String, op:String, val:String):Object
     {
+        if (!prop || !op )
+            return null;
+        
         var condition:Object = {property: prop, operator: op, value: val, result:false};
         conditions.push(condition);
         
@@ -679,7 +682,8 @@
                     for each (var cond:XML in conditionalList)
                     {
                         condition = addCondition(cond.metadataNS::fieldName, cond.metadataNS::operator, cond.metadataNS::value);
-                        meetsCondition = meetsCondition && evalCondition(condition);
+                        if (condition)
+                            meetsCondition = meetsCondition && evalCondition(condition);
                     }
                     
                 }

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+#
+# Copyright (c) 2008-2011 rPath, Inc.
+#
+# All rights reserved
+#
+-->
+
+<s:ItemRenderer
+    xmlns:fx="http://ns.adobe.com/mxml/2009" 
+    xmlns:s="library://ns.adobe.com/flex/spark" 
+    xmlns:mx="library://ns.adobe.com/flex/mx"
+    xmlns:views="com.rpath.raf.views.*"
+    
+    autoDrawBackground="false" 
+    contentBackgroundAlpha="0"
+    
+    preinitialize="preinitializeHandler(event)">
+    
+    
+    <fx:Metadata>
+        [Event(name="removeEnumItem", type="mx.events.FlexEvent")]
+        [Event(name="checkRemoveEnumItem", type="mx.events.FlexEvent")]
+    </fx:Metadata>
+    
+    <s:layout>
+        <s:HorizontalLayout />
+    </s:layout>
+
+    
+    <fx:Script>
+    <![CDATA[
+        import com.rpath.raf.models.EnumDescriptor;
+        import mx.events.FlexEvent;
+        
+        [Bindable]
+        public var editable:Boolean;
+        
+        protected function removeButtonClick(event:MouseEvent):void
+        {
+            dispatchEvent(new FlexEvent("removeEnumItem",true));
+        }
+        
+        protected function preinitializeHandler(event:FlexEvent):void
+        {
+            addEventListener("dataChange", onDataChange);
+            addEventListener("enabledChanged", onDataChange);
+        }
+        
+        private function onDataChange(event:Event):void
+        {
+            if (enabled)
+                removeButton.enabled = dispatchEvent(new FlexEvent("checkRemoveEnumItem", true, true));
+            else
+                removeButton.enabled = false;
+        }
+    ]]>
+    </fx:Script>
+    
+    <s:Button id="removeButton" label="-"  width="26"
+              click="removeButtonClick(event)" 
+              />
+
+    <views:ExtendedTextInput id="enumKey" text="@{(data as EnumDescriptor).key}" maxChars="5" 
+                             maxWidth="60"
+                             editable="{editable}" enabled="{enabled}"
+                             prompt="en_US"
+                             />
+    
+    <s:BorderContainer borderVisible="true" borderStyle="solid">
+        <views:DescListItemRenderer data="{(data as EnumDescriptor).descriptions}" 
+                                editable="{editable}" enabled="{enabled}"
+                                width="100%"
+                                
+                                />
+        
+    </s:BorderContainer>
+
+</s:ItemRenderer>

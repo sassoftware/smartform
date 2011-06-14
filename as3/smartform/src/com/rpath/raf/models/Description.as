@@ -15,7 +15,6 @@ public class Description extends XObjArrayCollection
     public function Description(source:Array=null)
     {
         super(source, {desc: DescriptionEntry});
-        addItem(new DescriptionEntry("en_US"));
     }
     
     public function valueForLang(lang:String):String
@@ -31,17 +30,10 @@ public class Description extends XObjArrayCollection
                 return desc.toString();
         }
         
-        // do we have a locale version?
-        lang = "en_US"; // TODO: look this up
-        
-        for each (desc in this)
-        {
-            if (desc.lang == lang)
-                return desc.toString();
-        }
+        // TODO: look for a locale one first
         
         // what about english?
-        lang = "en_US"; // TODO: look this up
+        lang = "en_US";
         
         for each (desc in this)
         {

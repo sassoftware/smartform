@@ -39,6 +39,10 @@
     <classEntry path="com.rpath.raf.models.RangeDescriptor"/>
     <classEntry path="com.rpath.raf.models.Description"/>
     <classEntry path="com.rpath.raf.models.DataFieldsDescriptor"/>
+    <classEntry path="com.rpath.raf.views.DescItemRenderer"/>
+    <classEntry path="com.rpath.raf.views.EnumDescItemRenderer"/>
+    <classEntry path="com.rpath.raf.views.DescListItemRenderer"/>
+    <classEntry path="com.rpath.raf.views.EnumListItemRenderer"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests>

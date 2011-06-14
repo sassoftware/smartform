@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+#
+# Copyright (c) 2008-2011 rPath, Inc.
+#
+# All rights reserved
+#
+-->
+
+<s:ItemRenderer 
+    xmlns:fx="http://ns.adobe.com/mxml/2009" 
+    xmlns:s="library://ns.adobe.com/flex/spark" 
+    xmlns:mx="library://ns.adobe.com/flex/mx" 
+    xmlns:views="com.rpath.raf.views.*"
+    
+    minHeight="0"
+
+    autoDrawBackground="false" 
+    contentBackgroundAlpha="0"
+    
+    preinitialize="preinitializeHandler(event)"
+    >
+    
+    <s:layout>
+        <s:VerticalLayout />
+    </s:layout>
+
+    <fx:Script>
+    <![CDATA[
+        import com.rpath.raf.models.Description;
+        import com.rpath.raf.models.DescriptionEntry;
+        
+        import mx.collections.ArrayCollection;
+        import mx.events.FlexEvent;
+        
+        [Bindable]
+        public var description:Description;
+        
+        [Bindable("dataChange")]
+        override public function get data():Object
+        {
+            return super.data;
+        }
+     
+        override public function set data(value:Object):void
+        {
+            super.data = value;
+            description = data as Description;
+        }
+        
+        protected function descGroupAddHandler(event:MouseEvent):void
+        {
+            description.addItem(new DescriptionEntry());
+        }
+        
+        [Bindable]
+        public var editable:Boolean;
+        
+        protected function preinitializeHandler(event:FlexEvent):void
+        {
+            addEventListener("removeDescItem", onRemoveDescItem);
+            addEventListener("checkRemoveDescItem", onCheckRemoveDescItem);
+        }
+
+        private function onCheckRemoveDescItem(event:Event):void
+        {
+            if (description.length < 2)
+                event.preventDefault();
+        }
+
+        private function onRemoveDescItem(event:Event):void
+        {
+            var elem:* = event.target.data;
+            if (description.length > 1)
+                description.removeItemIfPresent(elem);
+        }
+        
+    ]]>
+    </fx:Script>
+    
+    <s:DataGroup id="descList" 
+                 dataProvider="{description}"
+                 width="100%"
+                 minHeight="0"
+                 enabled="{editable &amp;&amp; enabled}"
+                 >
+        <s:layout>
+            <s:VerticalLayout />
+        </s:layout>
+        <s:itemRenderer>
+            <fx:Component>
+                <views:DescItemRenderer width="100%" 
+                                        enabled="{parentDocument.parentDocument.enabled}" editable="{parentDocument.parentDocument.editable}"/>
+            </fx:Component>
+        </s:itemRenderer>
+    </s:DataGroup>
+    
+    <s:Button id="addButton"
+              label="+"   width="32"
+              click="descGroupAddHandler(event)" 
+              includeInLayout="{editable &amp;&amp; enabled}"
+              visible="{addButton.includeInLayout}"
+              />
+    
+</s:ItemRenderer>

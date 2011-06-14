@@ -32,13 +32,12 @@ public class EnumDescriptor
     public function EnumDescriptor()
     {
         super();
+        descriptions = new Description();
     }
     
     public var key:String;
     
-    
-    [ElementType("com.rpath.raf.models.Description")]
-    public var descriptions:ArrayCollection;
+    public var descriptions:Description;
     
 }
 }
