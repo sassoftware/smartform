@@ -17,6 +17,7 @@ public class MetadataDescriptor
     {
         super();
         descriptions = new Description();
+        descriptions.addItem(new DescriptionEntry());
     }
     
     public var displayName:String;

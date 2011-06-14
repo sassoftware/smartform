@@ -539,17 +539,6 @@
         {
             if (!data)
                 return;
-            
-            var octets:Array = data.split(".");
-            
-            try 
-            {
-                A.text = octets[0];
-                B.text = octets[1];
-                C.text = octets[2];
-                D.text = octets[3];
-            }
-            catch (e:Error){}
         }
         
         
@@ -727,9 +716,14 @@
         private function handleIPAddress(e:Event):void
         {
             //TODO: make sure we're valid first
-            data = A.text + "." + B.text + "." + C.text + "." + D.text;
+            data = ipField.text;
         }
         
+        private function handleIPV6Address(e:Event):void
+        {
+            //TODO: make sure we're valid first
+            data = ipv6Field.text;
+        }
         
         private function handleLongtext(e:Event):void
         {
@@ -829,7 +823,7 @@
                 maxLengthV.enabled = false;
             
             x = constraints..metadataNS::range;
-            if (x.length() > 0)
+            if (x.length() > 0 && x.metadataNS::min.length() > 0 && x.metadataNS::max.length() > 0)
             {
                 rangeV.enabled = true;
                 rangeV.minValue = x.metadataNS::min;
@@ -1011,6 +1005,10 @@
         <s:State name="timeDeltaDisabled" />
         <s:State name="ipAddress" />
         <s:State name="ipAddressDisabled" />
+
+        <s:State name="ipv6" />
+        <s:State name="ipv6Disabled" />
+
         <s:State name="currency" />
         <s:State name="currencyDisabled" />
         <s:State name="file" />
@@ -1152,35 +1150,43 @@
               includeIn="timeDeltaDisabled"
               />
     
-    <!-- ipAddress: 13 -->
-    <views:CompoundInputItem includeIn="ipAddress,ipAddressDisabled"
+    <!-- ipAddress -->
+    <views:ExtendedTextInput id="ipField" text="{data}" 
+                             editable="{editable}" enabled="{enabled}"
+                             prompt="{prompt}"
+                             change="handleIPAddress(event)"
                              width="100%"
-                             inputFields="{[A, B, C, D]}">
-        <s:HGroup width="100%"
-                  toolTip="{prompt}" includeIn="ipAddress">
-            <views:ExtendedTextInput maxChars="3" id="A" editable="{editable}" enabled="{enabled}"
-                                     toolTipShown="toolTipShown(event)"
-                                     change="handleIPAddress(event)" />
-            <mx:Label text="."/>
-            <views:ExtendedTextInput maxChars="3" id="B" editable="{editable}" enabled="{enabled}"
-                                     toolTipShown="toolTipShown(event)"
-                                     change="handleIPAddress(event)" />
-            <mx:Label text="."/>
-            <views:ExtendedTextInput maxChars="3" id="C" editable="{editable}" enabled="{enabled}"
-                                     toolTipShown="toolTipShown(event)"
-                                     change="handleIPAddress(event)" />
-            <mx:Label text="."/>
-            <views:ExtendedTextInput maxChars="3" id="D" editable="{editable}" enabled="{enabled}"
-                                     toolTipShown="toolTipShown(event)"
-                                     change="handleIPAddress(event)" />
-        </s:HGroup>
-        <mx:Label text="{data}" 
-                  width="100%"
+                             toolTipShown="toolTipShown(event)"
+                             includeIn="ipAddress"
+                             />
+    
+    <mx:TextInput text="{data.valueOf() != null ? data : 'N/A'}" 
                   selectable="true"
-                  toolTip="{prompt}"
+                  editable="false"
+                  borderStyle="none"
+                  toolTip="{prompt}" 
+                  width="100%"
                   includeIn="ipAddressDisabled"
                   />
-    </views:CompoundInputItem>
+    
+    <!-- ipv6 Address -->
+    <views:ExtendedTextInput id="ipv6Field" text="{data}" 
+                             editable="{editable}" enabled="{enabled}"
+                             prompt="{prompt}"
+                             change="handleIPV6Address(event)"
+                             width="100%"
+                             toolTipShown="toolTipShown(event)"
+                             includeIn="ipv6"
+                             />
+    
+    <mx:TextInput text="{data.valueOf() != null ? data : 'N/A'}" 
+                  selectable="true"
+                  editable="false"
+                  borderStyle="none"
+                  toolTip="{prompt}" 
+                  width="100%"
+                  includeIn="ipv6Disabled"
+                  />
     
     <!-- currency: 15 -->
     <views:ExtendedTextInput id="currency" text="{data}" 
