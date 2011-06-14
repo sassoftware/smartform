@@ -47,77 +47,84 @@
 				<describedValue>
 					<key>str</key>
 					<descriptions>
-						<desc>String</desc>
+						<desc lang="en_US">String</desc>
 					</descriptions>
 				</describedValue>
 
 				<describedValue>
 					<key>bool</key>
 					<descriptions>
-						<desc>Boolean</desc>
+						<desc lang="en_US">Boolean</desc>
 					</descriptions>
 				</describedValue>
 
 				<describedValue>
 					<key>int</key>
 					<descriptions>
-						<desc>Integer</desc>
+						<desc lang="en_US">Integer</desc>
 					</descriptions>
 				</describedValue>
 
-				<describedValue>
-					<key>date</key>
-					<descriptions>
-						<desc>Date</desc>
-					</descriptions>
-				</describedValue>
-
-				<describedValue>
-					<key>time</key>
-					<descriptions>
-						<desc>Time</desc>
-					</descriptions>
-				</describedValue>
-
-				<describedValue>
-					<key>datetime</key>
-					<descriptions>
-						<desc>Datetime</desc>
-					</descriptions>
-				</describedValue>
-
-				<describedValue>
-					<key>timeDelta</key>
-					<descriptions>
-						<desc>Time Delta</desc>
-					</descriptions>
-				</describedValue>
+<!--				<describedValue>-->
+<!--					<key>date</key>-->
+<!--					<descriptions>-->
+<!--						<desc lang="en_US">Date</desc>-->
+<!--					</descriptions>-->
+<!--				</describedValue>-->
+<!---->
+<!--				<describedValue>-->
+<!--					<key>time</key>-->
+<!--					<descriptions>-->
+<!--						<desc lang="en_US">Time</desc>-->
+<!--					</descriptions>-->
+<!--				</describedValue>-->
+<!---->
+<!--				<describedValue>-->
+<!--					<key>datetime</key>-->
+<!--					<descriptions>-->
+<!--						<desc lang="en_US">Datetime</desc>-->
+<!--					</descriptions>-->
+<!--				</describedValue>-->
+<!---->
+<!--				<describedValue>-->
+<!--					<key>timeDelta</key>-->
+<!--					<descriptions>-->
+<!--						<desc lang="en_US">Time Delta</desc>-->
+<!--					</descriptions>-->
+<!--				</describedValue>-->
 
 				<describedValue>
 					<key>ipAddress</key>
 					<descriptions>
-						<desc>IPV4 Address</desc>
+						<desc lang="en_US">IPV4 Address</desc>
 					</descriptions>
 				</describedValue>
 
-				<describedValue>
-					<key>currency</key>
-					<descriptions>
-						<desc>Currency</desc>
-					</descriptions>
-				</describedValue>
+                <describedValue>
+                    <key>ipv6</key>
+                    <descriptions>
+                        <desc lang="en_US">IPV6 Address</desc>
+                    </descriptions>
+                </describedValue>
 
-				<describedValue>
-					<key>file</key>
-					<descriptions>
-						<desc>File content</desc>
-					</descriptions>
-				</describedValue>
+<!--				<describedValue>-->
+<!--					<key>currency</key>-->
+<!--					<descriptions>-->
+<!--						<desc lang="en_US">Currency</desc>-->
+<!--					</descriptions>-->
+<!--				</describedValue>-->
+<!---->
+<!--				<describedValue>-->
+<!--					<key>file</key>-->
+<!--					<descriptions>-->
+<!--						<desc lang="en_US">File content</desc>-->
+<!--					</descriptions>-->
+<!--				</describedValue>-->
 
 				<describedValue>
 					<key>enum</key>
 					<descriptions>
-						<desc>Enumerated Type</desc>
+						<desc lang="en_US">Enumerated Type</desc>
 					</descriptions>
 				</describedValue>
 
@@ -143,6 +150,11 @@
 			<descriptions>
 				<desc lang="en_US">Password?</desc>
 			</descriptions>
+            <conditional>
+                <fieldName>type</fieldName>
+                <operator>eq</operator>
+                <value>str</value>
+            </conditional>
 		</field>
 
 		<field>
