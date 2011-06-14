@@ -30,6 +30,7 @@
     <![CDATA[
         import com.rpath.raf.models.Description;
         import com.rpath.raf.models.DescriptionEntry;
+        import com.rpath.raf.util.UIHelper;
         
         import mx.collections.ArrayCollection;
         import mx.events.FlexEvent;
@@ -47,6 +48,15 @@
         {
             super.data = value;
             description = data as Description;
+            if (!showLang)
+            {
+                // if not showing multiple languages, make sure we have 
+                // at least one record
+                if (description.length == 0)
+                {
+                    description.addItem(new DescriptionEntry());
+                }
+            }
         }
         
         protected function descGroupAddHandler(event:MouseEvent):void
@@ -56,6 +66,12 @@
         
         [Bindable]
         public var editable:Boolean;
+        
+        [Bindable]
+        public var prompt:String;
+        
+        [Bindable]
+        public var showLang:Boolean;
         
         protected function preinitializeHandler(event:FlexEvent):void
         {
@@ -83,7 +99,7 @@
                  dataProvider="{description}"
                  width="100%"
                  minHeight="0"
-                 enabled="{editable &amp;&amp; enabled}"
+                 enabled="{UIHelper.checkBooleans(editable,enabled)}"
                  >
         <s:layout>
             <s:VerticalLayout />
@@ -91,7 +107,11 @@
         <s:itemRenderer>
             <fx:Component>
                 <views:DescItemRenderer width="100%" 
-                                        enabled="{parentDocument.parentDocument.enabled}" editable="{parentDocument.parentDocument.editable}"/>
+                                        prompt="{parentDocument.prompt}"
+                                        enabled="{parentDocument.enabled}" 
+                                        editable="{parentDocument.editable}"
+                                        showLang="{parentDocument.showLang}"
+                                        />
             </fx:Component>
         </s:itemRenderer>
     </s:DataGroup>
@@ -99,7 +119,7 @@
     <s:Button id="addButton"
               label="+"   width="32"
               click="descGroupAddHandler(event)" 
-              includeInLayout="{editable &amp;&amp; enabled}"
+              includeInLayout="{UIHelper.checkBooleans(editable,enabled,showLang)}"
               visible="{addButton.includeInLayout}"
               />
     

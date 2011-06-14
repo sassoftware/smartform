@@ -15,6 +15,7 @@ public class Description extends XObjArrayCollection
     public function Description(source:Array=null)
     {
         super(source, {desc: DescriptionEntry});
+        addItem(new DescriptionEntry());
     }
     
     public function valueForLang(lang:String):String

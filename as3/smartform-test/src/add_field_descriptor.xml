@@ -131,6 +131,29 @@
 			</enumeratedType>
 		</field>
 
+
+        <field>
+            <name>enumeratedType</name>
+            <type>enumDesc</type>
+            <descriptions>
+                <desc lang="en_US">Enum Values</desc>
+            </descriptions>
+            <conditional>
+                <fieldName>type</fieldName>
+                <operator>eq</operator>
+                <value>enum</value>
+            </conditional>
+        </field>
+
+
+        <field>
+            <name></name>
+            <type>divider</type>
+            <descriptions>
+                <desc lang="en_US">Options</desc>
+            </descriptions>
+        </field>
+
 		<field>
 			<name>multiple</name>
 			<type>bool</type>
@@ -202,19 +225,6 @@
 			<descriptions>
 				<desc lang="en_US">Default value</desc>
 			</descriptions>
-		</field>
-
-		<field>
-			<name>enumeratedType</name>
-			<type>enumDesc</type>
-			<descriptions>
-				<desc lang="en_US">Enum Values</desc>
-			</descriptions>
-			<conditional>
-				<fieldName>type</fieldName>
-				<operator>eq</operator>
-				<value>enum</value>
-			</conditional>
 		</field>
 
 	</dataFields>

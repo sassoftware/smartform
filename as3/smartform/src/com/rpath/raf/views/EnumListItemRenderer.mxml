@@ -55,6 +55,9 @@
         [Bindable]
         public var editable:Boolean;
         
+        [Bindable]
+        public var showLang:Boolean;
+        
         protected function preinitializeHandler(event:FlexEvent):void
         {
             addEventListener("removeEnumItem", onRemoveEnumItem);
@@ -87,7 +90,9 @@
         <s:itemRenderer>
             <fx:Component>
                 <views:EnumDescItemRenderer width="100%"
-                                            enabled="{parentDocument.enabled}" editable="{parentDocument.editable}"/>
+                                            enabled="{parentDocument.enabled}" editable="{parentDocument.editable}"
+                                            showLang="{parentDocument.showLang}"
+                                            />
             </fx:Component>
         </s:itemRenderer>
     </s:DataGroup>

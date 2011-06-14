@@ -17,7 +17,8 @@
     autoDrawBackground="false" 
     contentBackgroundAlpha="0"
     
-    preinitialize="preinitializeHandler(event)">
+    preinitialize="preinitializeHandler(event)"
+    >
     
     
     <fx:Metadata>
@@ -28,16 +29,39 @@
     <s:layout>
         <s:HorizontalLayout />
     </s:layout>
-
+    
     
     <fx:Script>
     <![CDATA[
+        import com.rpath.raf.models.Description;
+        import com.rpath.raf.models.DescriptionEntry;
         import com.rpath.raf.models.EnumDescriptor;
+        
         import mx.events.FlexEvent;
         
         [Bindable]
         public var editable:Boolean;
         
+        [Bindable]
+        public var showLang:Boolean;
+        
+        [Bindable]
+        public var enumDescEntry:DescriptionEntry;
+        
+        [Bindable]
+        public var enumEntry:EnumDescriptor;
+        
+        [Bindable("dataChange")]
+        override public function get data():Object
+        {
+            return super.data;
+        }
+        
+        override public function set data(value:Object):void
+        {
+            super.data = value;
+            enumEntry = data as EnumDescriptor;
+        }
         protected function removeButtonClick(event:MouseEvent):void
         {
             dispatchEvent(new FlexEvent("removeEnumItem",true));
@@ -55,6 +79,22 @@
                 removeButton.enabled = dispatchEvent(new FlexEvent("checkRemoveEnumItem", true, true));
             else
                 removeButton.enabled = false;
+            
+            if (!showLang)
+            {
+                if (enumEntry)
+                {
+                    if (enumEntry.descriptions.length == 0)
+                    {
+                        enumEntry.descriptions.addItem(new DescriptionEntry());
+                    }
+                    enumDescEntry = enumEntry.descriptions.getItemAt(0) as DescriptionEntry;
+                }
+            }
+            else
+            {
+                enumDescEntry = null;
+            }
         }
     ]]>
     </fx:Script>
@@ -62,20 +102,38 @@
     <s:Button id="removeButton" label="-"  width="26"
               click="removeButtonClick(event)" 
               />
-
+    
     <views:ExtendedTextInput id="enumKey" text="@{(data as EnumDescriptor).key}" maxChars="5" 
                              maxWidth="60"
                              editable="{editable}" enabled="{enabled}"
-                             prompt="en_US"
+                             prompt="key"
                              />
     
-    <s:BorderContainer borderVisible="true" borderStyle="solid">
-        <views:DescListItemRenderer data="{(data as EnumDescriptor).descriptions}" 
-                                editable="{editable}" enabled="{enabled}"
-                                width="100%"
-                                
-                                />
+    <s:BorderContainer id="descBorder"
+                       borderVisible="true" borderStyle="solid"
+                       includeInLayout="{showLang}"
+                       visible="{descBorder.includeInLayout}"
+                       minHeight="0">
+        <views:DescListItemRenderer id="descList"
+                                    data="{(data as EnumDescriptor).descriptions}" 
+                                    editable="{editable}" enabled="{enabled}"
+                                    width="100%"
+                                    prompt="value"
+                                    showLang="{showLang}"
+                                    />
         
     </s:BorderContainer>
-
+    
+    <!-- when no long support -->
+    <views:DescItemRenderer id="singleDesc"
+                            data="{enumDescEntry}" 
+                            editable="{editable}" enabled="{enabled}"
+                            width="100%"
+                            prompt="value"
+                            showLang="{showLang}"
+                            includeInLayout="{!showLang}"
+                            visible="{singleDesc.includeInLayout}"
+                            />
+    
+    
 </s:ItemRenderer>

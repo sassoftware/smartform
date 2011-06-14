@@ -255,6 +255,8 @@
                 return false;
         }
         
+        [Bindable]
+        public var showLang:Boolean;
         
         /** prompt is for use with the PromptingTextArea controls
          */
@@ -1034,6 +1036,9 @@
         <s:State name="enumDesc" />
         <s:State name="enumDescDisabled" />
         
+        <s:State name="divider" />
+        <s:State name="dividerDisabled" />
+
     </views:states>
     
     <!--<mx:NumberValidator id="intValidation" source="{intField}">
@@ -1375,6 +1380,7 @@
                                 data="{data}"
                                 enabled="{enabled}"
                                 editable="{editable}"
+                                showLang="{showLang}"
                                 includeIn="desc,descDisabled"
                                 >
         
@@ -1389,7 +1395,13 @@
         toolTip="{prompt}"
         enabled="{editable &amp;&amp; enabled}"
         editable="{editable}"
+        showLang="{showLang}"
         includeIn="enumDesc,enumDescDisabled"
+        />
+    
+    <!-- divider -->
+    <mx:HRule width="100%"
+        includeIn="divider,dividerDisabled"
         />
     
     <!--    </views:MagicFormItem>

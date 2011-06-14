@@ -267,6 +267,9 @@
     }        
     
     [Bindable]
+    public var showLang:Boolean;
+    
+    [Bindable]
     public override function set enabled(v:Boolean):void
     {
         _formEnabled = v;
@@ -760,6 +763,7 @@
                     newItem.id = "formItem" + (idGen++);
                     BindingUtils.bindProperty(newItem, "editable", this, [ "editable"], false, false);
                     BindingUtils.bindProperty(newItem, "enabled", this, [ "enabled"], false, false);
+                    BindingUtils.bindProperty(newItem, "showLang", this, [ "showLang"], false, false);
                     
                     newItem.errorTipManager = errorTipManager;
                     validationHelper.addItemToValidate(newItem);

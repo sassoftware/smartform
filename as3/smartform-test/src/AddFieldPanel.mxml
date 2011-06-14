@@ -143,5 +143,6 @@
     
     <s:Button label="Save" click="saveClick(event)" enabled="{addFieldForm.isValid}"/>
     <s:Button label="Test" click="testClick(event)" />
+    <s:CheckBox id="showLangCheck" label="Show lang?" change="addFieldForm.showLang = showLangCheck.selected" />
     
 </s:TitleWindow>

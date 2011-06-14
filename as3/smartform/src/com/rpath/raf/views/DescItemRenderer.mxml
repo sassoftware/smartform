@@ -32,10 +32,18 @@
 
     <fx:Script>
     <![CDATA[
+        import com.rpath.raf.util.UIHelper;
+        
         import mx.events.FlexEvent;
 
         [Bindable]
         public var editable:Boolean;
+        
+        [Bindable]
+        public var prompt:String;
+        
+        [Bindable]
+        public var showLang:Boolean;
         
         protected function removeButtonClick(event:MouseEvent):void
         {
@@ -61,16 +69,21 @@
     
     <s:Button id="removeButton" label="-"  width="26"
               click="removeButtonClick(event)" 
+              includeInLayout="{UIHelper.checkBooleans(editable,enabled,showLang)}"
+              visible="{removeButton.includeInLayout}"
               />
 
     <views:ExtendedTextInput id="descLang" text="@{data.lang}" maxChars="5" 
                              editable="{editable}" enabled="{enabled}"
                              maxWidth="60"
                              prompt="en_US"
+                             includeInLayout="{showLang}"
+                             visible="{descLang.includeInLayout}"
                              />
     <views:ExtendedTextInput id="descValue" text="@{data.value}" maxChars="32" 
                              editable="{editable}" enabled="{enabled}"
                              minWidth="160"
+                             prompt="{prompt}"
                              width="100%"
                              />
 </s:ItemRenderer>
