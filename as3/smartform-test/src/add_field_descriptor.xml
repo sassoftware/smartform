@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<descriptor>
+                <metadata>
+                    <displayName>Add Field</displayName>
+                    <descriptions>
+                        <desc>Add a field</desc>
+                    </descriptions>
+                </metadata>
+                
+                <dataFields>
+                    
+                    <field>
+                        <name>name</name>
+                        <type>str</type>
+                        <descriptions>
+                            <desc lang="en_US">Name (property)</desc>
+                        </descriptions>
+                        <required>true</required>
+                    </field>
+
+                    <field>
+                        <name>descriptions</name>
+                        <type>desc</type>
+                        <descriptions>
+                            <desc lang="en_US">Descriptions</desc>
+                        </descriptions>
+                        <required>true</required>
+                    </field>
+
+                    <field>
+                        <name>type</name>
+                        <type>str</type>
+                        <descriptions>
+                            <desc lang="en_US">Type</desc>
+                        </descriptions>
+                        <required>true</required>
+                        
+                        <enumeratedType>
+                            <describedValue>
+                                <key>str</key>
+                                <descriptions>
+                                    <desc>String</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>bool</key>
+                                <descriptions>
+                                    <desc>Boolean</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>int</key>
+                                <descriptions>
+                                    <desc>Integer</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>date</key>
+                                <descriptions>
+                                    <desc>Date</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>time</key>
+                                <descriptions>
+                                    <desc>Time</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>datetime</key>
+                                <descriptions>
+                                    <desc>Datetime</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>timeDelta</key>
+                                <descriptions>
+                                    <desc>Time Delta</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>ipAddress</key>
+                                <descriptions>
+                                    <desc>IPV4 Address</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>currency</key>
+                                <descriptions>
+                                    <desc>Currency</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>file</key>
+                                <descriptions>
+                                    <desc>File content</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                            <describedValue>
+                                <key>enum</key>
+                                <descriptions>
+                                    <desc>Enumerated Type</desc>
+                                </descriptions>
+                            </describedValue>
+                            
+                        </enumeratedType>
+                    </field>
+                    
+                    <field>
+                        <name>required</name>
+                        <type>bool</type>
+                        <descriptions>
+                            <desc lang="en_US">Required?</desc>
+                        </descriptions>
+                    </field>
+
+                    <field>
+                        <name>password</name>
+                        <type>bool</type>
+                        <descriptions>
+                            <desc lang="en_US">Password?</desc>
+                        </descriptions>
+                    </field>
+                                        
+                    <field>
+                        <name>constraints.range.min</name>
+                        <type>int</type>
+                        <descriptions>
+                            <desc lang="en_US">Range:Min</desc>
+                        </descriptions>
+                        <conditional>
+                            <fieldName>type</fieldName>
+                            <operator>eq</operator>
+                            <value>int</value>
+                        </conditional>
+                    </field>
+                    
+                    <field>
+                        <name>constraints.range.max</name>
+                        <type>int</type>
+                        <descriptions>
+                            <desc lang="en_US">Range:Max</desc>
+                        </descriptions>
+                        <conditional>
+                            <fieldName>type</fieldName>
+                            <operator>eq</operator>
+                            <value>int</value>
+                        </conditional>
+                    </field>
+                    
+                    <field>
+                        <name>constraints.regexp</name>
+                        <type>int</type>
+                        <descriptions>
+                            <desc lang="en_US">Regexp</desc>
+                        </descriptions>
+                        <conditional>
+                            <fieldName>type</fieldName>
+                            <operator>eq</operator>
+                            <value>str</value>
+                        </conditional>
+                    </field>
+                    
+                    <field>
+                        <name>default</name>
+                        <type>str</type>
+                        <descriptions>
+                            <desc lang="en_US">Default value</desc>
+                        </descriptions>
+                    </field>
+                    
+                </dataFields>
+            </descriptor>

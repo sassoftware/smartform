@@ -38,6 +38,7 @@
     <classEntry path="com.rpath.raf.models.ConstraintDescriptor"/>
     <classEntry path="com.rpath.raf.models.RangeDescriptor"/>
     <classEntry path="com.rpath.raf.models.Description"/>
+    <classEntry path="com.rpath.raf.models.DataFieldsDescriptor"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests>

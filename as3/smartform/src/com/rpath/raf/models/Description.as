@@ -15,29 +15,47 @@ public class Description extends XObjArrayCollection
     public function Description(source:Array=null)
     {
         super(source, {desc: DescriptionEntry});
+        addItem(new DescriptionEntry("en_US"));
     }
     
     public function valueForLang(lang:String):String
     {
-        for each (var desc:DescriptionEntry in this)
+        var desc:DescriptionEntry;
+        
+        if (length == 0)
+            return null;
+        
+        for each (desc in this)
         {
             if (desc.lang == lang)
                 return desc.toString();
         }
         
-        return toString(); // go with whatever we've got
+        // do we have a locale version?
+        lang = "en_US"; // TODO: look this up
+        
+        for each (desc in this)
+        {
+            if (desc.lang == lang)
+                return desc.toString();
+        }
+        
+        // what about english?
+        lang = "en_US"; // TODO: look this up
+        
+        for each (desc in this)
+        {
+            if (desc.lang == lang)
+                return desc.toString();
+        }
+        
+        // just take the first one...
+        return this[0].toString();
     }
     
     override public function toString():String
     {
-        if (length > 0)
-        {
-            return valueForLang("en_US"); // TODO: lookup user locale
-        }
-        else
-        {
-            return null;
-        }
+        return valueForLang("en_US"); // TODO: lookup user locale
     }
     
     public function valueOf():Object

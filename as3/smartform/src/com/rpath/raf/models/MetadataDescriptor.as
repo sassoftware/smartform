@@ -16,6 +16,7 @@ public class MetadataDescriptor
     public function MetadataDescriptor()
     {
         super();
+        descriptions = new Description();
     }
     
     public var displayName:String;

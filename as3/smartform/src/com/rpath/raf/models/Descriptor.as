@@ -17,13 +17,12 @@ public class Descriptor
     {
         super();
         
-        FieldDescriptor;
+        metadata = new MetadataDescriptor();
+        dataFields = new DataFieldsDescriptor();
     }
     
     public var metadata:MetadataDescriptor;
     
-    
-    [ElementType("com.rpath.raf.models.FieldDescriptor")]
-    public var dataFields:ArrayCollection;
+    public var dataFields:DataFieldsDescriptor;
 }
 }

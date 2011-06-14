@@ -19,7 +19,7 @@ public class ConstraintDescriptor
     }
     
     public var range:RangeDescriptor;
-    public var length:int;
+    public var length:String;  // so we can represent null values
     public var regexp:String;
 }
 }

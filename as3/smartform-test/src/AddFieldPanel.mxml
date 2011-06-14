@@ -12,203 +12,91 @@
          xmlns:s="library://ns.adobe.com/flex/spark" 
          xmlns:mx="library://ns.adobe.com/flex/mx"
          xmlns:smartform="http://www.rpath.com/2009/smartform.mxml"
+         
+         preinitialize="preinitializeHandler(event)"
          >
     
     <s:layout>
         <s:VerticalLayout />
     </s:layout>
     
+    
     <fx:Declarations>
         <!-- Place non-visual elements (e.g., services, value objects) here -->
         
-        <fx:XML id="smartFormFieldDescriptor">
-            <descriptor>
-                <metadata>
-                    <displayName>Add Field</displayName>
-                    <descriptions>
-                        <desc>Add a field</desc>
-                    </descriptions>
-                </metadata>
-                
-                <dataFields>
-                    
-                    <field>
-                        <name>name</name>
-                        <type>str</type>
-                        <descriptions>
-                            <desc lang="en_US">Name</desc>
-                        </descriptions>
-                        <required>true</required>
-                    </field>
-                    
-                    <field>
-                        <name>type</name>
-                        <type>str</type>
-                        <descriptions>
-                            <desc lang="en_US">Type</desc>
-                        </descriptions>
-                        <required>true</required>
-                        
-                        <enumeratedType>
-                            <describedValue>
-                                <key>str</key>
-                                <descriptions>
-                                    <desc>String</desc>
-                                </descriptions>
-                            </describedValue>
-                            
-                            <describedValue>
-                                <key>bool</key>
-                                <descriptions>
-                                    <desc>Boolean</desc>
-                                </descriptions>
-                            </describedValue>
-                            
-                            <describedValue>
-                                <key>int</key>
-                                <descriptions>
-                                    <desc>Integer</desc>
-                                </descriptions>
-                            </describedValue>
-                            
-                            <describedValue>
-                                <key>date</key>
-                                <descriptions>
-                                    <desc>Date</desc>
-                                </descriptions>
-                            </describedValue>
-                            
-                            <describedValue>
-                                <key>time</key>
-                                <descriptions>
-                                    <desc>Time</desc>
-                                </descriptions>
-                            </describedValue>
-                            
-                            <describedValue>
-                                <key>datetime</key>
-                                <descriptions>
-                                    <desc>Datetime</desc>
-                                </descriptions>
-                            </describedValue>
-                            
-                            <describedValue>
-                                <key>timeDelta</key>
-                                <descriptions>
-                                    <desc>Time Delta</desc>
-                                </descriptions>
-                            </describedValue>
-                            
-                            <describedValue>
-                                <key>ipAddress</key>
-                                <descriptions>
-                                    <desc>IPV4 Address</desc>
-                                </descriptions>
-                            </describedValue>
-                            
-                            <describedValue>
-                                <key>currency</key>
-                                <descriptions>
-                                    <desc>Currency</desc>
-                                </descriptions>
-                            </describedValue>
-                            
-                            <describedValue>
-                                <key>file</key>
-                                <descriptions>
-                                    <desc>File content</desc>
-                                </descriptions>
-                            </describedValue>
-                            
-                            <describedValue>
-                                <key>enum</key>
-                                <descriptions>
-                                    <desc>Enumerated Type</desc>
-                                </descriptions>
-                            </describedValue>
-                            
-                        </enumeratedType>
-                    </field>
-                    
-                    <field>
-                        <name>required</name>
-                        <type>bool</type>
-                        <descriptions>
-                            <desc lang="en_US">Required?</desc>
-                        </descriptions>
-                    </field>
-                    
-                    <field>
-                        <name>constraints.range.min</name>
-                        <type>int</type>
-                        <descriptions>
-                            <desc lang="en_US">Range:Min</desc>
-                        </descriptions>
-                        <conditional>
-                            <fieldName>type</fieldName>
-                            <operator>eq</operator>
-                            <value>int</value>
-                        </conditional>
-                    </field>
-                    
-                    <field>
-                        <name>constraints.range.max</name>
-                        <type>int</type>
-                        <descriptions>
-                            <desc lang="en_US">Range:Max</desc>
-                        </descriptions>
-                        <conditional>
-                            <fieldName>type</fieldName>
-                            <operator>eq</operator>
-                            <value>int</value>
-                        </conditional>
-                    </field>
-                    
-                    <field>
-                        <name>constraints.regexp</name>
-                        <type>int</type>
-                        <descriptions>
-                            <desc lang="en_US">Regexp</desc>
-                        </descriptions>
-                        <conditional>
-                            <fieldName>type</fieldName>
-                            <operator>eq</operator>
-                            <value>str</value>
-                        </conditional>
-                    </field>
-                    
-                    <field>
-                        <name>default</name>
-                        <type>str</type>
-                        <descriptions>
-                            <desc lang="en_US">Default value</desc>
-                        </descriptions>
-                    </field>
-                    
-                </dataFields>
-            </descriptor>
-        </fx:XML>
+        <fx:XML id="smartFormFieldDescriptor" source="add_field_descriptor.xml" />
+        <fx:XML id="dummyFormDescriptor" source="dummy_form.xml" />
         
     </fx:Declarations>
     
     <fx:Script>
     <![CDATA[
+        import com.rpath.raf.models.ConditionDescriptor;
+        import com.rpath.raf.models.ConstraintDescriptor;
+        import com.rpath.raf.models.Description;
+        import com.rpath.raf.models.DescriptionEntry;
+        import com.rpath.raf.models.Descriptor;
+        import com.rpath.raf.models.EnumDescriptor;
         import com.rpath.raf.models.FieldDescriptor;
+        import com.rpath.raf.models.RangeDescriptor;
+        import com.rpath.xobj.XObjXMLEncoder;
         
         import mx.collections.ArrayCollection;
+        import mx.events.FlexEvent;
         
         [Bindable]
-        public var field:FieldDescriptor = new FieldDescriptor();
+        public var field:FieldDescriptor;
+        
+        [Bindable]
+        public var testData:Object = {};
         
         [Bindable]
         public var enumTypeEntries:ArrayCollection = new ArrayCollection();
         
+        protected function preinitializeHandler(event:FlexEvent):void
+        {
+            // TODO Auto-generated method stub
+            field = new FieldDescriptor();
+            field.constraints = new ConstraintDescriptor();
+            field.constraints.range = new RangeDescriptor();
+            field.prompt = new Description();
+        }
+        
+        protected function saveClick(event:MouseEvent):void
+        {
+            // what to do here?
+        }
+        
+        
+        [Bindable]
+        public var testFormDescriptor:XML;
+        
+        protected function testClick(event:MouseEvent):void
+        {
+            // prepare a form descriptor
+            var newMetadata:Descriptor = new Descriptor();
+            
+            newMetadata.dataFields.addItem(field);
+            
+            var myXML:XMLDocument = new XMLDocument();
+            var xmlEncoder:XObjXMLEncoder = new XObjXMLEncoder({descriptor:Descriptor}, myXML);
+            
+            xmlEncoder.encodeNullElements = false;
+            
+            var xmlNode:XMLNode;
+            var newXML:XML;
+            
+            xmlNode = xmlEncoder.encodeObject(newMetadata);
+            newXML = new XML(xmlNode.toString());
+            
+            testFormDescriptor = newXML;
+        }
+        
+        
     ]]>
     </fx:Script>
     
-    <s:Group>
-        
-        <smartform:SmartForm id="addFieldForm"
+    <smartform:SmartForm id="addFieldForm"
                              metadata="{smartFormFieldDescriptor}"
                              data="{field}" 
                              editable="true"
@@ -225,6 +113,17 @@
                 </s:DataGroup>
             </smartform:itemsAfter>
         </smartform:SmartForm>
-    </s:Group>
+        
+        <s:Button label="Save" click="saveClick(event)" />
+    <s:Button label="Test" click="testClick(event)" />
+
+    <smartform:SmartForm id="testForm"
+                         metadata="{testFormDescriptor}"
+                         data="{testData}" 
+                         editable="true"
+                         >
+        
+    </smartform:SmartForm>
+    
     
 </s:Panel>

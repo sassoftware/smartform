@@ -17,7 +17,7 @@ public class RangeDescriptor
         super();
     }
     
-    public var min:int;
-    public var max:int;
+    public var min:String;  // so we can represent null values
+    public var max:String;
 }
 }

@@ -53,6 +53,12 @@ public dynamic class FieldDescriptor
         super();
         
         this["default"] = null;  // HOW TO DEAL WITH THIS RESERVED WORD COLLISION?
+        
+        descriptions = new Description();
+        prompt = new Description();
+        constraints = new ConstraintDescriptor();
+        enumeratedType = new EnumTypesDescriptor();
+        conditional = [];
     }
     
     public var name:String;
@@ -64,11 +70,10 @@ public dynamic class FieldDescriptor
     
     public var prompt:Description;
     
-    [ElementType("com.rpath.raf.models.EnumDescriptor")]
-    public var enumeratedType:ArrayCollection;
+    public var enumeratedType:EnumTypesDescriptor;
     
-    [ElementType("com.rpath.raf.models.ConditionDescriptor")]
-    public var conditional:ArrayCollection;
+    [ArrayElementType("com.rpath.raf.models.ConditionDescriptor")]
+    public var conditional:Array;
     
     public var constraints:ConstraintDescriptor;
     
