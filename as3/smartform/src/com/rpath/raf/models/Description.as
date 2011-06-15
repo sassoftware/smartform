@@ -15,14 +15,26 @@ package com.rpath.raf.models
 {
 import com.rpath.xobj.XObjArrayCollection;
 
+import flash.events.Event;
+
+import mx.events.CollectionEvent;
+import mx.events.PropertyChangeEvent;
+import mx.events.PropertyChangeEventKind;
+
+[Bindable]
 public class Description extends XObjArrayCollection
 {
     public function Description(source:Array=null)
     {
         super(source, {desc: DescriptionEntry});
+        
+        // we need to maintain our synthetic first property
+        addEventListener(CollectionEvent.COLLECTION_CHANGE, onCollectionChange);
+        
         // make sure we always have one
         addItem(new DescriptionEntry());
     }
+
     
     public function valueForLang(lang:String):String
     {
@@ -65,12 +77,29 @@ public class Description extends XObjArrayCollection
     [Transient]
     public function get first():String
     {
-        return toString();
+        return _first;
     }
+    
+    private var _first:String;
     
     public function set first(s:String):void
     {
-        this[0].value = s;
+        if (_first == s)
+            return;
+        
+        if (length > 0)
+        {
+            this[0].value = s;
+            _first = s;
+        }
     }
+    
+    
+    private function onCollectionChange(event:CollectionEvent):void
+    {
+        // first may have changed. Signal this
+        first = toString();
+    }
+
 }
 }

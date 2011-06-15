@@ -19,7 +19,8 @@
                
                xmlns:smartform="http://www.rpath.com/2009/smartform.mxml"
                
-               minWidth="955" minHeight="600">
+               width="100%" height="100%"
+               >
     
     <s:layout>
         <s:VerticalLayout/>
@@ -62,18 +63,10 @@
     
     <fx:Script>
     <![CDATA[
-        import com.rpath.raf.views.EditFieldPanel;
-        import com.rpath.raf.models.Descriptor;
-        import com.rpath.xobj.XObjQName;
-        import com.rpath.xobj.XObjXMLDecoder;
-        import com.rpath.xobj.XObjXMLEncoder;
         
-        import mx.core.IFlexDisplayObject;
-        import mx.events.PropertyChangeEvent;
-        import mx.managers.PopUpManager;
         
         [Bindable]
-        public var descriptorString:String;
+        public var testObject:TestObject = new TestObject();
         
         [Bindable]
         public function get metadata():XML
@@ -82,68 +75,12 @@
         }
         
         private var _metadata:XML;
-
+        
         public function set metadata(value:XML):void
         {
             _metadata = value;
-            
-            XML.prettyIndent = 2;
-            XML.prettyPrinting = true;
+        }
 
-            descriptorString = value.toXMLString();
-            
-            // try parsing into a new Descriptor structure...
-            var xmlNode:XMLNode = new XMLDocument(_metadata);
-            var xmlDecoder:XObjXMLDecoder = new XObjXMLDecoder({descriptor:Descriptor});
-            
-            // force decoding
-            oldTestObject = testObject;
-            
-            var decode:* = xmlDecoder.decodeXML(xmlNode);
-            formDescriptor = decode.root as Descriptor;
-        }
-        
-        
-        [Bindable]
-        public var smartFormDescriptor:Descriptor;
-        
-        [Bindable]
-        public function get testObject():TestObject
-        {
-            return _testObject;
-        }
-        
-        private var _testObject:TestObject = new TestObject();
-        
-        public function set testObject(s:TestObject):void
-        {
-            if (_testObject)
-            {
-                _testObject.removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, getObjectXML);
-            }
-            
-            _testObject = s;
-            
-            if (_testObject)
-            {
-                _testObject.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, getObjectXML);
-            }
-        }
-        
-        
-        public function creationComplete():void
-        {
-            // start with a fresh testObject
-            testObject = new TestObject();
-            setMetadata(tests[0].test);
-        }
-        
-        
-        public function editMetadata(event:Event):void
-        {
-            setMetadataXML(new XML(mdInput.text));
-        }
-        
         public function setMetadataXML(newXML:XML):void
         {
             try { 
@@ -153,71 +90,8 @@
             {
                 trace("problem setting new descriptor XML");
             }
-            
-            getObjectXML();
+
         }
-        
-        private var _objectXML:String;
-        private var refreshingXML:Boolean;
-        
-        public var oldTestObject:*;
-        
-        [Bindable]
-        public function set objectXML(xml:String):void
-        {
-            _objectXML = xml;
-            
-            if (!refreshingXML)
-            {
-                try
-                {
-                    var xmlNode:XMLNode = new XMLDocument(xml);
-                    var xmlDecoder:XObjXMLDecoder = new XObjXMLDecoder({foo:TestObject});
-                    var newObject:*;
-                    
-                    // force decoding
-                    oldTestObject = testObject;
-                    newObject = xmlDecoder.decodeXML(xmlNode).foo;
-                    testObject = newObject;
-                    testObject.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, getObjectXML);
-                    // force a refresh now
-                    getObjectXML();
-                }
-                catch (e:Error)
-                { }
-            }
-        }
-        
-        public function get objectXML():String
-        {
-            return _objectXML;
-        }
-        
-        public function getObjectXML(event:PropertyChangeEvent=null):void
-        {
-            refreshingXML = true;
-            
-            var myXML:XMLDocument = new XMLDocument();
-            var xmlEncoder:XObjXMLEncoder = new XObjXMLEncoder({foo:TestObject}, myXML);
-            var xmlNode:XMLNode;
-            var newXML:String;
-            
-            xmlNode = xmlEncoder.encodeObject(testObject);
-            var strVal:String = xmlNode.toString();
-            
-            XML.prettyIndent = 2;
-            XML.prettyPrinting = true;
-            
-            newXML = new XML(strVal).toXMLString();
-            objectXML = newXML;
-            refreshingXML = false;
-        }
-        
-        [Bindable]
-        public var formIsValid:Boolean;
-        
-        [Bindable]
-        public var formDescriptor:Descriptor = new Descriptor();
         
         private function setMetadata(name:String):void
         {
@@ -228,113 +102,47 @@
         {
             var testId:String = testSelector.selectedItem.test;
             setMetadata(testId);
-            
-            // start with a fresh testObject
+        }
+
+        
+        protected function cancelButton_clickHandler(event:MouseEvent):void
+        {
+            // fresh object
             testObject = new TestObject();
-        }
-        
-        protected function handleAddField(event:MouseEvent):void
-        {
-            // popup a field picker panel
-            
-            var popup:AddFieldWindow = PopUpManager.createPopUp(this, AddFieldWindow, true) as AddFieldWindow;
-            PopUpManager.centerPopUp(popup);
-            popup.addEventListener("addFieldToForm", onAddFieldToForm);
-        }
-        
-        private function onAddFieldToForm(event:Event):void
-        {
-            var addPanel:EditFieldPanel = event.target as EditFieldPanel;
-            if (formDescriptor)
-            {
-                formDescriptor.dataFields.addItem(addPanel.field);
-                
-                var myXML:XMLDocument = new XMLDocument();
-                var xmlEncoder:XObjXMLEncoder = new XObjXMLEncoder({descriptor:Descriptor}, myXML);
-                
-                xmlEncoder.encodeNullElements = false;
-                
-                var xmlNode:XMLNode;
-                var newXML:XML;
-                
-                xmlNode = xmlEncoder.encodeObject(formDescriptor);
-                newXML = new XML(xmlNode.toString());
-                
-                setMetadataXML(newXML);
-            }
-        }
-        
-        protected function showEditor_clickHandler(event:MouseEvent):void
-        {
-            var popup:SmartFormEditorWindow = PopUpManager.createPopUp(this, SmartFormEditorWindow, true) as SmartFormEditorWindow;
-            
-            popup.descriptorXML = metadata;
-            
-            PopUpManager.centerPopUp(popup);
-            //popup.addEventListener("addFieldToForm", onAddFieldToForm);
-            
         }
         
     ]]>
     </fx:Script>
     
     
-    <mx:HDividedBox width="100%" height="100%" verticalScrollPolicy="off">
-        
-        <!--<s:Scroller width="100%" height="60%">
-        <s:VGroup>  // does not work until ErrorTipManager can handle SPARK scrolling
-        // events (via PropertYChange rather than SCROLL events 
-        -->
-        <s:VGroup width="100%" height="100%">
-            <s:Label text="Form" />
-            <s:Scroller width="100%" height="100%">
-                <s:VGroup width="100%">
-                    
-                    <smartform:SmartForm id="infoForm" editable="{editableCheck.selected}"
-                                         metadata="{metadata}" data="{testObject}"
-                                         defaultButton="{okButton}"
-                                         />
-                    
-                    <s:HGroup width="100%">
-                        <s:Button label="Cancel" />
-                        <s:Label id="warningLabel" text="Please complete required fields" 
-                                 visible="{!infoForm.isValid}" 
-                                 color="blue"
-                                 click="infoForm.showErrors()"/>
-                        
-                        <s:Button id="okButton" label="OK" enabled="{infoForm.isValid}" />
-                    </s:HGroup>
-                    
-                </s:VGroup>
-                
-            </s:Scroller>
-        </s:VGroup>
-        
-        <s:VGroup height="100%" width="100%">
-            <s:Label text="Data Object" />
-            <s:TextArea id="objView" text="{objectXML}" width="100%"
-                        height="100%" change="{objectXML = objView.text}"/>
-            <s:Button label="REFRESH" click="getObjectXML()"/>
-        </s:VGroup>
-        
-        <s:VGroup height="100%" width="100%">
-            <s:Label text="Descriptor" />
-            <mx:TextArea id="mdInput" width="100%" height="100%" text="{descriptorString}" change="editMetadata(event)" />
-        </s:VGroup>
-    </mx:HDividedBox>
-    
-    <s:HGroup width="100%" bottom="0">
+    <s:HGroup width="100%" top="0">
         <mx:FormItem label="Load Descriptor" >
             <mx:ComboBox id="testSelector"
                          dataProvider="{tests}" change="handleTestChange(event)" />
         </mx:FormItem>
-        <s:Button label="Add Field" click="handleAddField(event)"/>
         <mx:CheckBox id="editableCheck" label="EDITABLE" selected="true"/>
         <mx:CheckBox id="isValid" label="VALID?" selected="{infoForm.isValid}"/>
         <mx:CheckBox id="isDirty" label="DIRTY?" selected="{infoForm.isDirty}"/>
-        <s:Button label="pop errors" click="infoForm.showErrors()" />
-        <s:Button label="hide errors" click="infoForm.hideErrors()" />
-        <s:Button id="showEditor" label="Show Editor" click="showEditor_clickHandler(event)" />
+        <s:Button label="pop errors" click="infoForm.smartform.showErrors()" />
+        <s:Button label="hide errors" click="infoForm.smartform.hideErrors()" />
     </s:HGroup>
+
+    <smartform:SmartFormEditor id="infoForm" 
+                               editable="{editableCheck.selected}"
+                               descriptorXML="{metadata}" data="{testObject}"
+                               defaultButton="{okButton}"
+                               height="100%" width="100%"
+                               />
+    
+    <s:HGroup width="100%">
+        <s:Button id="cancelButton" label="Cancel" click="cancelButton_clickHandler(event)"/>
+        <s:Label id="warningLabel" text="Please complete required fields" 
+                 visible="{!infoForm.isValid}" 
+                 color="blue"
+                 click="infoForm.smartform.showErrors()"/>
+        
+        <s:Button id="okButton" label="OK" enabled="{infoForm.isValid}" />
+    </s:HGroup>
+    
     
 </s:Application>
