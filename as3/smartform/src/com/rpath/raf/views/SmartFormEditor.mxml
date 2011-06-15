@@ -85,17 +85,19 @@
             formDescriptor.dataFields.addItem(newField);
             
             elementGrid.selectedItem = newField;
+            // How to do this?
+            //elementGrid.ensureCellIsVisible(elementGrid.selectedIndex);
         }
         
         /* private function onAddFieldToForm(event:Event):void
         {
-            var addPanel:AddFieldPanel = event.target as AddFieldPanel;
-            
-            if (formDescriptor)
-            {
-                formDescriptor.dataFields.addItem(addPanel.field);
-                recomputeMetadataXML();
-            }
+        var addPanel:AddFieldPanel = event.target as AddFieldPanel;
+        
+        if (formDescriptor)
+        {
+        formDescriptor.dataFields.addItem(addPanel.field);
+        recomputeMetadataXML();
+        }
         } */
         
         protected function handleRemoveField(event:MouseEvent):void
@@ -119,10 +121,15 @@
             
             // now try and turn it back into a regular data object...
         }
-
+        
         protected function navigator_changeHandler(event:IndexChangedEvent):void
         {
             if (navigator.selectedChild == formNav)
+            {
+                // tickle form to recompute
+                recomputeDescriptorXML();
+            }
+            else if (navigator.selectedChild == descNav)
             {
                 // tickle form to recompute
                 recomputeDescriptorXML();
@@ -178,7 +185,8 @@
             <s:DataGrid id="elementGrid"
                         dataProvider="{formDescriptor.dataFields}" 
                         width="100%" height="100%"
-                        editable="true">
+                        editable="true"
+                        >
                 <s:columns>
                     <s:ArrayList>
                         <s:GridColumn headerText="Description" dataField="descriptions.first" editable="false"/>
@@ -189,7 +197,7 @@
                 </s:columns>
             </s:DataGrid>
             
-            <s:HGroup width="100%" bottom="0">
+            <s:HGroup width="100%">
                 <s:Button label="Add Field" click="handleAddField(event)"/>
                 <s:Button label="Remove Field" click="handleRemoveField(event)"
                           enabled="{elementGrid.selectedItem != null}"/>
@@ -197,14 +205,15 @@
             </s:HGroup>
             
             <views:EditFieldPanel id="editFieldPanel" field="{elementGrid.selectedItem as FieldDescriptor}" 
-                                 width="100%"
-                                 includeInLayout="{elementGrid.selectedItem != null}"
-                                 visible="{editFieldPanel.includeInLayout}"
-                                 />
+                                  height="250%"
+                                  width="100%"
+                                  includeInLayout="{elementGrid.selectedItem != null}"
+                                  visible="{editFieldPanel.includeInLayout}"
+                                  />
             
         </s:NavigatorContent>
         
-        <s:NavigatorContent label="Descriptor XML" 
+        <s:NavigatorContent id="descNav" label="Descriptor XML" 
                             width="100%" height="100%">
             
             <views:DescriptorXMLView descriptorXML="{descriptorXML}" 
@@ -219,8 +228,8 @@
                             >
             
             <views:DataXMLView id="dataView" data="{data}" 
-                                     width="100%" height="100%"
-                                     editDataXML="editDataXMLHandler(event)"/>
+                               width="100%" height="100%"
+                               editDataXML="editDataXMLHandler(event)"/>
             
         </s:NavigatorContent>
         
