@@ -77,29 +77,45 @@ or fitness for a particular purpose. See the MIT License for full details.
             addEventListener("enabledChanged", onDataChange);
         }
         
+        private var _dataChanged:Boolean;
+        
         private function onDataChange(event:Event):void
         {
-            if (enabled)
-                removeButton.enabled = dispatchEvent(new FlexEvent("checkRemoveEnumItem", true, true));
-            else
-                removeButton.enabled = false;
-            
-            if (!showLang)
+            _dataChanged = true;
+            invalidateProperties();
+        }
+        
+        override protected function commitProperties():void
+        {
+            if (_dataChanged)
             {
-                if (enumEntry)
+                _dataChanged = false;
+                
+                if (enabled)
+                    removeButton.enabled = dispatchEvent(new FlexEvent("checkRemoveEnumItem", true, true));
+                else
+                    removeButton.enabled = false;
+                
+                if (!showLang)
                 {
-                    if (enumEntry.descriptions.length == 0)
+                    // we need to pluck the first desc entry only
+                    if (enumEntry)
                     {
-                        enumEntry.descriptions.addItem(new DescriptionEntry());
+                        if (enumEntry.descriptions.length == 0)
+                        {
+                            enumEntry.descriptions.addItem(new DescriptionEntry());
+                        }
+                        enumDescEntry = enumEntry.descriptions.getItemAt(0) as DescriptionEntry;
                     }
-                    enumDescEntry = enumEntry.descriptions.getItemAt(0) as DescriptionEntry;
+                }
+                else
+                {
+                    enumDescEntry = null;
                 }
             }
-            else
-            {
-                enumDescEntry = null;
-            }
+            super.commitProperties();
         }
+        
     ]]>
     </fx:Script>
     
@@ -128,7 +144,7 @@ or fitness for a particular purpose. See the MIT License for full details.
         
     </s:BorderContainer>
     
-    <!-- when no long support -->
+    <!-- when no lang support -->
     <views:DescItemRenderer id="singleDesc"
                             data="{enumDescEntry}" 
                             editable="{editable}" enabled="{enabled}"
