@@ -37,6 +37,7 @@
     <component id="PromptingTextInput" class="com.rpath.raf.views.PromptingTextInput"/>
     <component id="SmartForm" class="com.rpath.raf.views.SmartForm"/>
     <component id="SmartFormChoice" class="com.rpath.raf.views.SmartFormChoice"/>
+    <component id="SmartFormEditor" class="com.rpath.raf.views.SmartFormEditor"/>
     <component id="SmartFormItem" class="com.rpath.raf.views.SmartFormItem"/>
     <component id="SmartformVersion" class="com.rpath.raf.SmartformVersion"/>
     <component id="StringMatchValidator" class="com.rpath.raf.validators.StringMatchValidator"/>
