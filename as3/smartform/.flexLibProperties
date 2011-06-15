@@ -43,6 +43,11 @@
     <classEntry path="com.rpath.raf.views.EnumDescItemRenderer"/>
     <classEntry path="com.rpath.raf.views.DescListItemRenderer"/>
     <classEntry path="com.rpath.raf.views.EnumListItemRenderer"/>
+    <classEntry path="com.rpath.raf.views.SmartFormEditor"/>
+    <classEntry path="com.rpath.raf.views.DescriptorPanel"/>
+    <classEntry path="com.rpath.raf.views.DataXMLView"/>
+    <classEntry path="com.rpath.raf.views.DescriptorXMLView"/>
+    <classEntry path="com.rpath.raf.views.EditFieldPanel"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests>

@@ -75,7 +75,7 @@
 
     <views:ExtendedTextInput id="descLang" text="@{data.lang}" maxChars="5" 
                              editable="{editable}" enabled="{enabled}"
-                             maxWidth="60"
+                             maxWidth="50"
                              prompt="en_US"
                              includeInLayout="{showLang}"
                              visible="{descLang.includeInLayout}"

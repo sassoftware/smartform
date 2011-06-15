@@ -104,7 +104,7 @@
               />
     
     <views:ExtendedTextInput id="enumKey" text="@{(data as EnumDescriptor).key}" maxChars="5" 
-                             maxWidth="60"
+                             minWidth="60"
                              editable="{editable}" enabled="{enabled}"
                              prompt="key"
                              />

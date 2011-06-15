@@ -81,14 +81,14 @@
 
         private function onCheckRemoveDescItem(event:Event):void
         {
-            if (description.length < 2)
+            if (description && description.length < 2)
                 event.preventDefault();
         }
 
         private function onRemoveDescItem(event:Event):void
         {
             var elem:* = event.target.data;
-            if (description.length > 1)
+            if (description && description.length > 1)
                 description.removeItemIfPresent(elem);
         }
         

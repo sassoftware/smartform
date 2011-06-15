@@ -18,7 +18,7 @@ public class ConstraintDescriptor
         super();
     }
     
-    public var description:Description;
+    public var descriptions:Description;
     public var range:RangeDescriptor;
     public var length:String;  // so we can represent null values
     public var regexp:String;

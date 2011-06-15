@@ -8,17 +8,13 @@
 #
 -->
 
-<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
-               xmlns:s="library://ns.adobe.com/flex/spark" 
-               xmlns:mx="library://ns.adobe.com/flex/mx"
-               xmlns:smartform="http://www.rpath.com/2009/smartform.mxml"
-               
-               preinitialize="preinitializeHandler(event)"
-               
-               maxHeight="500"
-               minWidth="700"
-               close="closeHandler(event)"
-               >
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+         xmlns:s="library://ns.adobe.com/flex/spark" 
+         xmlns:mx="library://ns.adobe.com/flex/mx"
+         xmlns:smartform="http://www.rpath.com/2009/smartform.mxml"
+         
+         preinitialize="preinitializeHandler(event)"
+         >
     
     <s:layout>
         <s:VerticalLayout />
@@ -29,7 +25,6 @@
         <!-- Place non-visual elements (e.g., services, value objects) here -->
         
         <fx:XML id="smartFormFieldDescriptor" source="add_field_descriptor.xml" />
-        <fx:XML id="dummyFormDescriptor" source="dummy_form.xml" />
         
     </fx:Declarations>
     
@@ -65,13 +60,8 @@
             field = new FieldDescriptor();
             field.constraints = new ConstraintDescriptor();
             field.constraints.range = new RangeDescriptor();
-            field.constraints.description = new Description();
+            field.constraints.descriptions = new Description();
             field.prompt = new Description();
-        }
-        
-        protected function closeHandler(event:CloseEvent):void
-        {
-            PopUpManager.removePopUp(this);
         }
         
         protected function saveClick(event:MouseEvent):void
@@ -142,8 +132,8 @@
         
     </s:Scroller>
     
-    <s:Button label="Save" click="saveClick(event)" enabled="{addFieldForm.isValid}"/>
-    <s:Button label="Test" click="testClick(event)" />
-    <s:CheckBox id="showLangCheck" label="Show lang?" change="addFieldForm.showLang = showLangCheck.selected" />
-    
-</s:TitleWindow>
+    <s:HGroup width="100%" bottom="0">
+        <s:Button label="Test" click="testClick(event)" />
+        <s:CheckBox id="showLangCheck" label="Show lang?" change="addFieldForm.showLang = showLangCheck.selected" />
+    </s:HGroup>
+</s:Group>

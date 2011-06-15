@@ -15,6 +15,7 @@ public class Description extends XObjArrayCollection
     public function Description(source:Array=null)
     {
         super(source, {desc: DescriptionEntry});
+        // make sure we always have one
         addItem(new DescriptionEntry());
     }
     
@@ -54,6 +55,17 @@ public class Description extends XObjArrayCollection
     public function valueOf():Object
     {
         return toString();
+    }
+    
+    [Transient]
+    public function get first():String
+    {
+        return toString();
+    }
+    
+    public function set first(s:String):void
+    {
+        this[0].value = s;
     }
 }
 }

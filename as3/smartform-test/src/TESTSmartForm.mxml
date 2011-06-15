@@ -62,6 +62,7 @@
     
     <fx:Script>
     <![CDATA[
+        import com.rpath.raf.views.EditFieldPanel;
         import com.rpath.raf.models.Descriptor;
         import com.rpath.xobj.XObjQName;
         import com.rpath.xobj.XObjXMLDecoder;
@@ -236,14 +237,14 @@
         {
             // popup a field picker panel
             
-            var popup:AddFieldPanel = PopUpManager.createPopUp(this, AddFieldPanel, true) as AddFieldPanel;
+            var popup:AddFieldWindow = PopUpManager.createPopUp(this, AddFieldWindow, true) as AddFieldWindow;
             PopUpManager.centerPopUp(popup);
             popup.addEventListener("addFieldToForm", onAddFieldToForm);
         }
         
         private function onAddFieldToForm(event:Event):void
         {
-            var addPanel:AddFieldPanel = event.target as AddFieldPanel;
+            var addPanel:EditFieldPanel = event.target as EditFieldPanel;
             if (formDescriptor)
             {
                 formDescriptor.dataFields.addItem(addPanel.field);
@@ -261,6 +262,17 @@
                 
                 setMetadataXML(newXML);
             }
+        }
+        
+        protected function showEditor_clickHandler(event:MouseEvent):void
+        {
+            var popup:SmartFormEditorWindow = PopUpManager.createPopUp(this, SmartFormEditorWindow, true) as SmartFormEditorWindow;
+            
+            popup.descriptorXML = metadata;
+            
+            PopUpManager.centerPopUp(popup);
+            //popup.addEventListener("addFieldToForm", onAddFieldToForm);
+            
         }
         
     ]]>
@@ -322,6 +334,7 @@
         <mx:CheckBox id="isDirty" label="DIRTY?" selected="{infoForm.isDirty}"/>
         <s:Button label="pop errors" click="infoForm.showErrors()" />
         <s:Button label="hide errors" click="infoForm.hideErrors()" />
+        <s:Button id="showEditor" label="Show Editor" click="showEditor_clickHandler(event)" />
     </s:HGroup>
     
 </s:Application>
