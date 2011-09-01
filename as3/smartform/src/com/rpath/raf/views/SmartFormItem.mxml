@@ -1208,6 +1208,7 @@
     <s:DropDownList id="pulldownchoice" toolTip="{prompt}" enabled="{editable &amp;&amp; enabled}"
                     dataProvider="{choices}" change="handleDropdownList(event)" 
                     toolTipShown="toolTipShown(event)"
+                    width="100%"
                     includeIn="pulldownchoice,pulldownchoiceDisabled"
                     />
     
