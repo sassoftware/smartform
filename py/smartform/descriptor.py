@@ -114,6 +114,12 @@ class _BaseClass(object):
         @param stream: stream to write the serialized object
         @type stream: C{file}
         """
+        tree = self.getElementTree(validate=validate)
+        tree.write(stream, encoding = 'UTF-8', pretty_print = True,
+            xml_declaration = True)
+
+    def getElementTree(self, validate=True):
+
         attrs = [
             ('xmlns:xsi', self.xmlSchemaNamespace),
             ("xsi:schemaLocation", self.xmlSchemaLocation),
@@ -132,8 +138,7 @@ class _BaseClass(object):
             tree = etree.parse(sio)
         else:
             tree = etree.parse(sio)
-        tree.write(stream, encoding = 'UTF-8', pretty_print = True,
-            xml_declaration = True)
+        return tree
 
     def xmlFactory(self):
         return self.loadModule(self.version)
