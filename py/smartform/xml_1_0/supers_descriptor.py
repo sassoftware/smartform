@@ -198,7 +198,7 @@ def _cast(typ, value):
 class descriptorType(GeneratedsSuper):
     member_data_items_ = [
         MemberSpec_('version', 'xsd:string', 0),
-        MemberSpec_('id', 'xsd:string', 0),
+        MemberSpec_('id', 'xsd:anyURI', 0),
         MemberSpec_('metadata', 'metadataType', 0),
         MemberSpec_('dataFields', 'dataFieldsType', 0),
         ]

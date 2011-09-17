@@ -13,7 +13,7 @@
         <xsd:element name="metadata" type="dsc:metadataType" />
         <xsd:element name="dataFields" type="dsc:dataFieldsType" />
       </xsd:sequence>
-      <xsd:attribute name="id" type="xsd:ID" />
+      <xsd:attribute name="id" type="xsd:anyURI" />
       <xsd:attribute name="version" type="xsd:string" />
     </xsd:complexType>
 
