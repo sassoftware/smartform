@@ -19,7 +19,9 @@
 
                xmlns:smartform="http://www.rpath.com/2009/smartform.mxml"
 
-               minWidth="955" minHeight="600">
+               minWidth="955" minHeight="600"
+               
+               creationComplete="creationComplete(event)">
     
     <s:layout>
         <s:VerticalLayout/>
@@ -39,6 +41,7 @@
         <fx:XML id="complex_metadata" source="/data/test/complex.xml" />
         <fx:XML id="msi_conditional" source="/data/test/msi_conditional.xml" />
         <fx:XML id="nasty_vmware_test" source="/data/test/nasty_vmware_test.xml" />
+        <fx:XML id="cisco" source="/data/test/cisco.xml" />
         
         <mx:ArrayCollection id="tests">
             <fx:Object label="" test="" />
@@ -55,6 +58,7 @@
             <fx:Object label="Configure vsphere" test="configure_vsphere_metadata" />
             <fx:Object label="MSI Conditional" test="msi_conditional" />
             <fx:Object label="Nasty VMWare Test" test="nasty_vmware_test" />
+            <fx:Object label="CISCO" test="cisco" />
         </mx:ArrayCollection>
         
     </fx:Declarations>
@@ -95,11 +99,11 @@
     }
     
     
-    public function creationComplete():void
+    public function creationComplete(event:Event):void
     {
         // start with a fresh testObject
         testObject = new TestObject();
-        setMetadata(tests[0].test);
+        //setMetadata(tests[0].test);
     }
     
     

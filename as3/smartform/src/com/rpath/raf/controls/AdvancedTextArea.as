@@ -83,11 +83,11 @@ public class AdvancedTextArea extends TextArea
     
     /** autoResize controls the dynamic expand/contract behavior
      * 
-     * @default true
+     * @default false
      */
     
     [Bindable]
-    public var autoResize:Boolean = true;
+    public var autoResize:Boolean = false;
 
     //----------------------------------------------------------------------
     //
