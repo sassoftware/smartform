@@ -101,7 +101,7 @@
            </field>
     
            <field>
-               <name>container.options.swapSize</name>
+               <name>options.swapSize</name>
                <required>false</required>
                <descriptions>
                    <desc>Swap space</desc>
@@ -115,7 +115,7 @@
     
     
            <field>
-               <name>container.options.diskAdapter</name>
+               <name>options.diskAdapter</name>
                <required>true</required>
                <descriptions>
                    <desc>Disk driver</desc>
@@ -152,8 +152,8 @@
     
     A <field> describes a single property of the resulting data structure. The
     property is identified by the <name> element. For example, the descriptor
-    above describes three fields - displayName, container.options.swapSize and
-    container.options.diskAdapter.
+    above describes three fields - displayName, options.swapSize and
+    options.diskAdapter.
     
     Each <field> declares a <type> which is one of [int, bool, str]. If omitted,
     <type> is assumed to be a str. A <default> value can also be provided.
@@ -174,7 +174,7 @@
     
     <conditional>
         <condition>
-            <fieldName>container.options.diskAdapter</fieldName>
+            <fieldName>options.diskAdapter</fieldName>
             <operator>noteq</operator>
             <value>lsilogic</value>
         </condition>
@@ -186,7 +186,7 @@
     </conditional>
     
     This would make the <field> that contained this element only appear in the UI
-    (and only be expected by the server) if the container.options.diskAdapter
+    (and only be expected by the server) if the options.diskAdapter
     property was not equal to the value 'lsilogic' (and then whatever other
     conditions were in the second <condition> element)
     
