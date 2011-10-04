@@ -5,10 +5,13 @@ import com.rpath.raf.util.ErrorTipManager;
 import com.rpath.raf.util.IValidationAware;
 import com.rpath.raf.util.ValidationHelper;
 
+import flash.events.Event;
+import flash.events.MouseEvent;
+
 import mx.containers.FormItem;
 import mx.controls.Label;
 import mx.events.FlexEvent;
-import flash.events.MouseEvent;
+import mx.validators.Validator;
 
 [Event(name=HelpEvent.SHOW_HELP, type="com.rpath.raf.events.HelpEvent")]
 
@@ -19,7 +22,19 @@ public class ExtendedFormItem extends FormItem implements IValidationAware
         super();
         
         this.addEventListener(FlexEvent.CREATION_COMPLETE, onCreationComplete);
+        this.addEventListener("requiredChanged", handleRequiredChanged);
         this.setStyle("backgroundAlpha","0");
+        
+    }
+    
+    [Bindable]
+    private var requiredValidator:Validator;
+    private var _requiredChanged:Boolean;
+    
+    private function handleRequiredChanged(event:Event):void
+    {
+        _requiredChanged = true;
+        invalidateProperties();
     }
     
     [Bindable]
@@ -97,6 +112,12 @@ public class ExtendedFormItem extends FormItem implements IValidationAware
     public function initializeValidators():void
     {
         // first ensure we have a validation helper to listen
+/*        requiredValidator = new Validator();
+        requiredValidator.enabled = false;
+        if (!validators)
+            validators = [];
+        validators.push(requiredValidator);
+*/        
         validationHelper = new ValidationHelper(validators, this);
     }
     
@@ -132,13 +153,32 @@ public class ExtendedFormItem extends FormItem implements IValidationAware
     
     override protected function commitProperties():void
     {
+
         if (validationHelper == null)
         {
             initializeValidators();
         }
+
+        if (_requiredChanged)
+        {
+            _requiredChanged = true;
+            /*if (required)
+            {
+                requiredValidator.source = getChildAt(0);
+                requiredValidator.property = "data";
+                requiredValidator.triggerEvent"dataChange";
+                requiredValidator.enabled = true;
+                requiredValidator.required = true;
+                requiredValidator.requiredFieldError = "This field is required";
+            }
+            else if (requiredValidator)
+            {
+                requiredValidator.enabled = false;
+            }*/
+        }
         
         if (_pendingValidation && validationHelper != null
-        && validationHelper.errorTipManager.suppressionCount < 1)
+            && validationHelper.errorTipManager.suppressionCount < 1)
         {
             _pendingValidation = false;
             validationHelper.showErrors();
@@ -147,7 +187,17 @@ public class ExtendedFormItem extends FormItem implements IValidationAware
         super.commitProperties();
     }
     
+    override public function get required():Boolean
+    {
+        return super.required;
+    }
     
-
+    override public function set required(value:Boolean):void
+    {
+        super.required = value;
+    }
+    
+    
+    
 }
 }
