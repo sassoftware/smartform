@@ -248,10 +248,22 @@ class BaseDescriptor(_BaseClass):
         df.password = kwargs.get('password')
         df.conditional = kwargs.get('conditional')
 
-        # XXX FIXME: remove old field if it exists
+        # Delete the old field if it exists
+        self.deleteDataField(name)
         if self._rootObj.dataFields is None:
             self._rootObj.dataFields = xmlsubs.dataFieldsTypeSub.factory()
         self._rootObj.dataFields.add_field(df)
+
+    def deleteDataField(self, name):
+        if self._rootObj.dataFields is None:
+            return None
+        origFields = self._rootObj.dataFields.field
+        matches = [ x for x in origFields if x.get_name() == name ]
+        if not matches:
+            return None
+        self._rootObj.dataFields.set_field(
+            [ x for x in origFields if x.get_name() != name ])
+        return matches[0]
 
     def ValueWithDescription(self, key, descriptions):
         ret = self.xmlFactory().describedValueTypeSub.factory()

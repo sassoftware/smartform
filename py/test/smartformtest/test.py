@@ -99,6 +99,28 @@ class DescriptorTest(BaseTest):
                 for x in dsc.getDataFields() ],
             [{None: 'http://url1/en', 'en_LOL': 'http://url1/lol'}, {}])
 
+    def testDeleteDataField(self):
+        dsc = descriptor.ConfigurationDescriptor()
+        dsc.setId("Some-ID")
+        dsc.setDisplayName('Cloud Information')
+        dsc.addDescription('Configure Super Cloud')
+
+        dsc.addDataField('field1', type = 'str',
+            descriptions = [ dsc.Description('Field 1') ])
+        dsc.addDataField('field2', type = 'str',
+            descriptions = [ dsc.Description('Field 2') ])
+        dsc.addDataField('field3', type = 'str',
+            descriptions = [ dsc.Description('Field 3') ])
+        # Add field1 again; it will remove the first one and place this
+        # one after field3
+        dsc.addDataField('field1', type = 'str',
+            descriptions = [ dsc.Description('Field 1 modified') ])
+        dsc.deleteDataField('field3')
+
+        self.failUnlessEqual(
+            [ x.descriptions.asDict() for x in dsc.getDataFields() ],
+            [{None: 'Field 2'}, {None: 'Field 1 modified'}])
+
     def testUseTupleForDescriptions(self):
         dsc = descriptor.ConfigurationDescriptor()
         dsc.setId("Some-ID")
