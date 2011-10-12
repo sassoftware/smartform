@@ -199,7 +199,19 @@ class BaseDescriptor(_BaseClass):
         """
         return self._rootObj.get_dataFields().get_field()
 
+    def addDataFieldRaw(self, dataField):
+        name = dataField.get_name()
+
+        # Delete the old field if it exists
+        self.deleteDataField(name)
+        if self._rootObj.dataFields is None:
+            self._rootObj.dataFields = xmlsubs.dataFieldsTypeSub.factory()
+        self._rootObj.dataFields.add_field(dataField)
+
     def addDataField(self, name, **kwargs):
+        xmlsubs = self.xmlFactory()
+        if isinstance(name, xmlsubs.dataFieldTypeSub):
+            return self.addDataFieldRaw(name)
         nodeType = kwargs.get('type')
         constraints = kwargs.get('constraints', [])
         descriptions = kwargs.get('descriptions', [])
@@ -208,7 +220,6 @@ class BaseDescriptor(_BaseClass):
             help = [ help ]
         constraintsDescriptions = kwargs.get('constraintsDescriptions', [])
         default = kwargs.get('default')
-        xmlsubs = self.xmlFactory()
         df = xmlsubs.dataFieldTypeSub.factory()
         df.name = name
         df.multiple = kwargs.get('multiple', None)
@@ -247,12 +258,7 @@ class BaseDescriptor(_BaseClass):
         df.hidden = kwargs.get('hidden')
         df.password = kwargs.get('password')
         df.conditional = kwargs.get('conditional')
-
-        # Delete the old field if it exists
-        self.deleteDataField(name)
-        if self._rootObj.dataFields is None:
-            self._rootObj.dataFields = xmlsubs.dataFieldsTypeSub.factory()
-        self._rootObj.dataFields.add_field(df)
+        return self.addDataFieldRaw(df)
 
     def deleteDataField(self, name):
         if self._rootObj.dataFields is None:
