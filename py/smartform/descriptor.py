@@ -200,6 +200,7 @@ class BaseDescriptor(_BaseClass):
         return self._rootObj.get_dataFields().get_field()
 
     def addDataFieldRaw(self, dataField):
+        xmlsubs = self.xmlFactory()
         name = dataField.get_name()
 
         # Delete the old field if it exists
