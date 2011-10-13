@@ -164,7 +164,7 @@ def _validateSingleValue(value, valueType, description, constraints,
             continue
         if constraint['constraintName'] == 'length':
             # Only applies to str
-            if valueType != 'str':
+            if valueType != 'str' or cvalue is None:
                 continue
             if len(cvalue) > int(constraint['value']):
                 errorList.append(
@@ -173,7 +173,7 @@ def _validateSingleValue(value, valueType, description, constraints,
             continue
         if constraint['constraintName'] == 'regexp':
             # Only applies to str
-            if valueType != 'str':
+            if valueType != 'str' or cvalue is None:
                 continue
             if not re.compile(constraint['value'], re.S).match(cvalue):
                 errorList.append(
