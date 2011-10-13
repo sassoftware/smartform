@@ -224,6 +224,7 @@ class BaseDescriptor(_BaseClass):
         df = xmlsubs.dataFieldTypeSub.factory()
         df.name = name
         df.multiple = kwargs.get('multiple', None)
+        df.readonly = kwargs.get('readonly')
         if default is not None:
             if not isinstance(default, list):
                 if not isinstance(default, (basestring, int)):
@@ -234,6 +235,10 @@ class BaseDescriptor(_BaseClass):
             if not df.multiple and len(default) > 2:
                 raise errors.InvalidDefaultValue(default)
             df.default = default
+        elif df.readonly:
+            # A read-only field only makes sense if it has a default
+            # value
+            raise errors.MissingDefaultValue()
         if isinstance(nodeType, list) or hasattr(nodeType, 'describedValue'):
             df.set_type(None)
             df.enumeratedType = self.EnumeratedType(nodeType)

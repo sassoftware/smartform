@@ -752,11 +752,12 @@ class dataFieldType(GeneratedsSuper):
         MemberSpec_('allowFileContent', 'xsd:boolean', 0),
         MemberSpec_('hidden', 'xsd:boolean', 0),
         MemberSpec_('password', 'xsd:boolean', 0),
+        MemberSpec_('readonly', 'xsd:boolean', 0),
         MemberSpec_('conditional', 'conditionalType', 0),
         ]
     subclass = None
     superclass = None
-    def __init__(self, name=None, descriptions=None, help=None, type_=None, enumeratedType=None, multiple=None, default=None, constraints=None, required=None, allowFileContent=None, hidden=None, password=None, conditional=None):
+    def __init__(self, name=None, descriptions=None, help=None, type_=None, enumeratedType=None, multiple=None, default=None, constraints=None, required=None, allowFileContent=None, hidden=None, password=None, readonly=None, conditional=None):
         self.name = name
         self.descriptions = descriptions
         if help is None:
@@ -775,6 +776,7 @@ class dataFieldType(GeneratedsSuper):
         self.allowFileContent = allowFileContent
         self.hidden = hidden
         self.password = password
+        self.readonly = readonly
         self.conditional = conditional
     def factory(*args_, **kwargs_):
         if dataFieldType.subclass:
@@ -810,6 +812,8 @@ class dataFieldType(GeneratedsSuper):
     def set_hidden(self, hidden): self.hidden = hidden
     def get_password(self): return self.password
     def set_password(self, password): self.password = password
+    def get_readonly(self): return self.readonly
+    def set_readonly(self, readonly): self.readonly = readonly
     def get_conditional(self): return self.conditional
     def set_conditional(self, conditional): self.conditional = conditional
     def export(self, outfile, level, namespace_='dsc:', name_='dataFieldType', namespacedef_=''):
@@ -858,6 +862,9 @@ class dataFieldType(GeneratedsSuper):
         if self.password is not None:
             showIndent(outfile, level)
             outfile.write('<%spassword>%s</%spassword>\n' % (namespace_, self.format_boolean(str_lower(str(self.password)), input_name='password'), namespace_))
+        if self.readonly is not None:
+            showIndent(outfile, level)
+            outfile.write('<%sreadonly>%s</%sreadonly>\n' % (namespace_, self.format_boolean(str_lower(str(self.readonly)), input_name='readonly'), namespace_))
         if self.conditional:
             self.conditional.export(outfile, level, namespace_, name_='conditional')
     def hasContent_(self):
@@ -874,6 +881,7 @@ class dataFieldType(GeneratedsSuper):
             self.allowFileContent is not None or
             self.hidden is not None or
             self.password is not None or
+            self.readonly is not None or
             self.conditional is not None
             ):
             return True
@@ -947,6 +955,9 @@ class dataFieldType(GeneratedsSuper):
         if self.password is not None:
             showIndent(outfile, level)
             outfile.write('password=%s,\n' % self.password)
+        if self.readonly is not None:
+            showIndent(outfile, level)
+            outfile.write('readonly=%s,\n' % self.readonly)
         if self.conditional is not None:
             showIndent(outfile, level)
             outfile.write('conditional=model_.conditionalType(\n')
@@ -1055,6 +1066,17 @@ class dataFieldType(GeneratedsSuper):
                 else:
                     raise ValueError('requires boolean -- %s' % child_.toxml())
                 self.password = ival_
+        elif child_.nodeType == Node.ELEMENT_NODE and \
+            nodeName_ == 'readonly':
+            if child_.firstChild:
+                sval_ = child_.firstChild.nodeValue
+                if sval_ in ('true', '1'):
+                    ival_ = True
+                elif sval_ in ('false', '0'):
+                    ival_ = False
+                else:
+                    raise ValueError('requires boolean -- %s' % child_.toxml())
+                self.readonly = ival_
         elif child_.nodeType == Node.ELEMENT_NODE and \
             nodeName_ == 'conditional':
             obj_ = conditionalType.factory()

@@ -875,6 +875,33 @@ class DescriptorConstraintTest(BaseTest):
             [(x.get_lang(), x.getValueOf_()) for x in dlist],
             [(None, 'Test 2')])
 
+    def testReadonly(self):
+        dsc = descriptor.ConfigurationDescriptor()
+        dsc.setDisplayName('test')
+        dsc.addDescription("Test")
+        self.failUnlessRaises(errors.MissingDefaultValue,
+            dsc.addDataField, "readonly-field", type='str', readonly=True)
+
+        dsc.addDataField("readonly-field", type='str', default="mydefault",
+            descriptions="read-only field", readonly=True)
+        data = descriptor.DescriptorData(descriptor=dsc, fromStream="""\
+<descriptorData>
+    <readonly-field>mydefault</readonly-field>
+</descriptorData>
+""")
+        self.failUnlessEqual(data.getField('readonly-field'),
+            "mydefault")
+
+        # This should fail, the read-only value was changed
+        e = self.failUnlessRaises(errors.ConstraintsValidationError,
+            descriptor.DescriptorData, descriptor=dsc, fromStream="""\
+<descriptorData>
+    <readonly-field>not the default</readonly-field>
+</descriptorData>
+""")
+        self.failUnlessEqual(e.args[0],
+            ["'read-only field': invalid value 'not the default' for read-only field; expected 'mydefault'"])
+
 xmlDescriptor1 = """<?xml version="1.0" encoding="UTF-8"?>
 <descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd" id="Some-ID">
   <metadata>

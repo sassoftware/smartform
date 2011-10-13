@@ -63,8 +63,8 @@ supermod.helpType.subclass = helpTypeSub
 
 
 class dataFieldTypeSub(supermod.dataFieldType):
-    def __init__(self, name=None, descriptions=None, help=None, type_=None, enumeratedType=None, multiple=None, default=None, constraints=None, required=None, allowFileContent=None, hidden=None, password=None, conditional=None):
-        supermod.dataFieldType.__init__(self, name, descriptions, help, type_, enumeratedType, multiple, default, constraints, required, allowFileContent, hidden, password, conditional)
+    def __init__(self, name=None, descriptions=None, help=None, type_=None, enumeratedType=None, multiple=None, default=None, constraints=None, required=None, allowFileContent=None, hidden=None, password=None, readonly=None, conditional=None):
+        supermod.dataFieldType.__init__(self, name, descriptions, help, type_, enumeratedType, multiple, default, constraints, required, allowFileContent, hidden, password, readonly, conditional)
 supermod.dataFieldType.subclass = dataFieldTypeSub
 # end class dataFieldTypeSub
 

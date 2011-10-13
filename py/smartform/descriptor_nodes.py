@@ -18,6 +18,7 @@ class _DescriptorDataField(object):
     def checkConstraints(self):
         errorList = []
         descriptions = self._nodeDescriptor.get_descriptions()
+        defaultLangDesc = descriptions.asDict()[None]
         if self._nodeDescriptor.multiple:
             # Get the node's children as values
             values = [ x.text for x in self._node
@@ -28,13 +29,13 @@ class _DescriptorDataField(object):
             elif isinstance(self._nodeDescriptor.type, list):
                 errorList.extend(_validateEnumeratedValue(values,
                                  self._nodeDescriptor.type,
-                                 descriptions.asDict()[None]))
+                                 defaultLangDesc))
             else:
                 # It is conceivable that one has a multi-valued field with a
                 # simple type
                 errorList.extend(_validateMultiValue(values,
                                  self._nodeDescriptor.type,
-                                 descriptions.asDict().get(None),
+                                 defaultLangDesc,
                                  self._nodeDescriptor.constraints))
         else:
             value = self._node.text
@@ -42,9 +43,18 @@ class _DescriptorDataField(object):
                 self._nodeDescriptor.constraints.presentation() or [])
             errorList.extend(_validateSingleValue(value,
                              self._nodeDescriptor.type,
-                             descriptions.asDict().get(None),
+                             defaultLangDesc,
                              constraints,
                              required = self._nodeDescriptor.required))
+            if self._nodeDescriptor.readonly:
+                defaultVal = self._nodeDescriptor.getDefault()
+                if defaultVal is None:
+                    errorList.append("'%s': descriptor error: no defaults supplied for read-only field" % (
+                        defaultLangDesc, ))
+                elif value != defaultVal:
+                    errorList.append(
+                        "'%s': invalid value '%s' for read-only field; expected '%s'" % (
+                            defaultLangDesc, value, defaultVal))
         if errorList:
             raise errors.ConstraintsValidationError(errorList)
 

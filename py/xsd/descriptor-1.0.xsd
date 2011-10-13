@@ -78,6 +78,8 @@
             minOccurs="0" maxOccurs="1" />
         <xsd:element name="password" type="xsd:boolean"
             minOccurs="0" maxOccurs="1" />
+        <xsd:element name="readonly" type="xsd:boolean"
+            minOccurs="0" maxOccurs="1" />
         <xsd:element name="conditional" type="dsc:conditionalType"
             minOccurs="0" maxOccurs="1" />
       </xsd:sequence>

@@ -27,5 +27,11 @@ class ConstraintsValidationError(Error):
 class InvalidDefaultValue(Error):
     ""
 
+class MissingDefaultValue(Error):
+    ""
+
+class ReadOnlyFieldChanged(Error):
+    ""
+
 class UndefinedFactoryDataField(Error):
     ""
