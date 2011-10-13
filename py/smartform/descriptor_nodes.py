@@ -18,7 +18,7 @@ class _DescriptorDataField(object):
     def checkConstraints(self):
         errorList = []
         descriptions = self._nodeDescriptor.get_descriptions()
-        defaultLangDesc = descriptions.asDict()[None]
+        defaultLangDesc = descriptions.asDict().get(None)
         if self._nodeDescriptor.multiple:
             # Get the node's children as values
             values = [ x.text for x in self._node
