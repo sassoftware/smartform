@@ -48,13 +48,14 @@ class _DescriptorDataField(object):
                              required = self._nodeDescriptor.required))
             if self._nodeDescriptor.readonly:
                 defaultVal = self._nodeDescriptor.getDefault()
-                if defaultVal is None:
+                if defaultVal is None or (
+                        self._nodeDescriptor.type == 'str' and not defaultVal):
                     """ Commented out until the image import metadata
                     descriptor becomes smarter
                     errorList.append("'%s': descriptor error: no defaults supplied for read-only field" % (
                         defaultLangDesc, ))
                     """
-                elif value != defaultVal:
+                elif value is not None and value != defaultVal:
                     errorList.append(
                         "'%s': invalid value '%s' for read-only field; expected '%s'" % (
                             defaultLangDesc, value, defaultVal))
@@ -89,7 +90,7 @@ def _cast(val, typeStr):
             raise errors.DataValidationError(val)
         return val.upper() in ('TRUE', '1')
     elif typeStr == 'str':
-        if isinstance(val, unicode):
+        if val is None or isinstance(val, unicode):
             return val
 
         try:
