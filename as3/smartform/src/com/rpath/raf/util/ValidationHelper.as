@@ -143,12 +143,16 @@ public class ValidationHelper extends LifecycleObject implements IValidationAwar
     {
         if (_target)
         {
-            _target.removeEventListener(FIND_ERROR_TIP_MANAGER, handleRequestErrorTipManager);
+            _target.removeEventListener(Event.ADDED_TO_STAGE, handleTargetAddedToStage);
+            _target.removeEventListener(FlexEvent.SHOW, handleTargetAddedToStage);
+            
             _target.removeEventListener(Event.CLOSE, handleTargetRemovedFromStage);
             _target.removeEventListener(FlexEvent.HIDE, handleTargetRemovedFromStage);
             _target.removeEventListener(Event.REMOVED_FROM_STAGE, handleTargetRemovedFromStage);
-            _target.removeEventListener(Event.ADDED_TO_STAGE, handleTargetAddedToStage);
+
             _target.removeEventListener(FlexEvent.UPDATE_COMPLETE, handleTargetUpdateComplete);
+            _target.removeEventListener(FIND_ERROR_TIP_MANAGER, handleRequestErrorTipManager);
+            
         }
         
         _target = v;
@@ -160,12 +164,15 @@ public class ValidationHelper extends LifecycleObject implements IValidationAwar
             // go get our errorTip manager up the visual heirarchy
             findErrorTipManager();
             
-            _target.addEventListener(FIND_ERROR_TIP_MANAGER, handleRequestErrorTipManager,false,0,true);
-            _target.addEventListener(FlexEvent.UPDATE_COMPLETE, handleTargetUpdateComplete,false,0,true);
-            _target.addEventListener(Event.CLOSE, handleTargetRemovedFromStage,false,0,true);
-            _target.addEventListener(FlexEvent.HIDE, handleTargetRemovedFromStage,false,0,true);
-            _target.addEventListener(Event.REMOVED_FROM_STAGE, handleTargetRemovedFromStage,false,0,true);
-            _target.addEventListener(Event.ADDED_TO_STAGE, handleTargetAddedToStage,false,0,true);
+            _target.addEventListener(FIND_ERROR_TIP_MANAGER, handleRequestErrorTipManager,false, 0, true);
+            _target.addEventListener(FlexEvent.UPDATE_COMPLETE, handleTargetUpdateComplete,false, 0, true);
+            
+            _target.addEventListener(Event.CLOSE, handleTargetRemovedFromStage,false, 0, true);
+            _target.addEventListener(FlexEvent.HIDE, handleTargetRemovedFromStage,false, 0, true);
+            _target.addEventListener(Event.REMOVED_FROM_STAGE, handleTargetRemovedFromStage,false, 0, true);
+
+            _target.addEventListener(FlexEvent.SHOW, handleTargetAddedToStage, false, 0, true);
+            _target.addEventListener(Event.ADDED_TO_STAGE, handleTargetAddedToStage,false, 0, true);
         }
     }
     
@@ -463,6 +470,8 @@ public class ValidationHelper extends LifecycleObject implements IValidationAwar
         for each (item in items)
         {
             newValid = newValid && _validationStates[item];
+            if (!newValid)
+                break; // bail quickly
         }
         
         isValid = newValid;
