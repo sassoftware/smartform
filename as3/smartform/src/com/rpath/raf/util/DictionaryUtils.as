@@ -32,5 +32,16 @@ public class DictionaryUtils
         }
         return keys;
     }
+    
+    public static function copy(dict:Dictionary, useWeakKeys:Boolean=false):Dictionary
+    {
+        var result:Dictionary = new Dictionary(useWeakKeys);
+        var keys:Array = DictionaryUtils.getKeys(dict);
+        for each (var key:* in keys)
+        {
+            result[key] = dict[key];
+        }
+        return result;
+    }
 }
 }
