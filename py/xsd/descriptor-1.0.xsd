@@ -7,6 +7,7 @@
         xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd">
 
     <xsd:element name="descriptor" type="dsc:descriptorType" />
+    <xsd:element name="factory" type="dsc:descriptorType" />
 
     <xsd:complexType name="descriptorType">
       <xsd:sequence>
@@ -23,6 +24,7 @@
         <xsd:element name="rootElement" type="xsd:string"
             minOccurs="0" maxOccurs="1" />
         <xsd:element name="descriptions" type="dsc:descriptionsType" />
+        <xsd:element name="supportedFiles" type="dsc:supportedFilesType" />
       </xsd:sequence>
     </xsd:complexType>
 
@@ -30,6 +32,12 @@
       <xsd:sequence>
         <xsd:element name="desc" type="dsc:descType"
             minOccurs="0" maxOccurs="unbounded"/>
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="supportedFilesType">
+      <xsd:sequence>
+        <xsd:element name="file" type="xsd:string" />
       </xsd:sequence>
     </xsd:complexType>
 
