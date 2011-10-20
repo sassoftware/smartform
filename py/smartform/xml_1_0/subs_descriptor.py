@@ -28,8 +28,8 @@ supermod.descriptorType.subclass = descriptorTypeSub
 
 
 class metadataTypeSub(supermod.metadataType):
-    def __init__(self, displayName=None, rootElement=None, descriptions=None):
-        supermod.metadataType.__init__(self, displayName, rootElement, descriptions)
+    def __init__(self, displayName=None, rootElement=None, descriptions=None, supportedFiles=None):
+        supermod.metadataType.__init__(self, displayName, rootElement, descriptions, supportedFiles)
 supermod.metadataType.subclass = metadataTypeSub
 # end class metadataTypeSub
 
@@ -39,6 +39,13 @@ class descriptionsTypeSub(supermod.descriptionsType):
         supermod.descriptionsType.__init__(self, desc)
 supermod.descriptionsType.subclass = descriptionsTypeSub
 # end class descriptionsTypeSub
+
+
+class supportedFilesTypeSub(supermod.supportedFilesType):
+    def __init__(self, file=None):
+        supermod.supportedFilesType.__init__(self, file)
+supermod.supportedFilesType.subclass = supportedFilesTypeSub
+# end class supportedFilesTypeSub
 
 
 class descTypeSub(supermod.descType):
