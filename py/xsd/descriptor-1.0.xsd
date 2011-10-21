@@ -24,7 +24,8 @@
         <xsd:element name="rootElement" type="xsd:string"
             minOccurs="0" maxOccurs="1" />
         <xsd:element name="descriptions" type="dsc:descriptionsType" />
-        <xsd:element name="supportedFiles" type="dsc:supportedFilesType" />
+        <xsd:element name="supportedFiles" type="dsc:supportedFilesType"
+            minOccurs="0" maxOccurs="1" />
       </xsd:sequence>
     </xsd:complexType>
 
