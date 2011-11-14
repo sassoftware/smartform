@@ -199,7 +199,7 @@ class BaseDescriptor(_BaseClass):
         """
         return self._rootObj.get_dataFields().get_field()
 
-    def addDataFieldRaw(self, dataField):
+    def addDataFieldRaw(self, dataField, index=None):
         xmlsubs = self.xmlFactory()
         name = dataField.get_name()
 
@@ -207,7 +207,10 @@ class BaseDescriptor(_BaseClass):
         self.deleteDataField(name)
         if self._rootObj.dataFields is None:
             self._rootObj.dataFields = xmlsubs.dataFieldsTypeSub.factory()
-        self._rootObj.dataFields.add_field(dataField)
+        if index is None:
+            self._rootObj.dataFields.add_field(dataField)
+        else:
+            self._rootObj.dataFields.field.insert(index, dataField)
 
     def addDataField(self, name, **kwargs):
         xmlsubs = self.xmlFactory()
@@ -264,7 +267,7 @@ class BaseDescriptor(_BaseClass):
         df.hidden = kwargs.get('hidden')
         df.password = kwargs.get('password')
         df.conditional = kwargs.get('conditional')
-        return self.addDataFieldRaw(df)
+        return self.addDataFieldRaw(df, index=kwargs.get('index'))
 
     def deleteDataField(self, name):
         if self._rootObj.dataFields is None:
@@ -324,7 +327,7 @@ class BaseDescriptor(_BaseClass):
             href = h[0]
             if len(h) > 1:
                 lang = h[1]
-        elif isinstance(h, (string, unicode)):
+        elif isinstance(h, basestring):
             href = h
         else:
             raise Exception("XXX FIXME")
