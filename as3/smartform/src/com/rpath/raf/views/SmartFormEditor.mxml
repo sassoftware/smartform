@@ -191,22 +191,21 @@ or fitness for a particular purpose. See the MIT License for full details.
                 <s:VerticalLayout />
             </s:layout>
             
-            <s:DataGrid id="elementGrid"
-                        dataProvider="{formDescriptor.dataFields}" 
-                        width="100%" height="100%"
-                        editable="true"
-                        >
-                <s:columns>
-                    <s:ArrayList>
-                        <s:GridColumn headerText="Description" dataField="descriptions.first" 
-                                      editable="false"/>
-                        <s:GridColumn headerText="Property" dataField="name" editable="true"/>
-                        <s:GridColumn headerText="Type" dataField="type" editable="false"/>
-                        <s:GridColumn headerText="Prompt" dataField="prompt" editable="false"/>
-                        <s:GridColumn headerText="Required?" dataField="required" editable="false"/>
-                    </s:ArrayList>
-                </s:columns>
-            </s:DataGrid>
+            <mx:AdvancedDataGrid
+                id="elementGrid"
+                dataProvider="{formDescriptor.dataFields}" 
+                width="100%" height="100%"
+                editable="true"
+                >
+                <mx:columns>
+                    <mx:AdvancedDataGridColumn headerText="Description" dataField="descriptions" 
+                                               editable="false"/>
+                    <mx:AdvancedDataGridColumn headerText="Property" dataField="name" editable="true"/>
+                    <mx:AdvancedDataGridColumn headerText="Type" dataField="type" editable="false"/>
+                    <mx:AdvancedDataGridColumn headerText="Prompt" dataField="prompt" editable="false"/>
+                    <mx:AdvancedDataGridColumn headerText="Required?" dataField="required" editable="false"/>
+                </mx:columns>
+            </mx:AdvancedDataGrid>
             
             <s:HGroup width="100%">
                 <s:Button label="Add Field" click="handleAddField(event)"/>
@@ -214,7 +213,7 @@ or fitness for a particular purpose. See the MIT License for full details.
                           enabled="{elementGrid.selectedItem != null}"/>
                 
             </s:HGroup>
-
+            
             <views:EditFieldPanel id="editFieldPanel" field="{elementGrid.selectedItem as FieldDescriptor}" 
                                   height="250%"
                                   width="100%"
