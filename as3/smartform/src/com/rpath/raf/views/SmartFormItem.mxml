@@ -2,7 +2,7 @@
 <!--
 /*
 #
-# Copyright (c) 2009 rPath, Inc.
+# Copyright (c) 2009-2011 rPath, Inc.
 #
 # This program is distributed under the terms of the MIT License as found 
 # in a file called LICENSE. If it is not present, the license
@@ -19,6 +19,7 @@
     xmlns:s="library://ns.adobe.com/flex/spark" 
     xmlns:mx="library://ns.adobe.com/flex/mx"
     xmlns:views="com.rpath.raf.views.*"
+    
     initialize="onInitialize(event)"
     
     width="100%"
@@ -28,8 +29,12 @@
         [Event(name="dirtyChanged", type="mx.events.DynamicEvent")]
     </fx:Metadata>
     
+    
     <fx:Script>
     <![CDATA[
+        import com.rpath.raf.models.DescriptionEntry;
+        import com.rpath.raf.models.EnumDescriptor;
+        import com.rpath.raf.models.EnumTypesDescriptor;
         import com.rpath.raf.util.DescriptorUtil;
         import com.rpath.raf.util.ErrorTipManager;
         import com.rpath.raf.util.IValidationAware;
@@ -250,6 +255,8 @@
                 return false;
         }
         
+        [Bindable]
+        public var showLang:Boolean;
         
         /** prompt is for use with the PromptingTextArea controls
          */
@@ -328,8 +335,11 @@
             effectiveType = metadata.metadataNS::type;
             
             // is this an enumerated type?
-            if (enumerated)
+            if (enumerated && count > 0)
             {
+                // HACK to fix bad server data
+                metadata.type = "enum";
+                
                 // populate the choices array
                 extractChoices(metadata..metadataNS::describedValue);
                 
@@ -531,17 +541,6 @@
         {
             if (!data)
                 return;
-            
-            var octets:Array = data.split(".");
-            
-            try 
-            {
-                A.text = octets[0];
-                B.text = octets[1];
-                C.text = octets[2];
-                D.text = octets[3];
-            }
-            catch (e:Error){}
         }
         
         
@@ -719,9 +718,14 @@
         private function handleIPAddress(e:Event):void
         {
             //TODO: make sure we're valid first
-            data = A.text + "." + B.text + "." + C.text + "." + D.text;
+            data = ipField.text;
         }
         
+        private function handleIPV6Address(e:Event):void
+        {
+            //TODO: make sure we're valid first
+            data = ipv6Field.text;
+        }
         
         private function handleLongtext(e:Event):void
         {
@@ -821,7 +825,7 @@
                 maxLengthV.enabled = false;
             
             x = constraints..metadataNS::range;
-            if (x.length() > 0)
+            if (x.length() > 0 && x.metadataNS::min.length() > 0 && x.metadataNS::max.length() > 0)
             {
                 rangeV.enabled = true;
                 rangeV.minValue = x.metadataNS::min;
@@ -890,6 +894,7 @@
                 ipAddress: true,
                 currency: false,
                 file: false,
+                desc: false,
                 
                 // user interaction based effective types here
                 radiochoice: true,
@@ -927,6 +932,16 @@
             var content:ByteArray = fileRef.data as ByteArray;
             
             data = content.toString();
+        }
+        
+        protected function descGroupAddHandler(event:MouseEvent):void
+        {
+            (data as ArrayCollection).addItem(new DescriptionEntry());
+        }
+        
+        protected function enumGroupAddHandler(event:MouseEvent):void
+        {
+            (data as ArrayCollection).addItem(new EnumDescriptor());
         }
         
     ]]>
@@ -992,6 +1007,10 @@
         <s:State name="timeDeltaDisabled" />
         <s:State name="ipAddress" />
         <s:State name="ipAddressDisabled" />
+
+        <s:State name="ipv6" />
+        <s:State name="ipv6Disabled" />
+
         <s:State name="currency" />
         <s:State name="currencyDisabled" />
         <s:State name="file" />
@@ -1011,6 +1030,15 @@
         <s:State name="radiobool" />
         <s:State name="radioboolDisabled" />
         
+        <s:State name="desc" />
+        <s:State name="descDisabled" />
+        
+        <s:State name="enumDesc" />
+        <s:State name="enumDescDisabled" />
+        
+        <s:State name="divider" />
+        <s:State name="dividerDisabled" />
+
     </views:states>
     
     <!--<mx:NumberValidator id="intValidation" source="{intField}">
@@ -1036,7 +1064,7 @@
                              width="100%"
                              toolTipShown="toolTipShown(event)"
                              includeIn="str"
-
+                             
                              />
     <mx:TextInput text="{data.valueOf() != null ? data : 'N/A'}" 
                   selectable="true"
@@ -1127,35 +1155,43 @@
               includeIn="timeDeltaDisabled"
               />
     
-    <!-- ipAddress: 13 -->
-    <views:CompoundInputItem includeIn="ipAddress,ipAddressDisabled"
+    <!-- ipAddress -->
+    <views:ExtendedTextInput id="ipField" text="{data}" 
+                             editable="{editable}" enabled="{enabled}"
+                             prompt="{prompt}"
+                             change="handleIPAddress(event)"
                              width="100%"
-                             inputFields="{[A, B, C, D]}">
-        <s:HGroup width="100%"
-                  toolTip="{prompt}" includeIn="ipAddress">
-            <views:ExtendedTextInput maxChars="3" id="A" editable="{editable}" enabled="{enabled}"
-                                     toolTipShown="toolTipShown(event)"
-                                     change="handleIPAddress(event)" />
-            <mx:Label text="."/>
-            <views:ExtendedTextInput maxChars="3" id="B" editable="{editable}" enabled="{enabled}"
-                                     toolTipShown="toolTipShown(event)"
-                                     change="handleIPAddress(event)" />
-            <mx:Label text="."/>
-            <views:ExtendedTextInput maxChars="3" id="C" editable="{editable}" enabled="{enabled}"
-                                     toolTipShown="toolTipShown(event)"
-                                     change="handleIPAddress(event)" />
-            <mx:Label text="."/>
-            <views:ExtendedTextInput maxChars="3" id="D" editable="{editable}" enabled="{enabled}"
-                                     toolTipShown="toolTipShown(event)"
-                                     change="handleIPAddress(event)" />
-        </s:HGroup>
-        <mx:Label text="{data}" 
-                  width="100%"
+                             toolTipShown="toolTipShown(event)"
+                             includeIn="ipAddress"
+                             />
+    
+    <mx:TextInput text="{data.valueOf() != null ? data : 'N/A'}" 
                   selectable="true"
-                  toolTip="{prompt}"
+                  editable="false"
+                  borderStyle="none"
+                  toolTip="{prompt}" 
+                  width="100%"
                   includeIn="ipAddressDisabled"
                   />
-    </views:CompoundInputItem>
+    
+    <!-- ipv6 Address -->
+    <views:ExtendedTextInput id="ipv6Field" text="{data}" 
+                             editable="{editable}" enabled="{enabled}"
+                             prompt="{prompt}"
+                             change="handleIPV6Address(event)"
+                             width="100%"
+                             toolTipShown="toolTipShown(event)"
+                             includeIn="ipv6"
+                             />
+    
+    <mx:TextInput text="{data.valueOf() != null ? data : 'N/A'}" 
+                  selectable="true"
+                  editable="false"
+                  borderStyle="none"
+                  toolTip="{prompt}" 
+                  width="100%"
+                  includeIn="ipv6Disabled"
+                  />
     
     <!-- currency: 15 -->
     <views:ExtendedTextInput id="currency" text="{data}" 
@@ -1184,7 +1220,7 @@
                              width="100%"
                              toolTipShown="toolTipShown(event)"
                              includeIn="file"
-                            />
+                             />
     <mx:Label text="{data}" 
               selectable="true"
               toolTip="{prompt}" 
@@ -1337,6 +1373,37 @@
         </mx:HBox>
         
     </views:CompoundInputItem>
+    
+    <!-- desc -->
+    <views:DescListItemRenderer id="descBox"
+                                width="100%"
+                                minHeight="0"
+                                data="{data}"
+                                enabled="{enabled}"
+                                editable="{editable}"
+                                showLang="{showLang}"
+                                includeIn="desc,descDisabled"
+                                >
+        
+    </views:DescListItemRenderer>
+    
+    <!-- enum -->
+    <views:EnumListItemRenderer 
+        id="enumBox"
+        width="100%"
+        minHeight="0"
+        data="{data}"
+        toolTip="{prompt}"
+        enabled="{editable &amp;&amp; enabled}"
+        editable="{editable}"
+        showLang="{showLang}"
+        includeIn="enumDesc,enumDescDisabled"
+        />
+    
+    <!-- divider -->
+    <mx:HRule width="100%"
+        includeIn="divider,dividerDisabled"
+        />
     
     <!--    </views:MagicFormItem>
     -->

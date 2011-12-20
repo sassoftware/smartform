@@ -9,6 +9,19 @@ NOTICE: Adobe permits you to use, modify, and distribute this file
 in accordance with the terms of the license agreement accompanying it.
 
 -->
+
+<!--
+Copyright (c) 2009-2011 rPath, Inc.
+
+This program is distributed under the terms of the MIT License as found 
+in a file called LICENSE. If it is not present, the license
+is always available at http://www.opensource.org/licenses/mit-license.php.
+
+This program is distributed in the hope that it will be useful, but
+without any warranty; without even the implied warranty of merchantability
+or fitness for a particular purpose. See the MIT License for full details.
+-->
+
 <!--- The default skin class for Spark TextInput component.  
 
 @see spark.components.TextInput
@@ -212,9 +225,9 @@ in accordance with the terms of the license agreement accompanying it.
     <s:RichEditableText id="textDisplay"
                         verticalAlign="middle"
                         widthInChars="10"
-                        backgroundColor="0x464646"
                         left="1" right="1" top="1" bottom="1" />
-    
+    <!--                         backgroundColor="0x464646" -->
+
     <!-- prompt -->
     <s:Label 
         id="promptView"

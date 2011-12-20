@@ -1,6 +1,6 @@
 /*
 #
-# Copyright (c) 2009 rPath, Inc.
+# Copyright (c) 2008-2011 rPath, Inc.
 #
 # This program is distributed under the terms of the MIT License as found 
 # in a file called LICENSE. If it is not present, the license
@@ -11,11 +11,20 @@
 # or fitness for a particular purpose. See the MIT License for full details.
 */
 
-package
+
+package com.rpath.raf.models
 {
-    
-    [Bindable]
-    public dynamic class TestObject extends Object
-    {        
+
+[Bindable]
+public class ConditionDescriptor
+{
+    public function ConditionDescriptor()
+    {
+        super();
     }
+    
+    public var fieldName:String;
+    public var operator:String;
+    public var value:String;
+}
 }

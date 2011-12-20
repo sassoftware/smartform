@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
- Copyright (c) 2009 rPath, Inc.
+ Copyright (c) 2009-2011 rPath, Inc.
 
  This program is distributed under the terms of the MIT License as found 
  in a file called LICENSE. If it is not present, the license
@@ -37,11 +37,18 @@
     <component id="PromptingTextInput" class="com.rpath.raf.views.PromptingTextInput"/>
     <component id="SmartForm" class="com.rpath.raf.views.SmartForm"/>
     <component id="SmartFormChoice" class="com.rpath.raf.views.SmartFormChoice"/>
+    <component id="SmartFormEditor" class="com.rpath.raf.views.SmartFormEditor"/>
     <component id="SmartFormItem" class="com.rpath.raf.views.SmartFormItem"/>
     <component id="SmartformVersion" class="com.rpath.raf.SmartformVersion"/>
     <component id="StringMatchValidator" class="com.rpath.raf.validators.StringMatchValidator"/>
     <component id="UIHelper" class="com.rpath.raf.util.UIHelper"/>
     <component id="UniqueElementValidator" class="com.rpath.raf.validators.UniqueElementValidator"/>
     <component id="ValidationHelper" class="com.rpath.raf.util.ValidationHelper"/>
+
+    <component id="Descriptor" class="com.rpath.raf.models.Descriptor"/>
+    <component id="FieldDescriptor" class="com.rpath.raf.models.FieldDescriptor"/>
+    <component id="MetadataDescriptor" class="com.rpath.raf.models.MetadataDescriptor"/>
+    <component id="EnumDescriptor" class="com.rpath.raf.models.EnumDescriptor"/>
+    <component id="Description" class="com.rpath.raf.models.Description"/>
 
 </componentPackage>

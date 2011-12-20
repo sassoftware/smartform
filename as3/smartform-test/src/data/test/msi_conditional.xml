@@ -1,4 +1,4 @@
-<factory xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.rpath.com/permanent/factorydef-1.0.xsd factorydef-1.0.xsd">
 	<metadata>
 		<displayName>MSI</displayName>
@@ -166,4 +166,4 @@
 			<hidden>true</hidden>
 		</field>
 	</dataFields>
-</factory>
+</descriptor>

@@ -16,12 +16,11 @@
 <s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
                xmlns:s="library://ns.adobe.com/flex/spark" 
                xmlns:mx="library://ns.adobe.com/flex/mx" 
-
-               xmlns:smartform="http://www.rpath.com/2009/smartform.mxml"
-
-               minWidth="955" minHeight="600"
                
-               creationComplete="creationComplete(event)">
+               xmlns:smartform="http://www.rpath.com/2009/smartform.mxml"
+               
+               width="100%" height="100%"
+               >
     
     <s:layout>
         <s:VerticalLayout/>
@@ -51,7 +50,7 @@
             <fx:Object label="Large" test="large_metadata" />
             <fx:Object label="Conditional" test="conditional_metadata" />
             <fx:Object label="Complex" test="complex_metadata" />
-
+            
             <fx:Object label="Launch EC2" test="launch_ec2_metadata" />
             <fx:Object label="Launch vsphere" test="launch_vsphere_metadata" />
             <fx:Object label="Configure EC2" test="configure_ec2_metadata" />
@@ -65,175 +64,87 @@
     
     
     <fx:Script>
-<![CDATA[
-    import com.rpath.xobj.XObjQName;
-    import com.rpath.xobj.XObjXMLDecoder;
-    import com.rpath.xobj.XObjXMLEncoder;
-    
-    import mx.events.PropertyChangeEvent;
-    
-    [Bindable]    
-    public var metadata:XML;
-    
-    [Bindable]
-    public function get testObject():TestObject
-    {
-        return _testObject;
-    }
-    
-    private var _testObject:TestObject;
-    
-    public function set testObject(s:TestObject):void
-    {
-        if (_testObject)
+    <![CDATA[
+        
+        
+        [Bindable]
+        public var testObject:TestObject = new TestObject();
+        
+        [Bindable]
+        public function get metadata():XML
         {
-            _testObject.removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, getObjectXML);
+            return _metadata;
         }
         
-        _testObject = s;
+        private var _metadata:XML;
         
-        if (_testObject)
+        public function set metadata(value:XML):void
         {
-            _testObject.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, getObjectXML);
+            _metadata = value;
         }
-    }
-    
-    
-    public function creationComplete(event:Event):void
-    {
-        // start with a fresh testObject
-        testObject = new TestObject();
-        //setMetadata(tests[0].test);
-    }
-    
-    
-    public function editMetadata(event:Event):void
-    {
-        try { metadata = new XML(mdInput.text); } catch (e:Error) {}
-        getObjectXML();
-    }
-    
-    private var _objectXML:String;
-    private var refreshingXML:Boolean;
-    
-    public var oldTestObject:*;
-    
-    [Bindable]
-    public function set objectXML(xml:String):void
-    {
-        _objectXML = xml;
-        
-        if (!refreshingXML)
+
+        public function setMetadataXML(newXML:XML):void
         {
-            try
-            {
-                var xmlNode:XMLNode = new XMLDocument(xml);
-                var xmlDecoder:XObjXMLDecoder = new XObjXMLDecoder({foo:TestObject});
-                var newObject:*;
-                
-                // force decoding
-                oldTestObject = testObject;
-                newObject = xmlDecoder.decodeXML(xmlNode).foo;
-                testObject = newObject;
-                testObject.addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, getObjectXML);
-                // force a refresh now
-                getObjectXML();
-            }
+            try { 
+                metadata = newXML; 
+            } 
             catch (e:Error)
-            { }
+            {
+                trace("problem setting new descriptor XML");
+            }
+
         }
-    }
-    
-    public function get objectXML():String
-    {
-        return _objectXML;
-    }
-    
-    public function getObjectXML(event:PropertyChangeEvent=null):void
-    {
-        refreshingXML = true;
         
-        var myXML:XMLDocument = new XMLDocument();
-        var xmlEncoder:XObjXMLEncoder = new XObjXMLEncoder({foo:TestObject}, myXML);
-        var xmlNode:XMLNode;
-        var newXML:String;
+        private function setMetadata(name:String):void
+        {
+            metadata = this[name];
+        }
         
-        xmlNode = xmlEncoder.encodeObject(testObject,new XMLNode(5,"root"), "root", new XObjQName("local","foo"));
-        newXML = new XML(xmlNode.toString()).toString();
-        objectXML = newXML;
-        refreshingXML = false;
-    }
-    
-    [Bindable]
-    public var formIsValid:Boolean;
-    
-    private function setMetadata(name:String):void
-    {
-        metadata = this[name];
-    }
-    
-    public function handleTestChange(event:Event):void
-    {
-        var testId:String = testSelector.selectedItem.test;
-        setMetadata(testId);
+        public function handleTestChange(event:Event):void
+        {
+            var testId:String = testSelector.selectedItem.test;
+            setMetadata(testId);
+        }
+
         
-        // start with a fresh testObject
-        testObject = new TestObject();
-    }
-    
-]]>
+        protected function cancelButton_clickHandler(event:MouseEvent):void
+        {
+            // fresh object
+            testObject = new TestObject();
+        }
+        
+    ]]>
     </fx:Script>
     
-    <mx:HDividedBox width="100%" height="100%">
-        <mx:VDividedBox width="70%" height="100%" verticalScrollPolicy="off">
-            
-            <s:VGroup width="100%" height="40%">
-                <mx:FormItem label="Field Set" >
-                    <mx:ComboBox id="testSelector"
-                                 dataProvider="{tests}" change="handleTestChange(event)" />
-                </mx:FormItem>
-                <mx:CheckBox id="editableCheck" label="EDITABLE" selected="true"/>
-                <mx:CheckBox id="isValid" label="VALID?" selected="{infoForm.isValid}"/>
-                <mx:CheckBox id="isDirty" label="DIRTY?" selected="{infoForm.isDirty}"/>
-                <mx:TextArea id="mdInput" width="100%" height="100%" text="{metadata}" change="editMetadata(event)" />
-                <s:Button label="pop errors" click="infoForm.showErrors()" />
-                <s:Button label="hide errors" click="infoForm.hideErrors()" />
-            </s:VGroup>
-            
-            <!--<s:Scroller width="100%" height="60%">
-                <s:VGroup>  // does not work until ErrorTipManager can handle SPARK scrolling
-            // events (via PropertYChange rather than SCROLL events 
-            -->
-            <mx:VBox width="100%" height="60%"
-                     verticalScrollPolicy="auto"
-                     horizontalScrollPolicy="off"
-                     >
-                
-                <smartform:SmartForm id="infoForm" editable="{editableCheck.selected}"
-                                     metadata="{metadata}" data="{testObject}"
-                                     defaultButton="{okButton}"
-                                     />
-                
-                <s:HGroup width="100%">
-                    <s:Button label="Cancel" />
-                    <s:Label id="warningLabel" text="Please complete required fields" 
-                             visible="{!infoForm.isValid}" 
-                             color="blue"
-                             click="infoForm.showErrors()"/>
-                    
-                    <!-- TODO: make this enable/disabled automatically -->
-                    <s:Button id="okButton" label="OK" />
-                </s:HGroup>
-                
-                
-            </mx:VBox>
-<!--                </s:VGroup>
-            </s:Scroller>-->
-        </mx:VDividedBox>
-        <s:VGroup height="100%">
-            <s:Button label="REFRESH" click="getObjectXML()"/>
-            <s:TextArea id="objView" text="{objectXML}" height="100%" change="{objectXML = objView.text}"/>
-       </s:VGroup>
-    </mx:HDividedBox>
+    
+    <s:HGroup width="100%" top="0">
+        <mx:FormItem label="Load Descriptor" >
+            <mx:ComboBox id="testSelector"
+                         dataProvider="{tests}" change="handleTestChange(event)" />
+        </mx:FormItem>
+        <mx:CheckBox id="editableCheck" label="EDITABLE" selected="true"/>
+        <mx:CheckBox id="isValid" label="VALID?" selected="{infoForm.isValid}"/>
+        <mx:CheckBox id="isDirty" label="DIRTY?" selected="{infoForm.isDirty}"/>
+        <s:Button label="pop errors" click="infoForm.smartform.showErrors()" />
+        <s:Button label="hide errors" click="infoForm.smartform.hideErrors()" />
+    </s:HGroup>
+
+    <smartform:SmartFormEditor id="infoForm" 
+                               editable="{editableCheck.selected}"
+                               descriptorXML="{metadata}" data="{testObject}"
+                               defaultButton="{okButton}"
+                               height="100%" width="100%"
+                               />
+    
+    <s:HGroup width="100%">
+        <s:Button id="cancelButton" label="Cancel" click="cancelButton_clickHandler(event)"/>
+        <s:Label id="warningLabel" text="Please complete required fields" 
+                 visible="{!infoForm.isValid}" 
+                 color="blue"
+                 click="infoForm.smartform.showErrors()"/>
+        
+        <s:Button id="okButton" label="OK" enabled="{infoForm.isValid}" />
+    </s:HGroup>
+    
     
 </s:Application>
