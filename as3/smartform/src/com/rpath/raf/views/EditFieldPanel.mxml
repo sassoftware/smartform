@@ -29,7 +29,7 @@ or fitness for a particular purpose. See the MIT License for full details.
     <fx:Declarations>
         <!-- Place non-visual elements (e.g., services, value objects) here -->
         
-        <fx:XML id="smartFormFieldDescriptor" source="add_field_descriptor.xml" />
+        <fx:XML id="smartFormFieldDescriptor" source="/add_field_descriptor.xml" />
         
     </fx:Declarations>
     
