@@ -58,7 +58,7 @@
         <sequential>
             <!-- Build the lib -->
             <echo>Building @{title} flex lib...</echo>
-            <compc output="@{outputLib}" debug="true">
+            <compc output="@{outputLib}" debug="false">
                 <load-config filename="@{config}"/>
                 <source-path path-element="@{srcDir}"/>
                 <compc-elements/>
