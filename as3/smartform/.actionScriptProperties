@@ -10,6 +10,7 @@
         </excludedEntries>
       </libraryPathEntry>
       <libraryPathEntry kind="3" linkType="2" path="/xobjas3/bin/xobjas3.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="2" path="/RESTful/bin/RESTful.swc" useDefaultLinkType="false"/>
     </libraryPath>
     <sourceAttachmentPath/>
   </compiler>
