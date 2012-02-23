@@ -31,6 +31,7 @@ basicXmlDef2 = """<?xml version='1.0' encoding='UTF-8'?>
     <descriptions><desc>metadata description</desc></descriptions>
     <supportedFiles>
       <file>tar</file>
+      <file>gzip</file>
     </supportedFiles>
   </metadata>
   <dataFields>
@@ -69,6 +70,17 @@ class BaseTest(testcase.TestCase):
         self.schemaDir = schemaDir
         self.mock(descriptor.BaseDescriptor, 'schemaDir', schemaDir)
         self.mock(descriptor.DescriptorData, 'schemaDir', schemaDir)
+
+
+class FactoryDescriptorTest(BaseTest):
+    def testSupportedFiles(self):
+        desc = descriptor.FactoryDescriptor()
+        desc.parseStream(StringIO(basicXmlDef2))
+
+        self.failUnlessEqual(desc.getSupportedFiles(), ['tar', 'gzip'])
+
+        desc.setSupportedFiles(['george', ])
+        self.failUnlessEqual(desc.getSupportedFiles(), ['george'])
 
 
 class DescriptorTest(BaseTest):

@@ -192,6 +192,14 @@ class BaseDescriptor(_BaseClass):
         metadata = self._rootObj.get_metadata()
         metadata.set_rootElement(rootElement)
 
+    def getSupportedFiles(self):
+        metadata = self._rootObj.get_metadata()
+        return metadata.get_supportedFiles().get_file()
+
+    def setSupportedFiles(self, supportedFiles):
+        metadata = self._rootObj.get_metadata()
+        metadata.get_supportedFiles().set_file(supportedFiles)
+
     def getDataFields(self):
         """
         @return: the data fields associated with this object
@@ -508,5 +516,14 @@ class DescriptorData(_BaseClass):
         bsio.seek(0)
         return bsio
 
+
 class ConfigurationDescriptor(BaseDescriptor):
     "Class for representing the configuration descriptor definition"
+
+
+class FactoryDescriptor(BaseDescriptor):
+    """
+    Class for representing factory descriptors.
+    """
+
+    RootNode = 'factory'
