@@ -38,7 +38,7 @@
 
     <xsd:complexType name="supportedFilesType">
       <xsd:sequence>
-        <xsd:element name="file" type="xsd:string" />
+        <xsd:element name="file" type="xsd:string" maxOccurs="unbounded" />
       </xsd:sequence>
     </xsd:complexType>
 

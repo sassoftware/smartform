@@ -353,7 +353,7 @@ class metadataType(GeneratedsSuper):
         if self.descriptions:
             self.descriptions.export(outfile, level, namespace_, name_='descriptions', )
         if self.supportedFiles:
-            self.supportedFiles.export(outfile, level, namespace_, name_='supportedFiles', )
+            self.supportedFiles.export(outfile, level, namespace_, name_='supportedFiles')
     def hasContent_(self):
         if (
             self.displayName is not None or
@@ -510,12 +510,15 @@ class descriptionsType(GeneratedsSuper):
 
 class supportedFilesType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('file', 'xsd:string', 0),
+        MemberSpec_('file', 'xsd:string', 1),
         ]
     subclass = None
     superclass = None
     def __init__(self, file=None):
-        self.file = file
+        if file is None:
+            self.file = []
+        else:
+            self.file = file
     def factory(*args_, **kwargs_):
         if supportedFilesType.subclass:
             return supportedFilesType.subclass(*args_, **kwargs_)
@@ -524,6 +527,8 @@ class supportedFilesType(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_file(self): return self.file
     def set_file(self, file): self.file = file
+    def add_file(self, value): self.file.append(value)
+    def insert_file(self, index, value): self.file[index] = value
     def export(self, outfile, level, namespace_='dsc:', name_='supportedFilesType', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -538,12 +543,12 @@ class supportedFilesType(GeneratedsSuper):
     def exportAttributes(self, outfile, level, namespace_='dsc:', name_='supportedFilesType'):
         pass
     def exportChildren(self, outfile, level, namespace_='dsc:', name_='supportedFilesType'):
-        if self.file is not None:
+        for file_ in self.file:
             showIndent(outfile, level)
-            outfile.write('<%sfile>%s</%sfile>\n' % (namespace_, self.format_string(quote_xml(self.file).encode(ExternalEncoding), input_name='file'), namespace_))
+            outfile.write('<%sfile>%s</%sfile>\n' % (namespace_, self.format_string(quote_xml(file_).encode(ExternalEncoding), input_name='file'), namespace_))
     def hasContent_(self):
         if (
-            self.file is not None
+            self.file
             ):
             return True
         else:
@@ -556,9 +561,15 @@ class supportedFilesType(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
-        if self.file is not None:
+        showIndent(outfile, level)
+        outfile.write('file=[\n')
+        level += 1
+        for file_ in self.file:
             showIndent(outfile, level)
-            outfile.write('file=%s,\n' % quote_python(self.file).encode(ExternalEncoding))
+            outfile.write('%s,\n' % quote_python(file_).encode(ExternalEncoding))
+        level -= 1
+        showIndent(outfile, level)
+        outfile.write('],\n')
     def build(self, node_):
         attrs = node_.attributes
         self.buildAttributes(attrs)
@@ -573,7 +584,7 @@ class supportedFilesType(GeneratedsSuper):
             file_ = ''
             for text__content_ in child_.childNodes:
                 file_ += text__content_.nodeValue
-            self.file = file_
+            self.file.append(file_)
 # end class supportedFilesType
 
 
