@@ -7,8 +7,8 @@ import testsuite
 testsuite.setup()
 
 import os
-import StringIO
 import sys
+from StringIO import StringIO
 
 from testrunner import testcase
 
@@ -91,7 +91,7 @@ class DescriptorTest(BaseTest):
                      values = ['Foo', 'Bar', 'Baz']),
             ])
 
-        sio = StringIO.StringIO()
+        sio = StringIO()
         dsc.serialize(sio)
         self.assertXMLEquals(sio.getvalue(), xmlDescriptor1)
 
@@ -133,7 +133,7 @@ class DescriptorTest(BaseTest):
         dsc.addDataField('cloudType', type = 'str',
             descriptions = [('field msg in lang 1', 'lang1'),
                 ('field msg in lang 2', 'lang2'), 'Default lang'])
-        sio = StringIO.StringIO()
+        sio = StringIO()
         dsc.serialize(sio)
         self.assertXMLEquals(sio.getvalue(), """
 <descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd" id="Some-ID">
@@ -181,7 +181,7 @@ class DescriptorTest(BaseTest):
 
     def testSerializeDescriptor1(self):
         dsc = descriptor.ConfigurationDescriptor(fromStream = xmlDescriptor1)
-        sio = StringIO.StringIO()
+        sio = StringIO()
         dsc.serialize(sio)
         self.assertXMLEquals(sio.getvalue(), xmlDescriptor1)
 
@@ -199,7 +199,7 @@ class DescriptorTest(BaseTest):
         dsc = descriptor.ConfigurationDescriptor(fromStream = xmlDescriptor1)
         ddata = descriptor.DescriptorData(fromStream = xmlDescriptorData1,
             descriptor = dsc)
-        sio = StringIO.StringIO()
+        sio = StringIO()
         ddata.serialize(sio)
         self.assertXMLEquals(sio.getvalue(), xmlDescriptorData1)
 
@@ -238,7 +238,7 @@ class DescriptorTest(BaseTest):
         self.failUnlessEqual([ x.descriptions.asDict() for x in multi.type ],
             [{None: 'One'}, {None: 'Two'}])
 
-        sio = StringIO.StringIO()
+        sio = StringIO()
         dsc.serialize(sio)
         newXml = xmlDescriptor2.replace("  </dataFields>",
             "%s\n  </dataFields>" % newDescriptorField)
@@ -246,13 +246,13 @@ class DescriptorTest(BaseTest):
 
         sio.seek(0)
         dsc = descriptor.ConfigurationDescriptor(fromStream = sio)
-        sio = StringIO.StringIO()
+        sio = StringIO()
         dsc.serialize(sio)
         self.assertXMLEquals(sio.getvalue(), newXml)
 
     def testSerializeDescriptor2(self):
         dsc = descriptor.ConfigurationDescriptor(fromStream = xmlDescriptor2)
-        sio = StringIO.StringIO()
+        sio = StringIO()
         dsc.serialize(sio)
         self.assertXMLEquals(sio.getvalue(), xmlDescriptor2)
 
@@ -277,7 +277,7 @@ class DescriptorTest(BaseTest):
     def testSerializeDescriptor3Password(self):
         xml = xmlDescriptor3 % passwordFields3
         dsc = descriptor.ConfigurationDescriptor(fromStream = xml)
-        sio = StringIO.StringIO()
+        sio = StringIO()
         dsc.serialize(sio)
         self.assertXMLEquals(sio.getvalue(), xml)
 
@@ -304,7 +304,7 @@ class DescriptorTest(BaseTest):
     def testSerializeDescriptor3Hidden(self):
         xml = xmlDescriptor3 % hiddenFields3
         dsc = descriptor.ConfigurationDescriptor(fromStream = xml)
-        sio = StringIO.StringIO()
+        sio = StringIO()
         dsc.serialize(sio)
         self.assertXMLEquals(sio.getvalue(), xml)
 
@@ -323,7 +323,7 @@ class DescriptorTest(BaseTest):
             [(x.getName(), x.getValue()) for x in ddata.getFields()],
             [('hiddenFieldStr', 'abc'), ('hiddenFieldInt', 1)])
 
-        sio = StringIO.StringIO()
+        sio = StringIO()
         ddata.serialize(sio)
         self.assertXMLEquals(sio.getvalue(), xml)
 
@@ -358,7 +358,7 @@ class DescriptorTest(BaseTest):
             [(x.getName(), x.getValue()) for x in ddata.getFields()],
             [('passwordFieldStr', 'Real string'), ('passwordFieldInt', 42)])
 
-        sio = StringIO.StringIO()
+        sio = StringIO()
         ddata.serialize(sio)
         self.assertXMLEquals(sio.getvalue(), xml)
 
@@ -369,7 +369,7 @@ class DescriptorTest(BaseTest):
         ddata.addField('passwordFieldInt', 42)
 
         # The password fields should have been whited out
-        sio = StringIO.StringIO()
+        sio = StringIO()
         ddata.serialize(sio)
         self.assertXMLEquals(sio.getvalue(), xml)
 
@@ -542,7 +542,7 @@ class DescriptorConstraintTest(BaseTest):
             descriptions = ['bar', ('barre', 'fr')],
             )
 
-        sio = StringIO.StringIO()
+        sio = StringIO()
         dsc.serialize(sio)
         self.assertXMLEquals(sio.getvalue(), """
 <descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd" id="Some-ID">
@@ -784,7 +784,7 @@ class DescriptorConstraintTest(BaseTest):
                 dsc.ValueWithDescription(str(x),
                     descriptions = "Description for %s" % x) for x in range(3)),
             default = ["0", "1"])
-        sio = StringIO.StringIO()
+        sio = StringIO()
         dsc.serialize(sio)
         sio.seek(0)
 
@@ -799,7 +799,7 @@ class DescriptorConstraintTest(BaseTest):
         dsc.addDataField("fieldName",
             type = "int", default = 1)
 
-        sio = StringIO.StringIO()
+        sio = StringIO()
         dsc.serialize(sio)
         sio.seek(0)
 
@@ -813,7 +813,7 @@ class DescriptorConstraintTest(BaseTest):
         dsc.addDataField("fieldName",
             type = "int", default = 1, multiple = True)
 
-        sio = StringIO.StringIO()
+        sio = StringIO()
         dsc.serialize(sio)
         sio.seek(0)
 
@@ -846,7 +846,7 @@ class DescriptorConstraintTest(BaseTest):
                      for x in range(3) ],
                  default = "val-%s-2" % i, required = True,
                  conditional = dsc.Conditional("switchField", "val-%s" % i))
-        sio = StringIO.StringIO()
+        sio = StringIO()
         dsc.serialize(sio)
         self.assertXMLEquals(sio.getvalue(), xmlDescriptorConditional2)
 
@@ -2086,4 +2086,3 @@ xmlDescriptorDataConditional3 = """\
 
 if __name__ == "__main__":
     testsuite.main()
-
