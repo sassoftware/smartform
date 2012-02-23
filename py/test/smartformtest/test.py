@@ -7,7 +7,6 @@ import testsuite
 testsuite.setup()
 
 import os
-import sys
 from StringIO import StringIO
 
 from testrunner import testcase
