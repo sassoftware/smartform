@@ -8,6 +8,7 @@
 
     <xsd:element name="descriptor" type="dsc:descriptorType" />
     <xsd:element name="factory" type="dsc:descriptorType" />
+    <xsd:element name="configuration_descriptor" type="dsc:descriptorType" />
 
     <xsd:complexType name="descriptorType">
       <xsd:sequence>

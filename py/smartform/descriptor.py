@@ -521,6 +521,14 @@ class ConfigurationDescriptor(BaseDescriptor):
     "Class for representing the configuration descriptor definition"
 
 
+class SystemConfigurationDescriptor(BaseDescriptor):
+    """
+    Class for representing configuration descriptors for systems.
+    """
+
+    RootNode = 'configuration_descriptor'
+
+
 class FactoryDescriptor(BaseDescriptor):
     """
     Class for representing factory descriptors.
