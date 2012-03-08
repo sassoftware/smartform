@@ -150,6 +150,12 @@
 
     <xsd:complexType name="conditionalType">
       <xsd:sequence>
+        <xsd:group ref="dsc:conditionalTypeReqFields" minOccurs="0" maxOccurs="1"/>
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:group name="conditionalTypeReqFields">
+      <xsd:sequence>
         <xsd:element name="fieldName" type="xsd:string"/>
         <xsd:element name="operator">
           <xsd:simpleType>
@@ -160,5 +166,5 @@
         </xsd:element>
         <xsd:element name="value" type="xsd:string"/>
       </xsd:sequence>
-    </xsd:complexType>
+    </xsd:group>
 </xsd:schema>
