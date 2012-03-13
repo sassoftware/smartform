@@ -366,8 +366,11 @@ class DescriptorTest(BaseTest):
 
         self.failUnlessEqual(dsc.getId(), 'Some-ID')
         self.failUnlessEqual(
-            [(x.getName(), x.getValue()) for x in ddata.getFields()],
-            [('passwordFieldStr', 'Real string'), ('passwordFieldInt', 42)])
+            [(x.getName(), x.getValue(), type(x.getValue())) for x in ddata.getFields()],
+            [
+                ('passwordFieldStr', 'Real string', dnodes.ProtectedUnicode),
+                ('passwordFieldInt', 42, int)
+            ])
 
         sio = StringIO()
         ddata.serialize(sio)
