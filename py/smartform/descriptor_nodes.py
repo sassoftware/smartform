@@ -7,6 +7,13 @@ import re
 
 import descriptor_errors as errors
 
+class ProtectedUnicode(unicode):
+    """A string that is not printed in tracebacks"""
+    def __safe_str__(self):
+        return "<Protected Value>"
+
+    __repr__ = __safe_str__
+
 class _DescriptorDataField(object):
     __slots__ = [ '_node', '_nodeDescriptor' ]
     def __init__(self, node, nodeDescriptor, checkConstraints = True):
@@ -67,18 +74,19 @@ class _DescriptorDataField(object):
 
     def getValue(self):
         vtype = self._nodeDescriptor.type
+        isPasswd = bool(self._nodeDescriptor.password)
         if self._nodeDescriptor.multiple:
-            return [ _cast(x.text, vtype)
+            return [ _cast(x.text, vtype, isPassword=isPasswd)
                 for x in self._node
                 if x.tag == 'item' ]
-        return _cast(self._node.text, vtype)
+        return _cast(self._node.text, vtype, isPassword=isPasswd)
 
 def _toStr(val):
     if isinstance(val, (str, unicode)):
         return val
     return str(val)
 
-def _cast(val, typeStr):
+def _cast(val, typeStr, isPassword=False):
     if typeStr == 'int':
         try:
             return int(val)
@@ -90,11 +98,18 @@ def _cast(val, typeStr):
             raise errors.DataValidationError(val)
         return val.upper() in ('TRUE', '1')
     elif typeStr == 'str':
-        if val is None or isinstance(val, unicode):
+        if val is None:
+            return None
+        if isinstance(val, unicode):
+            if isPassword:
+                return ProtectedUnicode(val)
             return val
 
         try:
-            return str(val).decode('utf-8')
+            if isPassword:
+                return ProtectedUnicode(str(val).decode('utf-8'))
+            else:
+                return str(val).decode('utf-8')
         except UnicodeDecodeError, e_value:
             raise errors.DataValidationError('UnicodeDecodeError: %s'
                 % str(e_value))

@@ -12,6 +12,8 @@ import descriptor_errors as errors
 import descriptor_nodes as dnodes
 import constants
 
+ProtectedUnicode = dnodes.ProtectedUnicode
+
 class _BaseClass(object):
     version = constants.version
     defaultNamespace = constants.defaultNamespaceList[0]
