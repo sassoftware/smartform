@@ -1679,8 +1679,8 @@ class rangeType(GeneratedsSuper):
                     ival_ = int(sval_)
                 except ValueError, exp:
                     raise ValueError('requires integer (min): %s' % exp)
-                if ival_ < 0:
-                    raise ValueError('requires non-negative integer -- %s' % child_.toxml())
+                if ival_ <= 0:
+                    raise ValueError('requires positiveInteger -- %s' % child_.toxml())
                 self.min = ival_
         elif child_.nodeType == Node.ELEMENT_NODE and \
             nodeName_ == 'max':
@@ -1690,8 +1690,8 @@ class rangeType(GeneratedsSuper):
                     ival_ = int(sval_)
                 except ValueError, exp:
                     raise ValueError('requires integer (max): %s' % exp)
-                if ival_ < 0:
-                    raise ValueError('requires non-negative Integer -- %s' % child_.toxml())
+                if ival_ <= 0:
+                    raise ValueError('requires positiveInteger -- %s' % child_.toxml())
                 self.max = ival_
 
     def presentation(self):
