@@ -124,8 +124,8 @@
 
     <xsd:complexType name="rangeType">
       <xsd:sequence>
-        <xsd:element name="min" type="xsd:positiveInteger"/>
-        <xsd:element name="max" type="xsd:positiveInteger"/>
+        <xsd:element name="min" type="xsd:long"/>
+        <xsd:element name="max" type="xsd:long"/>
       </xsd:sequence>
     </xsd:complexType>
 

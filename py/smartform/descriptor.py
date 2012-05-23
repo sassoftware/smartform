@@ -400,10 +400,9 @@ class DescriptorData(_BaseClass):
 
     def parseStream(self, fromStream, validate = False, schemaDir = None):
         if isinstance(fromStream, (str, unicode)):
-            func = etree.fromstring
+            self._rootObj = etree.fromstring(fromStream)
         else:
-            func = etree.parse
-        self._rootObj = func(fromStream)
+            self._rootObj = etree.parse(fromStream).getroot()
         self._postinit()
         self._postprocess()
 

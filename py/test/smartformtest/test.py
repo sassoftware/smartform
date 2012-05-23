@@ -941,6 +941,49 @@ class DescriptorConstraintTest(BaseTest):
         self.failUnlessEqual(data.getField('readonly-field'),
             "mydefault")
 
+    def testRange(self):
+        # only a partial factory def for the pieces we care about
+        fDef = descriptor.ConfigurationDescriptor()
+        constraints = [
+                    dict(constraintName = 'range', min=0, max=65535),
+        ]
+
+        fDef.addDataField('port', type = 'int',
+            descriptions = [fDef.Description("port")],
+            constraints = constraints,
+            default = 8080,
+            )
+
+        fData = descriptor.DescriptorData(descriptor = fDef)
+        fData.addField('port', value = 0)
+
+        sio = StringIO()
+        fData.serialize(sio)
+        sio.seek(0)
+
+        fData = descriptor.DescriptorData(fromStream=sio, descriptor=fDef)
+        self.assertEqual(fData.getField('port'), 0)
+
+    def testRangeOnDescriptor(self):
+        # Mingle #2117: minValue of 0 should not fail with:
+        # '0' is not a # valid value of the atomic type 'xs:positiveInteger'
+        fDef = descriptor.ConfigurationDescriptor()
+        fDef.setDisplayName('test')
+        fDef.setRootElement('descriptor_data')
+        fDef.addDescription('Range test')
+        constraints = [
+                    dict(constraintName = 'range', min=-123456, max=123456),
+        ]
+
+        fDef.addDataField('port', type = 'int',
+            descriptions = [fDef.Description("port")],
+            constraints = constraints,
+            default = 8080,
+            )
+
+        sio = StringIO()
+        fDef.serialize(sio)
+
 xmlDescriptor1 = """<?xml version="1.0" encoding="UTF-8"?>
 <descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd" id="Some-ID">
   <metadata>
