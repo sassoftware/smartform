@@ -92,6 +92,8 @@
             minOccurs="0" maxOccurs="1" />
         <xsd:element name="conditional" type="dsc:conditionalType"
             minOccurs="0" maxOccurs="1" />
+        <xsd:element name="prompt" type="dsc:descriptionsType"
+            minOccurs="0" maxOccurs="1" />
       </xsd:sequence>
     </xsd:complexType>
 
