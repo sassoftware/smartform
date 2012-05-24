@@ -852,10 +852,11 @@ class dataFieldType(GeneratedsSuper):
         MemberSpec_('password', 'xsd:boolean', 0),
         MemberSpec_('readonly', 'xsd:boolean', 0),
         MemberSpec_('conditional', 'conditionalType', 0),
+        MemberSpec_('prompt', 'descriptionsType', 0),
         ]
     subclass = None
     superclass = None
-    def __init__(self, name=None, descriptions=None, help=None, type_=None, enumeratedType=None, multiple=None, default=None, constraints=None, required=None, allowFileContent=None, hidden=None, password=None, readonly=None, conditional=None):
+    def __init__(self, name=None, descriptions=None, help=None, type_=None, enumeratedType=None, multiple=None, default=None, constraints=None, required=None, allowFileContent=None, hidden=None, password=None, readonly=None, conditional=None, prompt=None):
         self.name = name
         self.descriptions = descriptions
         if help is None:
@@ -876,6 +877,7 @@ class dataFieldType(GeneratedsSuper):
         self.password = password
         self.readonly = readonly
         self.conditional = conditional
+        self.prompt = prompt
     def factory(*args_, **kwargs_):
         if dataFieldType.subclass:
             return dataFieldType.subclass(*args_, **kwargs_)
@@ -914,6 +916,8 @@ class dataFieldType(GeneratedsSuper):
     def set_readonly(self, readonly): self.readonly = readonly
     def get_conditional(self): return self.conditional
     def set_conditional(self, conditional): self.conditional = conditional
+    def get_prompt(self): return self.prompt
+    def set_prompt(self, prompt): self.prompt = prompt
     def export(self, outfile, level, namespace_='dsc:', name_='dataFieldType', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -965,6 +969,8 @@ class dataFieldType(GeneratedsSuper):
             outfile.write('<%sreadonly>%s</%sreadonly>\n' % (namespace_, self.format_boolean(str_lower(str(self.readonly)), input_name='readonly'), namespace_))
         if self.conditional:
             self.conditional.export(outfile, level, namespace_, name_='conditional')
+        if self.prompt:
+            self.prompt.export(outfile, level, namespace_, name_='prompt')
     def hasContent_(self):
         if (
             self.name is not None or
@@ -980,7 +986,8 @@ class dataFieldType(GeneratedsSuper):
             self.hidden is not None or
             self.password is not None or
             self.readonly is not None or
-            self.conditional is not None
+            self.conditional is not None or
+            self.prompt is not None
             ):
             return True
         else:
@@ -1060,6 +1067,12 @@ class dataFieldType(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('conditional=model_.conditionalType(\n')
             self.conditional.exportLiteral(outfile, level, name_='conditional')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        if self.prompt is not None:
+            showIndent(outfile, level)
+            outfile.write('prompt=model_.descriptionsType(\n')
+            self.prompt.exportLiteral(outfile, level, name_='prompt')
             showIndent(outfile, level)
             outfile.write('),\n')
     def build(self, node_):
@@ -1180,6 +1193,11 @@ class dataFieldType(GeneratedsSuper):
             obj_ = conditionalType.factory()
             obj_.build(child_)
             self.set_conditional(obj_)
+        elif child_.nodeType == Node.ELEMENT_NODE and \
+            nodeName_ == 'prompt':
+            obj_ = descriptionsType.factory()
+            obj_.build(child_)
+            self.set_prompt(obj_)
 
     def _getType(self):
         if not self.enumeratedType:
