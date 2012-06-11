@@ -433,6 +433,28 @@ class DescriptorData(_BaseClass):
                 checkConstraints = False)
             self._fields.append(field)
             self._fieldsMap[nodeName] = field
+        # Add required fields with a default that might be missing
+        for dfield in self._descriptor.getDataFields():
+            nodeName = dfield.name
+            if nodeName in self._fieldsMap:
+                # We already saw this field
+                continue
+            if not (dfield.required and dfield.default):
+                continue
+            if dfield.conditional:
+                # We don't want to enforce conditionals with defaults just yet
+                continue
+            child = etree.Element(nodeName)
+            if dfield.multiple:
+                for v in dfield.default:
+                    cv = etree.SubElement(child, "item")
+                    cv.text = str(v)
+            else:
+                child.text = str(dfield.default[0])
+            field = dnodes._DescriptorDataField(child, dfield,
+                checkConstraints = False)
+            self._fields.append(field)
+            self._fieldsMap[nodeName] = field
         self.checkConstraints()
 
     def getFields(self):
@@ -481,9 +503,10 @@ class DescriptorData(_BaseClass):
                 if x.name not in self._fieldsMap
                     and x.required ]
         # A required field may be missing if:
-        # the conditional is eq and the field is missing or the field value is
+        # * the field has a default
+        # * the conditional is eq and the field is missing or the field value is
         # not what the conditional specified
-        # the conditional is noteq and the field is present and its value is
+        # * the conditional is noteq and the field is present and its value is
         # what the conditional specified
         missingRequiredFields = [ x
             for x in missingRequiredFields

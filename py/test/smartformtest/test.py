@@ -984,6 +984,32 @@ class DescriptorConstraintTest(BaseTest):
         sio = StringIO()
         fDef.serialize(sio)
 
+    def testRequiredDefault(self):
+        # Make sure that one can skip a required data field if it has a
+        # default value
+        dsc = descriptor.ConfigurationDescriptor()
+        dsc.setRootElement("data")
+        dsc.setDisplayName('test')
+        dsc.addDescription("Test")
+        dsc.addDataField("reqFieldWithDefault",
+            type = "int", default = 42, required=True)
+        dsc.addDataField("reqField",
+            type = "int", required=True)
+        dsc.addDataField('multiField', type = 'str', multiple = True,
+            required = True,
+            descriptions = [ dsc.Description('Multi Field') ],
+            constraints = [
+                dict(constraintName = 'legalValues',
+                     values = ['Foo', 'Bar', 'Baz']),
+            ],
+            default = [ 'Baz', 'Foo'], )
+
+
+        xml = """<data><reqField>10</reqField></data>"""
+        ddata = descriptor.DescriptorData(fromStream=xml, descriptor=dsc)
+        self.assertEquals(ddata.getField('reqFieldWithDefault'), 42)
+        self.assertEquals(ddata.getField('multiField'), ['Baz', 'Foo'])
+
 xmlDescriptor1 = """<?xml version="1.0" encoding="UTF-8"?>
 <descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd" id="Some-ID">
   <metadata>
