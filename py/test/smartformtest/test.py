@@ -24,7 +24,7 @@ multiValues = """<values>
 multiValuesSingleValue = "<value>Just one value</value>"
 
 basicXmlDef2 = """<?xml version='1.0' encoding='UTF-8'?>
-<factory xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd">
+<factory xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd">
   <metadata>
     <displayName>metadata display name</displayName>
     <descriptions><desc>metadata description</desc></descriptions>
@@ -147,7 +147,7 @@ class DescriptorTest(BaseTest):
         sio = StringIO()
         dsc.serialize(sio)
         self.assertXMLEquals(sio.getvalue(), """
-<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd" id="Some-ID">
+<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd" id="Some-ID" version="1.1">
     <metadata>
         <displayName>Cloud Information</displayName>
         <descriptions>
@@ -394,6 +394,119 @@ class DescriptorTest(BaseTest):
         ddata = descriptor.DescriptorData(fromStream=data, descriptor=dsc)
         self.failUnlessEqual(ddata.getField('multiField'), ['small', 'medium'])
 
+    def testParseVersion10(self):
+        xml = xmlDescriptor2.replace('descriptor-1.1', 'descriptor-1.0')
+        dsc = descriptor.ConfigurationDescriptor(fromStream = xml)
+
+    def testCompoundType1(self):
+        dsc1 = descriptor.ConfigurationDescriptor()
+        dsc1.setId("apache-configuration/process-info")
+        dsc1.setDisplayName('Process Ownership Information')
+        dsc1.addDescription('Process Ownership Information')
+        dsc1.addDataField("user", type="str", default="apache", required=True,
+            descriptions="User")
+        dsc1.addDataField("group", type="str", default="apache", required=True,
+            descriptions="Group")
+
+        vhost = descriptor.ConfigurationDescriptor()
+        vhost.setId("apache-configuration/vhost")
+        vhost.setRootElement('vhost')
+        vhost.setDisplayName('Virtual Host Configuration')
+        vhost.addDescription('Virtual Host Configuration')
+        vhost.addDataField('serverName', type="str", required=True,
+            descriptions="Virtual Host Name")
+        vhost.addDataField('documentRoot', type="str", required=True,
+            descriptions="Virtual Host Document Root")
+
+        dsc = descriptor.ConfigurationDescriptor()
+        dsc.setRootElement('configuration')
+        dsc.setId("apache-configuration")
+        dsc.setDisplayName('Apache Configuration')
+        dsc.addDescription('Apache Configuration')
+
+        dsc.addDataField('port', type="int",
+            required=True, descriptions="Apache Port")
+        dsc.addDataField('processInfo', type=dsc.CompoundType(dsc1),
+            required=True, descriptions="Process Ownership Information")
+        dsc.addDataField('vhosts', type=dsc.ListType(vhost),
+            required=True, descriptions="Virtual Hosts",
+            constraints=[dict(constraintName='uniqueKey', value="serverName"),
+                dict(constraintName="minLength", value=1)])
+
+        sio = StringIO()
+        dsc.serialize(sio)
+
+        # Make sure we can load it
+        sio.seek(0)
+        dsc2 = descriptor.ConfigurationDescriptor(fromStream=sio)
+        sio2 = StringIO()
+        dsc2.serialize(sio2)
+        self.assertXMLEquals(sio.getvalue(), sio2.getvalue())
+
+        dataXml = """\
+<configuration version="1.1">
+  <port>10</port>
+  <processInfo>
+    <group>nogroup</group>
+    <user>nobody</user>
+  </processInfo>
+  <vhosts list="true">
+    <vhost>
+      <serverName>a.example.com</serverName>
+      <documentRoot>/a</documentRoot>
+    </vhost>
+    <vhost>
+      <serverName>b.example.com</serverName>
+      <documentRoot>/b</documentRoot>
+    </vhost>
+  </vhosts>
+</configuration>"""
+        ddata = descriptor.DescriptorData(fromStream=dataXml, descriptor=dsc)
+        self.assertEquals(ddata.getField('port'), 10)
+        processInfo = ddata.getField('processInfo')
+        self.assertEquals(
+            (processInfo.getField('user'), processInfo.getField('group')),
+            ('nobody', 'nogroup'))
+        vhosts = ddata.getField('vhosts')
+        self.failUnlessEqual(
+            [ (x.getField('serverName'), x.getField('documentRoot'))
+                for x in vhosts ],
+            [ ('a.example.com', '/a'), ('b.example.com', '/b') ])
+
+        sio2.truncate(0)
+        ddata.serialize(sio2)
+        self.assertXMLEquals(sio2.getvalue(), dataXml)
+
+        # New descriptor, we set the values by hand
+        ddata = descriptor.DescriptorData(descriptor=dsc)
+        ddata.addField('port', 10)
+        ddata.addField('processInfo', dict(user='nobody', group='nogroup'))
+        ddata.addField('vhosts', [
+            dict(serverName='a.example.com', documentRoot='/a'),
+            dict(serverName='b.example.com', documentRoot='/b'),
+        ])
+
+        sio2.truncate(0)
+        ddata.serialize(sio2)
+        self.assertXMLEquals(sio2.getvalue(), dataXml)
+
+        # New descriptor, with some required fields missing
+        ddata = descriptor.DescriptorData(descriptor=dsc)
+        ddata.addField('port', 10)
+        # This will work, since we have a default for the required field
+        ddata.addField('processInfo', dict(user='nobody'))
+        e = self.failUnlessRaises(errors.ConstraintsValidationError,
+            ddata.addField, 'vhosts', [
+                dict(serverName='a.example.com'),
+                dict(documentRoot='/b'),
+            ])
+        self.assertEquals(e.args[0],
+            ["Missing field: 'documentRoot'", "Missing field: 'serverName'"])
+        e = self.failUnlessRaises(errors.ConstraintsValidationError,
+            ddata.checkConstraints)
+        self.assertEquals(e.args[0],
+            ["Missing field: 'vhosts'",])
+
 class DescriptorConstraintTest(BaseTest):
     def testIntType(self):
         # only a partial def for the pieces we care about
@@ -559,7 +672,7 @@ class DescriptorConstraintTest(BaseTest):
         sio = StringIO()
         dsc.serialize(sio)
         self.assertXMLEquals(sio.getvalue(), """
-<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd" id="Some-ID">
+<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd" id="Some-ID" version="1.1">
     <metadata>
         <displayName>Cloud Information</displayName>
         <descriptions>
@@ -1011,7 +1124,7 @@ class DescriptorConstraintTest(BaseTest):
         self.assertEquals(ddata.getField('multiField'), ['Baz', 'Foo'])
 
 xmlDescriptor1 = """<?xml version="1.0" encoding="UTF-8"?>
-<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd" id="Some-ID">
+<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd" id="Some-ID" version="1.1">
   <metadata>
     <displayName>Cloud Information</displayName>
     <descriptions>
@@ -1048,7 +1161,7 @@ xmlDescriptor1 = """<?xml version="1.0" encoding="UTF-8"?>
 </descriptor>"""
 
 xmlDescriptorData1 = """<?xml version='1.0' encoding='UTF-8'?>
-<descriptorData id="Some-ID">
+<descriptorData id="Some-ID" version="1.1">
   <cloudType>ec2</cloudType>
   <multiField>
     <item>Foo</item>
@@ -1058,7 +1171,7 @@ xmlDescriptorData1 = """<?xml version='1.0' encoding='UTF-8'?>
 """
 
 xmlDescriptor2 = """<?xml version="1.0" encoding="UTF-8"?>
-<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd" id="Some-ID">
+<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd" id="Some-ID" version="1.1">
   <metadata>
     <displayName>Cloud Information</displayName>
     <descriptions>
@@ -1121,7 +1234,7 @@ newDescriptorField = """\
     </field>"""
 
 xmlDescriptor3 = """<?xml version="1.0" encoding="UTF-8"?>
-<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd" id="Some-ID">
+<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd" id="Some-ID" version="1.1">
   <metadata>
     <displayName>Cloud Information</displayName>
     <rootElement>blahBlah</rootElement>
@@ -1175,7 +1288,7 @@ hiddenFields3 = """\
     </field>"""
 
 xmlDescriptorData3 = """<?xml version='1.0' encoding='UTF-8'?>
-<%s id="Some-ID">
+<%s id="Some-ID" version="1.1">
 %s
 </%s>"""
 
@@ -1188,13 +1301,13 @@ hiddenFields3Data = """\
   <hiddenFieldInt>1</hiddenFieldInt>"""
 
 xmlDescriptorDataNoMulti1 = """<?xml version='1.0' encoding='UTF-8'?>
-<descriptorData id="Some-ID">
+<descriptorData id="Some-ID" version="1.1">
   <cloudType>ec2</cloudType>
   <multiField>bloop</multiField>
 </descriptorData>
 """
 
-xmlDescriptorConditional1 = """<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd">
+xmlDescriptorConditional1 = """<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd">
   <metadata>
     <displayName>VMware Launch Parameters</displayName>
     <descriptions>
@@ -1348,7 +1461,7 @@ xmlDescriptorDataConditional1 = """\
 """
 
 xmlDescriptorConditional2 = """\
-<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd">
+<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd" version="1.1">
   <metadata>
     <displayName>test</displayName>
     <rootElement>newInstance</rootElement>
@@ -1449,7 +1562,7 @@ xmlDescriptorDataConditional23= """\
 
 xmlDescriptorConditional3 = """\
 <?xml version='1.0' encoding='UTF-8'?>
-<descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.rpath.com/permanent/descriptor-1.0.xsd" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.0.xsd descriptor-1.0.xsd">
+<descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd">
     <metadata>
         <displayName>VMware Launch Parameters</displayName>
         <descriptions>

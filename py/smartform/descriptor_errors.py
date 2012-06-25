@@ -27,7 +27,13 @@ class ConstraintsValidationError(Error):
 class InvalidDefaultValue(Error):
     ""
 
+class InvalidUniqueKey(Error):
+    ""
+
 class MissingDefaultValue(Error):
+    ""
+
+class MissingRootElement(Error):
     ""
 
 class ReadOnlyFieldChanged(Error):

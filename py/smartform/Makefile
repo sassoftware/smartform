@@ -16,7 +16,7 @@ export TOPDIR=$(shell pwd)/../..
 python_files =	$(wildcard *.py)
 override DIR=/smartform
 
-SUBDIRS = xml_1_0
+SUBDIRS = xml_1_0 xml_1_1
 
 dist_files = Makefile constants.py.in $(python_files)
 

@@ -14,6 +14,15 @@ class ProtectedUnicode(unicode):
 
     __repr__ = __safe_str__
 
+class ListField(list):
+    def checkConstraints(self, raiseException=True):
+        ret = []
+        for x in self:
+            ret.extend(x.checkConstraints(raiseException=False))
+        if ret and raiseException:
+            raise errors.ConstraintsValidationError(ret)
+        return ret
+
 class _DescriptorDataField(object):
     __slots__ = [ '_node', '_nodeDescriptor' ]
     def __init__(self, node, nodeDescriptor, checkConstraints = True):
@@ -22,41 +31,58 @@ class _DescriptorDataField(object):
         if checkConstraints:
             self.checkConstraints()
 
-    def checkConstraints(self):
+    def checkConstraints(self, raiseException=True):
         errorList = []
-        descriptions = self._nodeDescriptor.get_descriptions()
+        errorList.extend(self._checkConstraints(self._nodeDescriptor,
+            self._node))
+        if errorList and raiseException:
+            raise errors.ConstraintsValidationError(errorList)
+        return errorList
+
+    def _checkConstraints(self, nodeDescriptor, node):
+        errorList = []
+        descriptions = nodeDescriptor.get_descriptions()
         defaultLangDesc = descriptions.asDict().get(None)
-        if self._nodeDescriptor.multiple:
+        if nodeDescriptor.compoundType:
+            errorList.extend(self._checkConstraintsCompoundType(
+                nodeDescriptor.descriptor, node))
+        elif nodeDescriptor.listType:
+            subdesc = nodeDescriptor.descriptor
+            childName = subdesc.getRootElement()
+            for childNode in node.iterchildren(childName):
+                errorList.extend(self._checkConstraintsCompoundType(
+                    subdesc, childNode))
+        elif nodeDescriptor.multiple:
             # Get the node's children as values
-            values = [ x.text for x in self._node
+            values = [ x.text for x in node
                 if hasattr(x, 'tag') and x.tag == 'item' ]
-            if self._nodeDescriptor.required and not values:
+            if nodeDescriptor.required and not values:
                 errorList.append("Missing field: '%s'" %
-                    self._nodeDescriptor.name)
-            elif isinstance(self._nodeDescriptor.type, list):
+                    nodeDescriptor.name)
+            elif isinstance(nodeDescriptor.type, list):
                 errorList.extend(_validateEnumeratedValue(values,
-                                 self._nodeDescriptor.type,
+                                 nodeDescriptor.type,
                                  defaultLangDesc))
             else:
                 # It is conceivable that one has a multi-valued field with a
                 # simple type
                 errorList.extend(_validateMultiValue(values,
-                                 self._nodeDescriptor.type,
+                                 nodeDescriptor.type,
                                  defaultLangDesc,
-                                 self._nodeDescriptor.constraints))
+                                 nodeDescriptor.constraints))
         else:
-            value = self._node.text
-            constraints = (self._nodeDescriptor.constraints and
-                self._nodeDescriptor.constraints.presentation() or [])
+            value = node.text
+            constraints = (nodeDescriptor.constraints and
+                nodeDescriptor.constraints.presentation() or [])
             errorList.extend(_validateSingleValue(value,
-                             self._nodeDescriptor.type,
+                             nodeDescriptor.type,
                              defaultLangDesc,
                              constraints,
-                             required = self._nodeDescriptor.required))
-            if self._nodeDescriptor.readonly:
-                defaultVal = self._nodeDescriptor.getDefault()
+                             required = nodeDescriptor.required))
+            if nodeDescriptor.readonly:
+                defaultVal = nodeDescriptor.getDefault()
                 if defaultVal is None or (
-                        self._nodeDescriptor.type == 'str' and not defaultVal):
+                        nodeDescriptor.type == 'str' and not defaultVal):
                     """ Commented out until the image import metadata
                     descriptor becomes smarter
                     errorList.append("'%s': descriptor error: no defaults supplied for read-only field" % (
@@ -66,8 +92,19 @@ class _DescriptorDataField(object):
                     errorList.append(
                         "'%s': invalid value '%s' for read-only field; expected '%s'" % (
                             defaultLangDesc, value, defaultVal))
-        if errorList:
-            raise errors.ConstraintsValidationError(errorList)
+        return errorList
+
+    def _checkConstraintsCompoundType(self, descriptor, node):
+        errorList = []
+        fieldsMap = []
+        for f in descriptor.getDataFields():
+            subnode = list(node.iterchildren(f.name))
+            if not subnode:
+                continue
+            subnode = subnode[0]
+            errorList.extend(self._checkConstraints(f, subnode))
+        # XXX check for required fields
+        return errorList
 
     def getName(self):
         return self._node.tag

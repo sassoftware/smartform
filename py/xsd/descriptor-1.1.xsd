@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://www.rpath.com/permanent/descriptor-1.1.xsd"
+        elementFormDefault="qualified"
+        attributeFormDefault="unqualified"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:dsc="http://www.rpath.com/permanent/descriptor-1.1.xsd"
+        xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd">
+
+    <xsd:element name="descriptor" type="dsc:descriptorType" />
+    <xsd:element name="factory" type="dsc:descriptorType" />
+    <xsd:element name="configuration_descriptor" type="dsc:descriptorType" />
+
+    <xsd:complexType name="descriptorType">
+      <xsd:sequence>
+        <xsd:element name="metadata" type="dsc:metadataType" />
+        <xsd:element name="dataFields" type="dsc:dataFieldsType" />
+      </xsd:sequence>
+      <xsd:attribute name="id" type="xsd:anyURI" />
+      <xsd:attribute name="version" type="xsd:string" />
+    </xsd:complexType>
+
+    <xsd:complexType name="metadataType">
+      <xsd:sequence>
+        <xsd:element name="displayName" type="xsd:string" />
+        <xsd:element name="rootElement" type="xsd:string"
+            minOccurs="0" maxOccurs="1" />
+        <xsd:element name="descriptions" type="dsc:descriptionsType" />
+        <xsd:element name="supportedFiles" type="dsc:supportedFilesType"
+            minOccurs="0" maxOccurs="1" />
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="descriptionsType">
+      <xsd:sequence>
+        <xsd:element name="desc" type="dsc:descType"
+            minOccurs="0" maxOccurs="unbounded"/>
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="supportedFilesType">
+      <xsd:sequence>
+        <xsd:element name="file" type="xsd:string" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="descType">
+      <xsd:simpleContent>
+        <xsd:extension base="xsd:string">
+          <xsd:attribute name="lang" type="xsd:string" />
+        </xsd:extension>
+      </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="dataFieldsType">
+      <xsd:sequence>
+        <xsd:element name="field" type="dsc:dataFieldType"
+            minOccurs="0" maxOccurs="unbounded"/>
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="helpType">
+      <xsd:attribute name="lang" type="xsd:string" />
+      <xsd:attribute name="href" type="xsd:anyURI" use="required" />
+    </xsd:complexType>
+
+    <xsd:complexType name="dataFieldType">
+      <xsd:sequence>
+        <xsd:element name="name" type="xsd:string" />
+        <xsd:element name="descriptions" type="dsc:descriptionsType" 
+            minOccurs="0" maxOccurs="1" />
+        <xsd:element name="help" type="dsc:helpType"
+            minOccurs="0" maxOccurs="unbounded"/>
+        <xsd:choice minOccurs="1" maxOccurs="1">
+          <xsd:element name="type" type="xsd:string"
+              minOccurs="0" maxOccurs="1" />
+          <xsd:element name="enumeratedType" type="dsc:enumeratedTypeType"
+              minOccurs="0" maxOccurs="1" />
+          <xsd:element name="listType" type="dsc:listTypeType" />
+          <xsd:element name="compoundType" type="dsc:descriptorType" />
+        </xsd:choice>
+        <xsd:element name="multiple" type="xsd:boolean"
+            minOccurs="0" maxOccurs="1" />
+        <xsd:element name="default" type="xsd:string"
+            minOccurs="0" maxOccurs="unbounded"/>
+        <xsd:element name="constraints" type="dsc:constraintsType"
+            minOccurs="0" maxOccurs="1" />
+        <xsd:element name="required" type="xsd:boolean"
+            minOccurs="0" maxOccurs="1" />
+        <xsd:element name="allowFileContent" type="xsd:boolean"
+            minOccurs="0" maxOccurs="1" />
+        <xsd:element name="hidden" type="xsd:boolean"
+            minOccurs="0" maxOccurs="1" />
+        <xsd:element name="password" type="xsd:boolean"
+            minOccurs="0" maxOccurs="1" />
+        <xsd:element name="readonly" type="xsd:boolean"
+            minOccurs="0" maxOccurs="1" />
+        <xsd:element name="conditional" type="dsc:conditionalType"
+            minOccurs="0" maxOccurs="1" />
+        <xsd:element name="prompt" type="dsc:descriptionsType"
+            minOccurs="0" maxOccurs="1" />
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="enumeratedTypeType">
+      <xsd:sequence>
+        <xsd:element name="describedValue" type="dsc:describedValueType"
+            minOccurs="0" maxOccurs="unbounded"/>
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="listTypeType">
+      <xsd:sequence>
+        <xsd:element name="constraints" type="dsc:listTypeConstraintsType"
+            minOccurs="0" maxOccurs="1"/>
+        <xsd:element name="compoundType" type="dsc:descriptorType"
+            minOccurs="1" maxOccurs="1"/>
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="describedValueType">
+      <xsd:sequence>
+        <xsd:element name="descriptions" type="dsc:descriptionsType" />
+        <xsd:element name="key" type="xsd:string" />
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="constraintsType">
+      <xsd:sequence>
+        <xsd:element name="descriptions" type="dsc:descriptionsType"
+            minOccurs="0" maxOccurs="1" />
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+          <xsd:element name="range" type="dsc:rangeType" />
+          <xsd:element name="legalValues" type="dsc:legalValuesType" />
+          <xsd:element name="regexp" type="dsc:regexpType" />
+          <xsd:element name="length" type="dsc:lengthType" />
+        </xsd:choice>
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="listTypeConstraintsType">
+      <xsd:sequence>
+        <xsd:element name="descriptions" type="dsc:descriptionsType"
+            minOccurs="0" maxOccurs="1" />
+        <xsd:element name="uniqueKey" type="dsc:uniqueKeyType"
+            minOccurs="0" maxOccurs="unbounded"/>
+        <xsd:element name="minLength" type="dsc:minLengthType"
+            minOccurs="0" maxOccurs="1"/>
+        <xsd:element name="maxLength" type="dsc:maxLengthType"
+            minOccurs="0" maxOccurs="1"/>
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="rangeType">
+      <xsd:sequence>
+        <xsd:element name="min" type="xsd:long"/>
+        <xsd:element name="max" type="xsd:long"/>
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="legalValuesType">
+      <xsd:sequence>
+        <xsd:element name="item" type="xsd:string"
+            minOccurs="0" maxOccurs="unbounded"/>
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="regexpType">
+      <xsd:simpleContent>
+        <xsd:extension base="xsd:string" />
+      </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="lengthType">
+      <xsd:simpleContent>
+        <xsd:extension base="xsd:unsignedInt" />
+      </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="uniqueKeyType">
+      <xsd:simpleContent>
+        <xsd:extension base="xsd:token" />
+      </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="minLengthType">
+      <xsd:simpleContent>
+        <xsd:extension base="xsd:nonNegativeInteger" />
+      </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="maxLengthType">
+      <xsd:simpleContent>
+        <xsd:extension base="xsd:nonNegativeInteger" />
+      </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="conditionalType">
+      <xsd:sequence>
+        <xsd:group ref="dsc:conditionalTypeReqFields" minOccurs="0" maxOccurs="1"/>
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:group name="conditionalTypeReqFields">
+      <xsd:sequence>
+        <xsd:element name="fieldName" type="xsd:string"/>
+        <xsd:element name="operator">
+          <xsd:simpleType>
+            <xsd:restriction base="xsd:string">
+              <xsd:enumeration value="eq"/>
+            </xsd:restriction>
+          </xsd:simpleType>
+        </xsd:element>
+        <xsd:element name="value" type="xsd:string"/>
+      </xsd:sequence>
+    </xsd:group>
+</xsd:schema>

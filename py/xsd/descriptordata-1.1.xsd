@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema targetNamespace="http://www.rpath.com/permanent/descriptor/1.0"
+        elementFormDefault="qualified"
+        attributeFormDefault="unqualified"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:dsc="http://www.rpath.com/permanent/descriptor/1.0"
+        xmlns="http://www.rpath.com/permanent/descriptor/1.0">
+
+    <xsd:element name="descriptorData" type="dsc:descriptorDataType" />
+
+    <xsd:complexType name="descriptorDataType">
+      <xsd:sequence>
+        <xsd:any minOccurs="0" />
+      </xsd:sequence>
+      <xsd:anyAttribute />
+    </xsd:complexType>
+</xsd:schema>
+
+
