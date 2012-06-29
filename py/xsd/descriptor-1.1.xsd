@@ -110,8 +110,6 @@
 
     <xsd:complexType name="listTypeType">
       <xsd:sequence>
-        <xsd:element name="constraints" type="dsc:listTypeConstraintsType"
-            minOccurs="0" maxOccurs="1"/>
         <xsd:element name="compoundType" type="dsc:descriptorType"
             minOccurs="1" maxOccurs="1"/>
       </xsd:sequence>
@@ -133,16 +131,8 @@
           <xsd:element name="legalValues" type="dsc:legalValuesType" />
           <xsd:element name="regexp" type="dsc:regexpType" />
           <xsd:element name="length" type="dsc:lengthType" />
+          <xsd:element name="uniqueKey" type="dsc:uniqueKeyType" />
         </xsd:choice>
-      </xsd:sequence>
-    </xsd:complexType>
-
-    <xsd:complexType name="listTypeConstraintsType">
-      <xsd:sequence>
-        <xsd:element name="descriptions" type="dsc:descriptionsType"
-            minOccurs="0" maxOccurs="1" />
-        <xsd:element name="uniqueKey" type="dsc:uniqueKeyType"
-            minOccurs="0" maxOccurs="unbounded"/>
         <xsd:element name="minLength" type="dsc:minLengthType"
             minOccurs="0" maxOccurs="1"/>
         <xsd:element name="maxLength" type="dsc:maxLengthType"

@@ -436,6 +436,22 @@ class DescriptorTest(BaseTest):
         sio = StringIO()
         dsc.serialize(sio)
 
+        # Make sure the uniqueKey and minLength constraints got in the
+        # proper spot
+        sio.seek(0)
+        tree = descriptor.etree.parse(sio)
+        namespaces = dict(
+            dsc="http://www.rpath.com/permanent/descriptor-%s.xsd" % descriptor.constants.version)
+        # Select vhosts
+        constraints = tree.xpath('/dsc:descriptor/dsc:dataFields/dsc:field[dsc:name="vhosts"]/dsc:constraints',
+            namespaces=namespaces)
+        self.assertXMLEquals(descriptor.etree.tostring(constraints[0]),
+            """\
+<constraints xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <uniqueKey>serverName</uniqueKey>
+    <minLength>1</minLength>
+</constraints>""")
+
         # Make sure we can load it
         sio.seek(0)
         dsc2 = descriptor.ConfigurationDescriptor(fromStream=sio)

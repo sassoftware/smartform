@@ -270,16 +270,6 @@ class BaseDescriptor(_BaseClass):
             df.set_type(None)
             df.listType = self._ListType(nodeType)
             df.descriptor = nodeType.dsc
-            if constraints:
-                df.listType.constraints = xmlsubs.listTypeConstraintsTypeSub.factory()
-                df.listType.constraints.fromData(constraints)
-                # Verify we do have the specified field
-                if df.listType.constraints.uniqueKey:
-                    for fname in (x.valueOf_ for x in df.listType.constraints.uniqueKey):
-                        field = df.descriptor.getDataField(fname)
-                        if field is None:
-                            raise errors.InvalidUniqueKey(fname)
-                constraints = None
         elif isinstance(nodeType, list) or hasattr(nodeType, 'describedValue'):
             df.set_type(None)
             df.enumeratedType = self.EnumeratedType(nodeType)

@@ -155,45 +155,12 @@ constraintsTypeMethods = MethodSpec(name = 'constraintsTypeMethods',
             return
         v = cls()
         v.fromData(data)
-        method = getattr(self, 'add_' + potential[0].name)
-        method(v)
-    ''',
-    class_names = r'^constraintsType$',)
-
-listTypeConstraintsTypeMethods = MethodSpec(name = 'listTypeConstraintsTypeMethods',
-    source = '''
-    def presentation(self):
-        ret = []
-        for constraintName in [ 'uniqueKey', 'minLength', 'maxLength' ]:
-            ret.extend(
-                dict(x.presentation(), constraintName=constraintName)
-                    for x in getattr(self, constraintName))
-        return ret
-
-    def fromData(self, dataList):
-        for dataDict in dataList:
-            self._fromData(dataDict)
-
-    def _fromData(self, data):
-        constraintName = data.get('constraintName')
-        if constraintName is None:
-            return
-        potential = [ x for x in self.member_data_items_
-            if x.name == constraintName ]
-        if not potential:
-            return
-        dataType = potential[0].get_data_type()
-        cls = globals().get(dataType)
-        if not cls:
-            return
-        v = cls()
-        v.fromData(data)
         method = getattr(self, 'add_' + potential[0].name, None)
         if method is None:
             method = getattr(self, 'set_' + potential[0].name)
         method(v)
     ''',
-    class_names = r'^listTypeConstraintsType$',)
+    class_names = r'^constraintsType$',)
 
 rangeTypeMethods = MethodSpec(name = 'rangeTypeMethods',
     source = '''
@@ -259,7 +226,6 @@ METHOD_SPECS = (
     fieldsAsDict,
     dataFieldMethods,
     constraintsTypeMethods,
-    listTypeConstraintsTypeMethods,
     rangeTypeMethods,
     legalValuesTypeMethods,
     regexpTypeMethods,

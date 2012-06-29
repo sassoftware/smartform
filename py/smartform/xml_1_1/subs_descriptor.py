@@ -84,8 +84,8 @@ supermod.enumeratedTypeType.subclass = enumeratedTypeTypeSub
 
 
 class listTypeTypeSub(supermod.listTypeType):
-    def __init__(self, constraints=None, compoundType=None):
-        supermod.listTypeType.__init__(self, constraints, compoundType)
+    def __init__(self, compoundType=None):
+        supermod.listTypeType.__init__(self, compoundType)
 supermod.listTypeType.subclass = listTypeTypeSub
 # end class listTypeTypeSub
 
@@ -98,17 +98,10 @@ supermod.describedValueType.subclass = describedValueTypeSub
 
 
 class constraintsTypeSub(supermod.constraintsType):
-    def __init__(self, descriptions=None, range=None, legalValues=None, regexp=None, length=None):
-        supermod.constraintsType.__init__(self, descriptions, range, legalValues, regexp, length)
+    def __init__(self, descriptions=None, range=None, legalValues=None, regexp=None, length=None, uniqueKey=None, minLength=None, maxLength=None):
+        supermod.constraintsType.__init__(self, descriptions, range, legalValues, regexp, length, uniqueKey, minLength, maxLength)
 supermod.constraintsType.subclass = constraintsTypeSub
 # end class constraintsTypeSub
-
-
-class listTypeConstraintsTypeSub(supermod.listTypeConstraintsType):
-    def __init__(self, descriptions=None, uniqueKey=None, minLength=None, maxLength=None):
-        supermod.listTypeConstraintsType.__init__(self, descriptions, uniqueKey, minLength, maxLength)
-supermod.listTypeConstraintsType.subclass = listTypeConstraintsTypeSub
-# end class listTypeConstraintsTypeSub
 
 
 class rangeTypeSub(supermod.rangeType):

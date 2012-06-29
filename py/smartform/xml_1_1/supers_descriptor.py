@@ -1354,13 +1354,11 @@ class enumeratedTypeType(GeneratedsSuper):
 
 class listTypeType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('constraints', 'listTypeConstraintsType', 0),
         MemberSpec_('compoundType', 'descriptorType', 0),
         ]
     subclass = None
     superclass = None
-    def __init__(self, constraints=None, compoundType=None):
-        self.constraints = constraints
+    def __init__(self, compoundType=None):
         self.compoundType = compoundType
     def factory(*args_, **kwargs_):
         if listTypeType.subclass:
@@ -1368,8 +1366,6 @@ class listTypeType(GeneratedsSuper):
         else:
             return listTypeType(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_constraints(self): return self.constraints
-    def set_constraints(self, constraints): self.constraints = constraints
     def get_compoundType(self): return self.compoundType
     def set_compoundType(self, compoundType): self.compoundType = compoundType
     def export(self, outfile, level, namespace_='dsc:', name_='listTypeType', namespacedef_=''):
@@ -1386,13 +1382,10 @@ class listTypeType(GeneratedsSuper):
     def exportAttributes(self, outfile, level, namespace_='dsc:', name_='listTypeType'):
         pass
     def exportChildren(self, outfile, level, namespace_='dsc:', name_='listTypeType'):
-        if self.constraints:
-            self.constraints.export(outfile, level, namespace_, name_='constraints')
         if self.compoundType:
             self.compoundType.export(outfile, level, namespace_, name_='compoundType', )
     def hasContent_(self):
         if (
-            self.constraints is not None or
             self.compoundType is not None
             ):
             return True
@@ -1406,12 +1399,6 @@ class listTypeType(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
-        if self.constraints is not None:
-            showIndent(outfile, level)
-            outfile.write('constraints=model_.listTypeConstraintsType(\n')
-            self.constraints.exportLiteral(outfile, level, name_='constraints')
-            showIndent(outfile, level)
-            outfile.write('),\n')
         if self.compoundType is not None:
             showIndent(outfile, level)
             outfile.write('compoundType=model_.descriptorType(\n')
@@ -1428,11 +1415,6 @@ class listTypeType(GeneratedsSuper):
         pass
     def buildChildren(self, child_, nodeName_):
         if child_.nodeType == Node.ELEMENT_NODE and \
-            nodeName_ == 'constraints':
-            obj_ = listTypeConstraintsType.factory()
-            obj_.build(child_)
-            self.set_constraints(obj_)
-        elif child_.nodeType == Node.ELEMENT_NODE and \
             nodeName_ == 'compoundType':
             obj_ = descriptorType.factory()
             obj_.build(child_)
@@ -1534,10 +1516,13 @@ class constraintsType(GeneratedsSuper):
         MemberSpec_('legalValues', 'legalValuesType', 1),
         MemberSpec_('regexp', 'regexpType', 1),
         MemberSpec_('length', 'lengthType', 1),
+        MemberSpec_('uniqueKey', 'uniqueKeyType', 1),
+        MemberSpec_('minLength', 'minLengthType', 0),
+        MemberSpec_('maxLength', 'maxLengthType', 0),
         ]
     subclass = None
     superclass = None
-    def __init__(self, descriptions=None, range=None, legalValues=None, regexp=None, length=None):
+    def __init__(self, descriptions=None, range=None, legalValues=None, regexp=None, length=None, uniqueKey=None, minLength=None, maxLength=None):
         self.descriptions = descriptions
         if range is None:
             self.range = []
@@ -1555,6 +1540,12 @@ class constraintsType(GeneratedsSuper):
             self.length = []
         else:
             self.length = length
+        if uniqueKey is None:
+            self.uniqueKey = []
+        else:
+            self.uniqueKey = uniqueKey
+        self.minLength = minLength
+        self.maxLength = maxLength
     def factory(*args_, **kwargs_):
         if constraintsType.subclass:
             return constraintsType.subclass(*args_, **kwargs_)
@@ -1579,6 +1570,14 @@ class constraintsType(GeneratedsSuper):
     def set_length(self, length): self.length = length
     def add_length(self, value): self.length.append(value)
     def insert_length(self, index, value): self.length[index] = value
+    def get_uniqueKey(self): return self.uniqueKey
+    def set_uniqueKey(self, uniqueKey): self.uniqueKey = uniqueKey
+    def add_uniqueKey(self, value): self.uniqueKey.append(value)
+    def insert_uniqueKey(self, index, value): self.uniqueKey[index] = value
+    def get_minLength(self): return self.minLength
+    def set_minLength(self, minLength): self.minLength = minLength
+    def get_maxLength(self): return self.maxLength
+    def set_maxLength(self, maxLength): self.maxLength = maxLength
     def export(self, outfile, level, namespace_='dsc:', name_='constraintsType', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -1603,13 +1602,22 @@ class constraintsType(GeneratedsSuper):
             regexp_.export(outfile, level, namespace_, name_='regexp')
         for length_ in self.length:
             length_.export(outfile, level, namespace_, name_='length')
+        for uniqueKey_ in self.uniqueKey:
+            uniqueKey_.export(outfile, level, namespace_, name_='uniqueKey')
+        if self.minLength:
+            self.minLength.export(outfile, level, namespace_, name_='minLength')
+        if self.maxLength:
+            self.maxLength.export(outfile, level, namespace_, name_='maxLength')
     def hasContent_(self):
         if (
             self.descriptions is not None or
             self.range or
             self.legalValues or
             self.regexp or
-            self.length
+            self.length or
+            self.uniqueKey or
+            self.minLength is not None or
+            self.maxLength is not None
             ):
             return True
         else:
@@ -1676,151 +1684,6 @@ class constraintsType(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
-    def build(self, node_):
-        attrs = node_.attributes
-        self.buildAttributes(attrs)
-        for child_ in node_.childNodes:
-            nodeName_ = child_.nodeName.split(':')[-1]
-            self.buildChildren(child_, nodeName_)
-    def buildAttributes(self, attrs):
-        pass
-    def buildChildren(self, child_, nodeName_):
-        if child_.nodeType == Node.ELEMENT_NODE and \
-            nodeName_ == 'descriptions':
-            obj_ = descriptionsType.factory()
-            obj_.build(child_)
-            self.set_descriptions(obj_)
-        elif child_.nodeType == Node.ELEMENT_NODE and \
-            nodeName_ == 'range':
-            obj_ = rangeType.factory()
-            obj_.build(child_)
-            self.range.append(obj_)
-        elif child_.nodeType == Node.ELEMENT_NODE and \
-            nodeName_ == 'legalValues':
-            obj_ = legalValuesType.factory()
-            obj_.build(child_)
-            self.legalValues.append(obj_)
-        elif child_.nodeType == Node.ELEMENT_NODE and \
-            nodeName_ == 'regexp':
-            obj_ = regexpType.factory()
-            obj_.build(child_)
-            self.regexp.append(obj_)
-        elif child_.nodeType == Node.ELEMENT_NODE and \
-            nodeName_ == 'length':
-            obj_ = lengthType.factory()
-            obj_.build(child_)
-            self.length.append(obj_)
-
-    def presentation(self):
-        ret = []
-        for constraintName in [ 'range', 'legalValues', 'regexp', 'length' ]:
-            ret.extend(
-                dict(x.presentation(), constraintName=constraintName)
-                    for x in getattr(self, constraintName))
-        return ret
-
-    def fromData(self, dataList):
-        for dataDict in dataList:
-            self._fromData(dataDict)
-
-    def _fromData(self, data):
-        constraintName = data.get('constraintName')
-        if constraintName is None:
-            return
-        potential = [ x for x in self.member_data_items_
-            if x.name == constraintName ]
-        if not potential:
-            return
-        dataType = potential[0].get_data_type()
-        cls = globals().get(dataType)
-        if not cls:
-            return
-        v = cls()
-        v.fromData(data)
-        method = getattr(self, 'add_' + potential[0].name)
-        method(v)
-    # end class constraintsType
-
-
-class listTypeConstraintsType(GeneratedsSuper):
-    member_data_items_ = [
-        MemberSpec_('descriptions', 'descriptionsType', 0),
-        MemberSpec_('uniqueKey', 'uniqueKeyType', 1),
-        MemberSpec_('minLength', 'minLengthType', 0),
-        MemberSpec_('maxLength', 'maxLengthType', 0),
-        ]
-    subclass = None
-    superclass = None
-    def __init__(self, descriptions=None, uniqueKey=None, minLength=None, maxLength=None):
-        self.descriptions = descriptions
-        if uniqueKey is None:
-            self.uniqueKey = []
-        else:
-            self.uniqueKey = uniqueKey
-        self.minLength = minLength
-        self.maxLength = maxLength
-    def factory(*args_, **kwargs_):
-        if listTypeConstraintsType.subclass:
-            return listTypeConstraintsType.subclass(*args_, **kwargs_)
-        else:
-            return listTypeConstraintsType(*args_, **kwargs_)
-    factory = staticmethod(factory)
-    def get_descriptions(self): return self.descriptions
-    def set_descriptions(self, descriptions): self.descriptions = descriptions
-    def get_uniqueKey(self): return self.uniqueKey
-    def set_uniqueKey(self, uniqueKey): self.uniqueKey = uniqueKey
-    def add_uniqueKey(self, value): self.uniqueKey.append(value)
-    def insert_uniqueKey(self, index, value): self.uniqueKey[index] = value
-    def get_minLength(self): return self.minLength
-    def set_minLength(self, minLength): self.minLength = minLength
-    def get_maxLength(self): return self.maxLength
-    def set_maxLength(self, maxLength): self.maxLength = maxLength
-    def export(self, outfile, level, namespace_='dsc:', name_='listTypeConstraintsType', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='listTypeConstraintsType')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, namespace_='dsc:', name_='listTypeConstraintsType'):
-        pass
-    def exportChildren(self, outfile, level, namespace_='dsc:', name_='listTypeConstraintsType'):
-        if self.descriptions:
-            self.descriptions.export(outfile, level, namespace_, name_='descriptions')
-        for uniqueKey_ in self.uniqueKey:
-            uniqueKey_.export(outfile, level, namespace_, name_='uniqueKey')
-        if self.minLength:
-            self.minLength.export(outfile, level, namespace_, name_='minLength')
-        if self.maxLength:
-            self.maxLength.export(outfile, level, namespace_, name_='maxLength')
-    def hasContent_(self):
-        if (
-            self.descriptions is not None or
-            self.uniqueKey or
-            self.minLength is not None or
-            self.maxLength is not None
-            ):
-            return True
-        else:
-            return False
-    def exportLiteral(self, outfile, level, name_='listTypeConstraintsType'):
-        level += 1
-        self.exportLiteralAttributes(outfile, level, name_)
-        if self.hasContent_():
-            self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, name_):
-        pass
-    def exportLiteralChildren(self, outfile, level, name_):
-        if self.descriptions is not None:
-            showIndent(outfile, level)
-            outfile.write('descriptions=model_.descriptionsType(\n')
-            self.descriptions.exportLiteral(outfile, level, name_='descriptions')
-            showIndent(outfile, level)
-            outfile.write('),\n')
         showIndent(outfile, level)
         outfile.write('uniqueKey=[\n')
         level += 1
@@ -1860,6 +1723,26 @@ class listTypeConstraintsType(GeneratedsSuper):
             obj_.build(child_)
             self.set_descriptions(obj_)
         elif child_.nodeType == Node.ELEMENT_NODE and \
+            nodeName_ == 'range':
+            obj_ = rangeType.factory()
+            obj_.build(child_)
+            self.range.append(obj_)
+        elif child_.nodeType == Node.ELEMENT_NODE and \
+            nodeName_ == 'legalValues':
+            obj_ = legalValuesType.factory()
+            obj_.build(child_)
+            self.legalValues.append(obj_)
+        elif child_.nodeType == Node.ELEMENT_NODE and \
+            nodeName_ == 'regexp':
+            obj_ = regexpType.factory()
+            obj_.build(child_)
+            self.regexp.append(obj_)
+        elif child_.nodeType == Node.ELEMENT_NODE and \
+            nodeName_ == 'length':
+            obj_ = lengthType.factory()
+            obj_.build(child_)
+            self.length.append(obj_)
+        elif child_.nodeType == Node.ELEMENT_NODE and \
             nodeName_ == 'uniqueKey':
             obj_ = uniqueKeyType.factory()
             obj_.build(child_)
@@ -1877,7 +1760,7 @@ class listTypeConstraintsType(GeneratedsSuper):
 
     def presentation(self):
         ret = []
-        for constraintName in [ 'uniqueKey', 'minLength', 'maxLength' ]:
+        for constraintName in [ 'range', 'legalValues', 'regexp', 'length' ]:
             ret.extend(
                 dict(x.presentation(), constraintName=constraintName)
                     for x in getattr(self, constraintName))
@@ -1905,7 +1788,7 @@ class listTypeConstraintsType(GeneratedsSuper):
         if method is None:
             method = getattr(self, 'set_' + potential[0].name)
         method(v)
-    # end class listTypeConstraintsType
+    # end class constraintsType
 
 
 class rangeType(GeneratedsSuper):
