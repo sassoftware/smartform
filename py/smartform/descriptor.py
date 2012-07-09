@@ -120,6 +120,16 @@ class _BaseClass(object):
         tree.write(stream, encoding = 'UTF-8', pretty_print = True,
             xml_declaration = True)
 
+    def toxml(self, validate=True):
+        """
+        Serialize the current object as an XML string.
+        """
+
+        out = StringIO.StringIO()
+        self.serialize(out, validate=validate)
+        out.seek(0)
+        return out.read()
+
     def getElementTree(self, validate=True):
 
         attrs = [
