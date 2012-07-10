@@ -102,9 +102,7 @@ class DescriptorTest(BaseTest):
                      values = ['Foo', 'Bar', 'Baz']),
             ])
 
-        sio = StringIO()
-        dsc.serialize(sio)
-        self.assertXMLEquals(sio.getvalue(), xmlDescriptor1)
+        self.assertXMLEquals(dsc.toxml(), xmlDescriptor1)
 
         self.failUnlessEqual([ x.helpAsDict
                 for x in dsc.getDataFields() ],
@@ -144,9 +142,7 @@ class DescriptorTest(BaseTest):
         dsc.addDataField('cloudType', type = 'str',
             descriptions = [('field msg in lang 1', 'lang1'),
                 ('field msg in lang 2', 'lang2'), 'Default lang'])
-        sio = StringIO()
-        dsc.serialize(sio)
-        self.assertXMLEquals(sio.getvalue(), """
+        self.assertXMLEquals(dsc.toxml(), """
 <descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd" id="Some-ID" version="1.1">
     <metadata>
         <displayName>Cloud Information</displayName>

@@ -127,8 +127,7 @@ class _BaseClass(object):
 
         out = StringIO.StringIO()
         self.serialize(out, validate=validate)
-        out.seek(0)
-        return out.read()
+        return out.getvalue()
 
     def getElementTree(self, validate=True):
 
