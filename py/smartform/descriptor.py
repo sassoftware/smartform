@@ -15,6 +15,7 @@ import constants
 ProtectedUnicode = dnodes.ProtectedUnicode
 
 class _BaseClass(object):
+    __slots__ = ['_validate', 'schemaDir', '_rootObj', ]
     version = constants.version
     defaultNamespace = constants.defaultNamespaceList[0]
     xmlSchemaNamespace = constants.xmlSchemaNamespace
@@ -186,6 +187,7 @@ class _BaseClass(object):
         return bsio
 
 class BaseDescriptor(_BaseClass):
+    __slots__ = []
     ClassFactoryName = 'descriptorTypeSub'
     RootNode = 'descriptor'
 
@@ -419,6 +421,7 @@ class BaseDescriptor(_BaseClass):
 
 class DescriptorData(_BaseClass):
     "Class for representing the descriptor data"
+    __slots__ = [ '_descriptor', '_rootElement', '_fields', '_fieldsMap', ]
 
     def __init__(self, fromStream = None, validate = True, descriptor = None,
             rootElement=None):
@@ -637,12 +640,14 @@ class DescriptorData(_BaseClass):
 
 class ConfigurationDescriptor(BaseDescriptor):
     "Class for representing the configuration descriptor definition"
+    __slots__ = []
 
 
 class SystemConfigurationDescriptor(BaseDescriptor):
     """
     Class for representing configuration descriptors for systems.
     """
+    __slots__ = []
 
     RootNode = 'configuration_descriptor'
 
@@ -651,5 +656,6 @@ class FactoryDescriptor(BaseDescriptor):
     """
     Class for representing factory descriptors.
     """
+    __slots__ = []
 
     RootNode = 'factory'

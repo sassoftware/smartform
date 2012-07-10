@@ -9,12 +9,14 @@ import descriptor_errors as errors
 
 class ProtectedUnicode(unicode):
     """A string that is not printed in tracebacks"""
+    __slots__ = []
     def __safe_str__(self):
         return "<Protected Value>"
 
     __repr__ = __safe_str__
 
 class ListField(list):
+    __slots__ = []
     def checkConstraints(self, raiseException=True):
         ret = []
         for x in self:
