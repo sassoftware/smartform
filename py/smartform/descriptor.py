@@ -82,6 +82,8 @@ class _BaseClass(object):
     def setId(self, id):
         self._rootObj.set_id(id)
 
+    id = property(getId, setId)
+
     @classmethod
     def loadModule(cls, version):
         moduleName = "xml_%s.subs_%s" % (version.replace('.', '_'),
@@ -473,6 +475,11 @@ class DescriptorData(_BaseClass):
 
     def setId(self, id):
         self._rootObj.attrib['id'] = id
+
+    def getId(self):
+        return self._rootObj.attrib.get('id')
+
+    id = property(getId, setId)
 
     def _postinit(self):
         pass
