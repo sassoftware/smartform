@@ -844,7 +844,7 @@ class dataFieldType(GeneratedsSuper):
         MemberSpec_('type_', 'xsd:string', 0),
         MemberSpec_('enumeratedType', 'enumeratedTypeType', 0),
         MemberSpec_('listType', 'listTypeType', 0),
-        MemberSpec_('compoundType', 'descriptorType', 0),
+        MemberSpec_('descriptor', 'descriptorType', 0),
         MemberSpec_('multiple', 'xsd:boolean', 0),
         MemberSpec_('default', 'xsd:string', 1),
         MemberSpec_('constraints', 'constraintsType', 0),
@@ -858,7 +858,7 @@ class dataFieldType(GeneratedsSuper):
         ]
     subclass = None
     superclass = None
-    def __init__(self, name=None, descriptions=None, help=None, type_=None, enumeratedType=None, listType=None, compoundType=None, multiple=None, default=None, constraints=None, required=None, allowFileContent=None, hidden=None, password=None, readonly=None, conditional=None, prompt=None):
+    def __init__(self, name=None, descriptions=None, help=None, type_=None, enumeratedType=None, listType=None, descriptor=None, multiple=None, default=None, constraints=None, required=None, allowFileContent=None, hidden=None, password=None, readonly=None, conditional=None, prompt=None):
         self.name = name
         self.descriptions = descriptions
         if help is None:
@@ -868,7 +868,7 @@ class dataFieldType(GeneratedsSuper):
         self.type_ = type_
         self.enumeratedType = enumeratedType
         self.listType = listType
-        self.compoundType = compoundType
+        self.descriptor = descriptor
         self.multiple = multiple
         if default is None:
             self.default = []
@@ -902,8 +902,8 @@ class dataFieldType(GeneratedsSuper):
     def set_enumeratedType(self, enumeratedType): self.enumeratedType = enumeratedType
     def get_listType(self): return self.listType
     def set_listType(self, listType): self.listType = listType
-    def get_compoundType(self): return self.compoundType
-    def set_compoundType(self, compoundType): self.compoundType = compoundType
+    def get_descriptor(self): return self.descriptor
+    def set_descriptor(self, descriptor): self.descriptor = descriptor
     def get_multiple(self): return self.multiple
     def set_multiple(self, multiple): self.multiple = multiple
     def get_default(self): return self.default
@@ -953,9 +953,9 @@ class dataFieldType(GeneratedsSuper):
         if self.enumeratedType:
             self.enumeratedType.export(outfile, level, namespace_, name_='enumeratedType')
         if self.listType:
-            self.listType.export(outfile, level, namespace_, name_='listType', )
-        if self.compoundType:
-            self.compoundType.export(outfile, level, namespace_, name_='compoundType', )
+            self.listType.export(outfile, level, namespace_, name_='listType')
+        if self.descriptor:
+            self.descriptor.export(outfile, level, namespace_, name_='descriptor')
         if self.multiple is not None:
             showIndent(outfile, level)
             outfile.write('<%smultiple>%s</%smultiple>\n' % (namespace_, self.format_boolean(str_lower(str(self.multiple)), input_name='multiple'), namespace_))
@@ -991,7 +991,7 @@ class dataFieldType(GeneratedsSuper):
             self.type_ is not None or
             self.enumeratedType is not None or
             self.listType is not None or
-            self.compoundType is not None or
+            self.descriptor is not None or
             self.multiple is not None or
             self.default or
             self.constraints is not None or
@@ -1050,10 +1050,10 @@ class dataFieldType(GeneratedsSuper):
             self.listType.exportLiteral(outfile, level, name_='listType')
             showIndent(outfile, level)
             outfile.write('),\n')
-        if self.compoundType is not None:
+        if self.descriptor is not None:
             showIndent(outfile, level)
-            outfile.write('compoundType=model_.descriptorType(\n')
-            self.compoundType.exportLiteral(outfile, level, name_='compoundType')
+            outfile.write('descriptor=model_.descriptorType(\n')
+            self.descriptor.exportLiteral(outfile, level, name_='descriptor')
             showIndent(outfile, level)
             outfile.write('),\n')
         if self.multiple is not None:
@@ -1143,10 +1143,10 @@ class dataFieldType(GeneratedsSuper):
             obj_.build(child_)
             self.set_listType(obj_)
         elif child_.nodeType == Node.ELEMENT_NODE and \
-            nodeName_ == 'compoundType':
+            nodeName_ == 'descriptor':
             obj_ = descriptorType.factory()
             obj_.build(child_)
-            self.set_compoundType(obj_)
+            self.set_descriptor(obj_)
         elif child_.nodeType == Node.ELEMENT_NODE and \
             nodeName_ == 'multiple':
             if child_.firstChild:
@@ -1354,20 +1354,20 @@ class enumeratedTypeType(GeneratedsSuper):
 
 class listTypeType(GeneratedsSuper):
     member_data_items_ = [
-        MemberSpec_('compoundType', 'descriptorType', 0),
+        MemberSpec_('descriptor', 'descriptorType', 0),
         ]
     subclass = None
     superclass = None
-    def __init__(self, compoundType=None):
-        self.compoundType = compoundType
+    def __init__(self, descriptor=None):
+        self.descriptor = descriptor
     def factory(*args_, **kwargs_):
         if listTypeType.subclass:
             return listTypeType.subclass(*args_, **kwargs_)
         else:
             return listTypeType(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_compoundType(self): return self.compoundType
-    def set_compoundType(self, compoundType): self.compoundType = compoundType
+    def get_descriptor(self): return self.descriptor
+    def set_descriptor(self, descriptor): self.descriptor = descriptor
     def export(self, outfile, level, namespace_='dsc:', name_='listTypeType', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -1382,11 +1382,11 @@ class listTypeType(GeneratedsSuper):
     def exportAttributes(self, outfile, level, namespace_='dsc:', name_='listTypeType'):
         pass
     def exportChildren(self, outfile, level, namespace_='dsc:', name_='listTypeType'):
-        if self.compoundType:
-            self.compoundType.export(outfile, level, namespace_, name_='compoundType', )
+        if self.descriptor:
+            self.descriptor.export(outfile, level, namespace_, name_='descriptor', )
     def hasContent_(self):
         if (
-            self.compoundType is not None
+            self.descriptor is not None
             ):
             return True
         else:
@@ -1399,10 +1399,10 @@ class listTypeType(GeneratedsSuper):
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
-        if self.compoundType is not None:
+        if self.descriptor is not None:
             showIndent(outfile, level)
-            outfile.write('compoundType=model_.descriptorType(\n')
-            self.compoundType.exportLiteral(outfile, level, name_='compoundType')
+            outfile.write('descriptor=model_.descriptorType(\n')
+            self.descriptor.exportLiteral(outfile, level, name_='descriptor')
             showIndent(outfile, level)
             outfile.write('),\n')
     def build(self, node_):
@@ -1415,10 +1415,10 @@ class listTypeType(GeneratedsSuper):
         pass
     def buildChildren(self, child_, nodeName_):
         if child_.nodeType == Node.ELEMENT_NODE and \
-            nodeName_ == 'compoundType':
+            nodeName_ == 'descriptor':
             obj_ = descriptorType.factory()
             obj_.build(child_)
-            self.set_compoundType(obj_)
+            self.set_descriptor(obj_)
 # end class listTypeType
 
 

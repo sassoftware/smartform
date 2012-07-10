@@ -45,7 +45,7 @@ class _DescriptorDataField(object):
         errorList = []
         descriptions = nodeDescriptor.get_descriptions()
         defaultLangDesc = descriptions.asDict().get(None)
-        if nodeDescriptor.compoundType:
+        if nodeDescriptor.descriptor:
             errorList.extend(self._checkConstraintsCompoundType(
                 nodeDescriptor.descriptor, node))
         elif nodeDescriptor.listType:

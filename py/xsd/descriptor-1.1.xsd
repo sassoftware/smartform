@@ -70,13 +70,13 @@
             minOccurs="0" maxOccurs="1" />
         <xsd:element name="help" type="dsc:helpType"
             minOccurs="0" maxOccurs="unbounded"/>
-        <xsd:choice minOccurs="1" maxOccurs="1">
-          <xsd:element name="type" type="xsd:string"
-              minOccurs="0" maxOccurs="1" />
+        <xsd:element name="type" type="xsd:string"
+            minOccurs="0" maxOccurs="1" />
+        <xsd:choice minOccurs="0" maxOccurs="1">
           <xsd:element name="enumeratedType" type="dsc:enumeratedTypeType"
               minOccurs="0" maxOccurs="1" />
           <xsd:element name="listType" type="dsc:listTypeType" />
-          <xsd:element name="compoundType" type="dsc:descriptorType" />
+          <xsd:element name="descriptor" type="dsc:descriptorType" />
         </xsd:choice>
         <xsd:element name="multiple" type="xsd:boolean"
             minOccurs="0" maxOccurs="1" />
@@ -110,7 +110,7 @@
 
     <xsd:complexType name="listTypeType">
       <xsd:sequence>
-        <xsd:element name="compoundType" type="dsc:descriptorType"
+        <xsd:element name="descriptor" type="dsc:descriptorType"
             minOccurs="1" maxOccurs="1"/>
       </xsd:sequence>
     </xsd:complexType>

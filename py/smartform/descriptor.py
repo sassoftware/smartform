@@ -234,6 +234,7 @@ class BaseDescriptor(_BaseClass):
             self._rootObj.dataFields.add_field(dataField)
         else:
             self._rootObj.dataFields.field.insert(index, dataField)
+        self._postprocessField(dataField)
 
     def addDataField(self, name, **kwargs):
         xmlsubs = self.xmlFactory()
@@ -269,20 +270,17 @@ class BaseDescriptor(_BaseClass):
             # value
             raise errors.MissingDefaultValue()
         if isinstance(nodeType, self.CompoundType):
-            df.set_type(None)
-            df.compoundType = nodeType.getValue()
+            df.set_descriptor(nodeType.getValue())
             # One should acess the data field via the descriptor
             # property, in order to get access to methods like
             # getDataField()
-            df.descriptor = nodeType.dsc
+            df._descriptor = nodeType.dsc
         elif isinstance(nodeType, self.ListType):
             if not nodeType.dsc.getRootElement():
                 raise errors.MissingRootElement()
-            df.set_type(None)
-            df.listType = self._ListType(nodeType)
-            df.descriptor = nodeType.dsc
+            df.set_listType(self._ListType(nodeType))
+            df._descriptor = nodeType.dsc
         elif isinstance(nodeType, list) or hasattr(nodeType, 'describedValue'):
-            df.set_type(None)
             df.enumeratedType = self.EnumeratedType(nodeType)
             if default is not None:
                 properKeys = set(x.key for x in df.enumeratedType.get_describedValue())
@@ -305,6 +303,14 @@ class BaseDescriptor(_BaseClass):
         df.password = kwargs.get('password')
         df.conditional = kwargs.get('conditional')
         return self.addDataFieldRaw(df, index=kwargs.get('index'))
+
+    def _postprocessField(self, df):
+        if df.enumeratedType is not None:
+            df.set_type('enumeratedType')
+        elif df.listType is not None:
+            df.set_type('listType')
+        elif df.descriptor is not None:
+            df.set_type('compoundType')
 
     def deleteDataField(self, name):
         if self._rootObj.dataFields is None:
@@ -355,7 +361,7 @@ class BaseDescriptor(_BaseClass):
 
     def _ListType(self, compoundType):
         ret = self.xmlFactory().listTypeTypeSub.factory()
-        ret.set_compoundType(compoundType.getValue())
+        ret.set_descriptor(compoundType.getValue())
         return ret
 
     class ListType(object):
@@ -445,6 +451,11 @@ class DescriptorData(_BaseClass):
     def _getSchemaVersion(self):
         return self._rootObj.attrib.get('version', self.__class__.version)
 
+    def _postprocess(self, validate=True):
+        super(BaseDescriptor, self)._postprocess(validate=validate)
+        for field in self.getDataFields():
+            self._postprocessField(field)
+
     def parseStream(self, fromStream, validate = False, schemaDir = None):
         if isinstance(fromStream, (str, unicode)):
             self._rootObj = etree.fromstring(fromStream)
@@ -479,13 +490,13 @@ class DescriptorData(_BaseClass):
                 continue
             if fieldDesc.listType:
                 field = dnodes.ListField()
-                childName = fieldDesc.descriptor.getRootElement()
+                childName = fieldDesc._descriptor.getRootElement()
                 for csub in child.iterchildren(childName):
                     field.append(DescriptorData(fromStream=csub,
-                    descriptor=fieldDesc.descriptor, rootElement=childName))
-            elif fieldDesc.compoundType:
+                    descriptor=fieldDesc._descriptor, rootElement=childName))
+            elif fieldDesc.descriptor:
                 field = DescriptorData(fromStream=child,
-                    descriptor=fieldDesc.descriptor, rootElement=nodeName)
+                    descriptor=fieldDesc._descriptor, rootElement=nodeName)
             else:
                 # Disable constraint checking, we will do it at the end
                 field = dnodes._DescriptorDataField(child, fieldDesc,
@@ -535,12 +546,12 @@ class DescriptorData(_BaseClass):
 
         elm = etree.SubElement(parent, name)
         field = None
-        if fdesc.compoundType:
-            subdesc = fdesc.descriptor
+        if fdesc.descriptor:
+            subdesc = fdesc._descriptor
             field = self._addCompoundTypeField(subdesc, elm, value)
         elif fdesc.listType:
             elm.attrib['list'] = 'true'
-            subdesc = fdesc.descriptor
+            subdesc = fdesc._descriptor
             subName = subdesc.getRootElement()
             field = dnodes.ListField()
             for val in value:

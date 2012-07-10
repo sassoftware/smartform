@@ -70,8 +70,8 @@ supermod.helpType.subclass = helpTypeSub
 
 
 class dataFieldTypeSub(supermod.dataFieldType):
-    def __init__(self, name=None, descriptions=None, help=None, type_=None, enumeratedType=None, listType=None, compoundType=None, multiple=None, default=None, constraints=None, required=None, allowFileContent=None, hidden=None, password=None, readonly=None, conditional=None, prompt=None):
-        supermod.dataFieldType.__init__(self, name, descriptions, help, type_, enumeratedType, listType, compoundType, multiple, default, constraints, required, allowFileContent, hidden, password, readonly, conditional, prompt)
+    def __init__(self, name=None, descriptions=None, help=None, type_=None, enumeratedType=None, listType=None, descriptor=None, multiple=None, default=None, constraints=None, required=None, allowFileContent=None, hidden=None, password=None, readonly=None, conditional=None, prompt=None):
+        supermod.dataFieldType.__init__(self, name, descriptions, help, type_, enumeratedType, listType, descriptor, multiple, default, constraints, required, allowFileContent, hidden, password, readonly, conditional, prompt)
 supermod.dataFieldType.subclass = dataFieldTypeSub
 # end class dataFieldTypeSub
 
@@ -84,8 +84,8 @@ supermod.enumeratedTypeType.subclass = enumeratedTypeTypeSub
 
 
 class listTypeTypeSub(supermod.listTypeType):
-    def __init__(self, compoundType=None):
-        supermod.listTypeType.__init__(self, compoundType)
+    def __init__(self, descriptor=None):
+        supermod.listTypeType.__init__(self, descriptor)
 supermod.listTypeType.subclass = listTypeTypeSub
 # end class listTypeTypeSub
 

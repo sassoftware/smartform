@@ -1203,6 +1203,7 @@ xmlDescriptor2 = """<?xml version="1.0" encoding="UTF-8"?>
       <descriptions>
         <desc>Multi Field</desc>
       </descriptions>
+      <type>enumeratedType</type>
       <enumeratedType>
         <describedValue>
           <descriptions>
@@ -1229,6 +1230,7 @@ newDescriptorField = """\
       <descriptions>
         <desc>foo</desc>
       </descriptions>
+      <type>enumeratedType</type>
       <enumeratedType>
         <describedValue>
           <descriptions>
@@ -1483,6 +1485,7 @@ xmlDescriptorConditional2 = """\
     <field>
       <name>switchField</name>
       <descriptions><desc>Conditionals will use this field as a switch</desc></descriptions>
+      <type>enumeratedType</type>
       <enumeratedType>
         <describedValue>
           <descriptions><desc>Description for 0</desc></descriptions>
@@ -1499,6 +1502,7 @@ xmlDescriptorConditional2 = """\
     <field>
       <name>cond-0</name>
       <descriptions/>
+      <type>enumeratedType</type>
       <enumeratedType>
         <describedValue>
           <descriptions><desc>Description for 0-0</desc></descriptions>
@@ -1524,6 +1528,7 @@ xmlDescriptorConditional2 = """\
     <field>
       <name>cond-1</name>
       <descriptions/>
+      <type>enumeratedType</type>
       <enumeratedType>
         <describedValue>
           <descriptions><desc>Description for 1-0</desc></descriptions>
