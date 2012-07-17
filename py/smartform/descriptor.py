@@ -340,18 +340,17 @@ class BaseDescriptor(_BaseClass):
         if values is None:
             return None
         if isinstance(values, dict):
-            langMap = values
-        else:
-            if not isinstance(values, list):
-                values = [ values ]
-            # Eliminate duplicates
-            langMap = {}
-            for val in values:
-                if isinstance(val, (str, unicode)):
-                    val = self.Description(val)
-                elif isinstance(val, tuple):
-                    val = self.Description(val[0], val[1])
-                langMap[val.get_lang()] = val
+            values = values.items()
+        if not isinstance(values, list):
+            values = [ values ]
+        # Eliminate duplicates
+        langMap = {}
+        for val in values:
+            if isinstance(val, (str, unicode)):
+                val = self.Description(val)
+            elif isinstance(val, tuple):
+                val = self.Description(val[0], val[1])
+            langMap[val.get_lang()] = val
         ret = self.xmlFactory().descriptionsTypeSub.factory()
         ret.set_desc([ x[1] for x in sorted(langMap.items()) ])
         return ret
