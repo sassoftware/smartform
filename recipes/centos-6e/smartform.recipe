@@ -11,7 +11,7 @@
 #
 
 loadSuperClass('rpathpackage')
-
+loadInstalled('python-conary')
 class Smartform(RpathPackageRecipe):
     name = 'smartform'
     version = '0'
