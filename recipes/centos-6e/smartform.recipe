@@ -56,7 +56,7 @@ class Smartform(RpathPackageRecipe):
                 contents='%r\n' % configuration)
 
             # run the tests
-            r.macros.sitepkgs = Python.sitepkgs
+            r.macros.sitepkgs = PythonConary.sitepkgs
             r.Make('test TESTOUTPUTDIR=%(destdir)s%(testoutputdir)s TESTCOVERAGEDIR=%(destdir)s%(coverdir)s COVERAGEDUMP=coverage_dump', preMake='CONARY_PATH=%(sitepkgs)s COVERAGE_PATH=%(sitepkgs)s')
             #r.Install('as3/smartform-test/bin-debug/test/output/*.xml', '%(testoutputdir)s')
 
