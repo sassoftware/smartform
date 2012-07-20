@@ -29,8 +29,10 @@ class Smartform(RpathPackageRecipe):
     def setup(r):
         r.rpathSetup()
         r.addMercurialSnapshot('http://scc.eng.rpath.com/products/smartform/trunk/smartform')
-        r.Replace('export prefix = /usr' , 'export prefix = /usr/conary', 'Make.defs')
-        r.Replace('export datadir = $(prefix)/share' , 'export datadir = /usr/share', 'Make.defs')
+        r.Replace('export prefix = /usr' ,
+                    'export prefix = /usr/conary', 'Make.defs')
+        r.Replace('export datadir = \$(prefix)/share' ,
+                    'export datadir = /usr/share', 'Make.defs')
         r.Make()
 
         # install the as3 libs
