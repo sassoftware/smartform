@@ -10,12 +10,14 @@
 # or fitness for a particular purpose. See the MIT License for full details.
 #
 
-loadInstalled('python')
-class Smartform(PackageRecipe):
+loadSuperClass('rpathpackage')
+
+class Smartform(RpathPackageRecipe):
     name = 'smartform'
     version = '0'
 
     buildRequires = [ 'flexsdk', 'xobj', 'make:runtime',
+        'python-conary:devel', 'python-conary:lib',
         'procps:runtime', 'sun-jdk', 'ant:runtime', 'ant:java',
         'xorg-server:runtime', 'util-linux:runtime', 'lxml:python',
         'xkeyboard-config', 'xkbcomp', 'xfs', 'group-xorg-fonts',
@@ -27,6 +29,7 @@ class Smartform(PackageRecipe):
         buildRequires.append('testutils')
 
     def setup(r):
+        r.rpathSetup()
         r.addMercurialSnapshot('http://scc.eng.rpath.com/products/smartform/trunk/smartform')
         r.Make()
 
