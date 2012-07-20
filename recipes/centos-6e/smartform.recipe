@@ -33,7 +33,7 @@ class Smartform(RpathPackageRecipe):
                     'export prefix = /usr/conary', 'Make.defs')
         r.Replace('schemaDir = "/usr/share/smartform"' ,
                     'schemaDir = "/usr/conary/share/smartform"',
-                    'py/smartforms/descriptor.py')
+                    'py/smartform/descriptor.py')
         r.Make()
 
         # install the as3 libs
