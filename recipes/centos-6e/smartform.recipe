@@ -11,16 +11,13 @@
 #
 
 loadSuperClass('rpathpackage')
-loadInstalled('python-conary')
+
 class Smartform(RpathPackageRecipe):
     name = 'smartform'
     version = '0'
 
-    buildRequires = [ 'flexsdk', 'xobj', 'make:runtime',
+    buildRequires = [ 'xobj', 'make:rpm',
         'python-conary:devel', 'python-conary:lib',
-        'procps:runtime', 'sun-jdk', 'ant:runtime', 'ant:java',
-        'xorg-server:runtime', 'util-linux:runtime', 'lxml:python',
-        'xkeyboard-config', 'xkbcomp', 'xfs', 'group-xorg-fonts',
     ]
 
     Flags.test = True
