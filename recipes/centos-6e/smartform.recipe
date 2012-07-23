@@ -17,8 +17,9 @@ class Smartform(RpathPackageRecipe):
     version = '0'
 
     buildRequires = [ 'make:rpm',
-        'python-conary:devel', 
+        'python-conary:devel',
         'python-conary:lib',
+        'python-lxml-conary:python',
         ]
 
     Flags.test = True
