@@ -340,7 +340,7 @@ class BaseDescriptor(_BaseClass):
         if values is None:
             return None
         if isinstance(values, dict):
-            values = values.items()
+            values = [ (y, x) for x, y in values.iteritems() ]
         if not isinstance(values, list):
             values = [ values ]
         # Eliminate duplicates
