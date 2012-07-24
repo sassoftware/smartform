@@ -30,11 +30,14 @@ class Smartform(RpathPackageRecipe):
     def setup(r):
         r.rpathSetup()
         r.addMercurialSnapshot('http://scc.eng.rpath.com/products/smartform/trunk/smartform')
+
         r.Replace('export prefix = /usr' ,
                     'export prefix = /usr/conary', 'Make.defs')
+
         r.Replace('schemaDir = "/usr/share/smartform"' ,
                     'schemaDir = "/usr/conary/share/smartform"',
                     'py/smartform/descriptor.py')
+
         r.Make()
 
         # install the as3 libs
@@ -46,3 +49,10 @@ class Smartform(RpathPackageRecipe):
 
         # Need :data for the schema definitions
         r.ComponentRequires({'data': set(['python'])})
+
+        # add flavoring
+        if Arch.x86:
+            pass
+        elif Arch.x86_64:
+            pass
+
