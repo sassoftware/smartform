@@ -38,19 +38,21 @@ class Smartform(RpathPackageRecipe):
                     'schemaDir = "/usr/conary/share/smartform"',
                     'py/smartform/descriptor.py')
 
-        r.Make()
+        r.Make('PYVER=%(pyver)s PYTHON=%(pybin)s PYDIR=%(sitepkgs)s')
 
         # install the as3 libs
         # as3 code is now in flexlibs
         #r.Install('as3/smartform/bin/*.swc', '/opt/smartform/as3/lib/')
 
         # Install the python module
-        r.MakeInstall()
+        r.MakeInstall('PYVER=%(pyver)s PYTHON=%(pybin)s PYDIR=%(sitepkgs)s')
 
         # Need :data for the schema definitions
         r.ComponentRequires({'data': set(['python'])})
 
-        # add flavoring
+        r.Requires('python-lxml-conary', '%(sitepkgs)s/smartform')
+
+       # add flavoring
         if Arch.x86:
             pass
         elif Arch.x86_64:
