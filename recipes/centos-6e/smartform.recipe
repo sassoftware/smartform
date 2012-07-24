@@ -50,6 +50,7 @@ class Smartform(RpathPackageRecipe):
         # Need :data for the schema definitions
         r.ComponentRequires({'data': set(['python'])})
 
+        r.Requires('python-conary:lib', '%(sitepkgs)s/smartform/*')
         r.Requires('python-lxml-conary:python', '%(sitepkgs)s/smartform/*')
 
        # add flavoring
