@@ -22,11 +22,6 @@ class Smartform(RpathPackageRecipe):
         'python-lxml-conary:python',
         ]
 
-    Flags.test = True
-
-    if Flags.test:
-        buildRequires.append('testutils')
-
     def setup(r):
         r.rpathSetup()
         r.addMercurialSnapshot('http://scc.eng.rpath.com/products/smartform/trunk/smartform')
