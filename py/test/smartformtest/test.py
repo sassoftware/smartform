@@ -519,6 +519,41 @@ class DescriptorTest(BaseTest):
         self.assertEquals(e.args[0],
             ["Missing field: 'vhosts'",])
 
+    def testSections1(self):
+        desc1 = descriptor.ConfigurationDescriptor()
+        desc1.setDisplayName('Configuration Descriptor')
+        desc1.addDescription('Configuration Descriptor')
+        desc1.addDataField('motd', type='str', default='Welcome!',
+            required=True, descriptions='Message of the day')
+        desc1.addDataField('iis_port', type='int', default=80, required=True,
+            descriptions='Port for IIS to listen on',
+            section={'key': 'middleware', 'descriptions': 'Middleware'},
+            prompt='IIS Port')
+        desc1.addDataField('sqlserver_port', type='int', default=1234,
+            required=True, descriptions='Port for SQLSserver to listen on',
+            section={'key': 'middleware', 'descriptions': 'Middleware'},
+            prompt='SQLServer Port')
+
+        xml = desc1.toxml()
+
+        desc2 = descriptor.ConfigurationDescriptor()
+        desc2.parseStream(StringIO(xml))
+
+        fields = dict((x.get_name(), x) for x in desc2.getDataFields())
+        iis_port = fields.get('iis_port').get_section()
+        self.failUnlessEqual(iis_port.get_key(), 'middleware')
+        self.failUnlessEqual(iis_port.get_descriptions().asDict(),
+            {None: 'Middleware'})
+
+        sqlserver_port = fields.get('sqlserver_port').get_section()
+        self.failUnlessEqual(sqlserver_port.get_key(), 'middleware')
+        self.failUnlessEqual(sqlserver_port.get_descriptions().asDict(),
+            {None: 'Middleware'})
+
+        motd = fields.get('motd')
+        self.failUnlessEqual(motd.get_section(), None)
+
+
 class DescriptorConstraintTest(BaseTest):
     def testIntType(self):
         # only a partial def for the pieces we care about

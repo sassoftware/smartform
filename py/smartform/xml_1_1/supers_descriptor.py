@@ -842,6 +842,7 @@ class dataFieldType(GeneratedsSuper):
         MemberSpec_('descriptions', 'descriptionsType', 0),
         MemberSpec_('help', 'helpType', 1),
         MemberSpec_('type_', 'xsd:string', 0),
+        MemberSpec_('section', 'sectionType', 0),
         MemberSpec_('enumeratedType', 'enumeratedTypeType', 0),
         MemberSpec_('listType', 'listTypeType', 0),
         MemberSpec_('descriptor', 'descriptorType', 0),
@@ -858,7 +859,7 @@ class dataFieldType(GeneratedsSuper):
         ]
     subclass = None
     superclass = None
-    def __init__(self, name=None, descriptions=None, help=None, type_=None, enumeratedType=None, listType=None, descriptor=None, multiple=None, default=None, constraints=None, required=None, allowFileContent=None, hidden=None, password=None, readonly=None, conditional=None, prompt=None):
+    def __init__(self, name=None, descriptions=None, help=None, type_=None, section=None, enumeratedType=None, listType=None, descriptor=None, multiple=None, default=None, constraints=None, required=None, allowFileContent=None, hidden=None, password=None, readonly=None, conditional=None, prompt=None):
         self.name = name
         self.descriptions = descriptions
         if help is None:
@@ -866,6 +867,7 @@ class dataFieldType(GeneratedsSuper):
         else:
             self.help = help
         self.type_ = type_
+        self.section = section
         self.enumeratedType = enumeratedType
         self.listType = listType
         self.descriptor = descriptor
@@ -898,6 +900,8 @@ class dataFieldType(GeneratedsSuper):
     def insert_help(self, index, value): self.help[index] = value
     def get_type(self): return self.type_
     def set_type(self, type_): self.type_ = type_
+    def get_section(self): return self.section
+    def set_section(self, section): self.section = section
     def get_enumeratedType(self): return self.enumeratedType
     def set_enumeratedType(self, enumeratedType): self.enumeratedType = enumeratedType
     def get_listType(self): return self.listType
@@ -950,6 +954,8 @@ class dataFieldType(GeneratedsSuper):
         if self.type_ is not None:
             showIndent(outfile, level)
             outfile.write('<%stype>%s</%stype>\n' % (namespace_, self.format_string(quote_xml(self.type_).encode(ExternalEncoding), input_name='type'), namespace_))
+        if self.section:
+            self.section.export(outfile, level, namespace_, name_='section')
         if self.enumeratedType:
             self.enumeratedType.export(outfile, level, namespace_, name_='enumeratedType')
         if self.listType:
@@ -989,6 +995,7 @@ class dataFieldType(GeneratedsSuper):
             self.descriptions is not None or
             self.help or
             self.type_ is not None or
+            self.section is not None or
             self.enumeratedType is not None or
             self.listType is not None or
             self.descriptor is not None or
@@ -1038,6 +1045,12 @@ class dataFieldType(GeneratedsSuper):
         if self.type_ is not None:
             showIndent(outfile, level)
             outfile.write('type_=%s,\n' % quote_python(self.type_).encode(ExternalEncoding))
+        if self.section is not None:
+            showIndent(outfile, level)
+            outfile.write('section=model_.sectionType(\n')
+            self.section.exportLiteral(outfile, level, name_='section')
+            showIndent(outfile, level)
+            outfile.write('),\n')
         if self.enumeratedType is not None:
             showIndent(outfile, level)
             outfile.write('enumeratedType=model_.enumeratedTypeType(\n')
@@ -1132,6 +1145,11 @@ class dataFieldType(GeneratedsSuper):
             for text__content_ in child_.childNodes:
                 type_ += text__content_.nodeValue
             self.type_ = type_
+        elif child_.nodeType == Node.ELEMENT_NODE and \
+            nodeName_ == 'section':
+            obj_ = sectionType.factory()
+            obj_.build(child_)
+            self.set_section(obj_)
         elif child_.nodeType == Node.ELEMENT_NODE and \
             nodeName_ == 'enumeratedType':
             obj_ = enumeratedTypeType.factory()
@@ -2537,6 +2555,93 @@ class operator(GeneratedsSuper):
         elif child_.nodeType == Node.CDATA_SECTION_NODE:
             self.valueOf_ += '![CDATA['+child_.nodeValue+']]'
 # end class operator
+
+
+class sectionType(GeneratedsSuper):
+    member_data_items_ = [
+        MemberSpec_('key', 'xsd:string', 0),
+        MemberSpec_('descriptions', 'descriptionsType', 0),
+        ]
+    subclass = None
+    superclass = None
+    def __init__(self, key=None, descriptions=None):
+        self.key = key
+        self.descriptions = descriptions
+    def factory(*args_, **kwargs_):
+        if sectionType.subclass:
+            return sectionType.subclass(*args_, **kwargs_)
+        else:
+            return sectionType(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_key(self): return self.key
+    def set_key(self, key): self.key = key
+    def get_descriptions(self): return self.descriptions
+    def set_descriptions(self, descriptions): self.descriptions = descriptions
+    def export(self, outfile, level, namespace_='dsc:', name_='sectionType', namespacedef_=''):
+        showIndent(outfile, level)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        self.exportAttributes(outfile, level, namespace_, name_='sectionType')
+        if self.hasContent_():
+            outfile.write('>\n')
+            self.exportChildren(outfile, level + 1, namespace_, name_)
+            showIndent(outfile, level)
+            outfile.write('</%s%s>\n' % (namespace_, name_))
+        else:
+            outfile.write('/>\n')
+    def exportAttributes(self, outfile, level, namespace_='dsc:', name_='sectionType'):
+        pass
+    def exportChildren(self, outfile, level, namespace_='dsc:', name_='sectionType'):
+        if self.key is not None:
+            showIndent(outfile, level)
+            outfile.write('<%skey>%s</%skey>\n' % (namespace_, self.format_string(quote_xml(self.key).encode(ExternalEncoding), input_name='key'), namespace_))
+        if self.descriptions:
+            self.descriptions.export(outfile, level, namespace_, name_='descriptions', )
+    def hasContent_(self):
+        if (
+            self.key is not None or
+            self.descriptions is not None
+            ):
+            return True
+        else:
+            return False
+    def exportLiteral(self, outfile, level, name_='sectionType'):
+        level += 1
+        self.exportLiteralAttributes(outfile, level, name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, name_):
+        pass
+    def exportLiteralChildren(self, outfile, level, name_):
+        if self.key is not None:
+            showIndent(outfile, level)
+            outfile.write('key=%s,\n' % quote_python(self.key).encode(ExternalEncoding))
+        if self.descriptions is not None:
+            showIndent(outfile, level)
+            outfile.write('descriptions=model_.descriptionsType(\n')
+            self.descriptions.exportLiteral(outfile, level, name_='descriptions')
+            showIndent(outfile, level)
+            outfile.write('),\n')
+    def build(self, node_):
+        attrs = node_.attributes
+        self.buildAttributes(attrs)
+        for child_ in node_.childNodes:
+            nodeName_ = child_.nodeName.split(':')[-1]
+            self.buildChildren(child_, nodeName_)
+    def buildAttributes(self, attrs):
+        pass
+    def buildChildren(self, child_, nodeName_):
+        if child_.nodeType == Node.ELEMENT_NODE and \
+            nodeName_ == 'key':
+            key_ = ''
+            for text__content_ in child_.childNodes:
+                key_ += text__content_.nodeValue
+            self.key = key_
+        elif child_.nodeType == Node.ELEMENT_NODE and \
+            nodeName_ == 'descriptions':
+            obj_ = descriptionsType.factory()
+            obj_.build(child_)
+            self.set_descriptions(obj_)
+# end class sectionType
 
 
 USAGE_TEXT = """

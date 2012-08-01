@@ -299,6 +299,12 @@ class BaseDescriptor(_BaseClass):
         if constraints:
             df.constraints = xmlsubs.constraintsTypeSub.factory()
             df.constraints.fromData(constraints)
+        section = kwargs.get('section')
+        if section:
+            df.section = xmlsubs.sectionTypeSub.factory()
+            df.section.set_key(section['key'])
+            df.section.set_descriptions(self.Descriptions(
+                section.get('descriptions', [])))
         df.required = kwargs.get('required')
         df.allowFileContent = kwargs.get('allowFileContent')
         df.hidden = kwargs.get('hidden')
