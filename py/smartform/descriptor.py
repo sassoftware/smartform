@@ -680,3 +680,7 @@ class FactoryDescriptor(BaseDescriptor):
     __slots__ = []
 
     RootNode = 'factory'
+
+    def getSupportedFiles(self):
+        md = self._rootObj.get_metadata()
+        return md.get_supportedFiles().get_file()
