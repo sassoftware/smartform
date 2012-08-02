@@ -461,11 +461,6 @@ class DescriptorData(_BaseClass):
     def _getSchemaVersion(self):
         return self._rootObj.attrib.get('version', self.__class__.version)
 
-    def _postprocess(self, validate=True):
-        super(BaseDescriptor, self)._postprocess(validate=validate)
-        for field in self.getDataFields():
-            self._postprocessField(field)
-
     def parseStream(self, fromStream, validate = False, schemaDir = None):
         if isinstance(fromStream, (str, unicode)):
             self._rootObj = etree.fromstring(fromStream)

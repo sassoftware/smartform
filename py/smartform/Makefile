@@ -66,6 +66,9 @@ rule-%:
                 -s $(call xmlDir,$@)/subs_descriptordata.py \
                 --user-methods=gends_user_methods \
                 ../xsd/descriptordata-$(call xmlVer,$@).xsd
+	for x in {subs,supers}_descriptor{,data}.py; do \
+		echo "# pyflakes=ignore-file" >> $(call xmlDir,$@)/$$x; \
+	done
 
 include $(TOPDIR)/Make.rules
 include $(TOPDIR)/Make.defs
