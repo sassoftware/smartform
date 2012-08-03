@@ -2595,7 +2595,7 @@ class sectionType(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('<%skey>%s</%skey>\n' % (namespace_, self.format_string(quote_xml(self.key).encode(ExternalEncoding), input_name='key'), namespace_))
         if self.descriptions:
-            self.descriptions.export(outfile, level, namespace_, name_='descriptions', )
+            self.descriptions.export(outfile, level, namespace_, name_='descriptions')
     def hasContent_(self):
         if (
             self.key is not None or
