@@ -1,0 +1,58 @@
+#
+# Copyright (c) 2008-2009 rPath, Inc.
+#
+# This program is distributed under the terms of the MIT License as found 
+# in a file called LICENSE. If it is not present, the license
+# is always available at http://www.opensource.org/licenses/mit-license.php.
+#
+# This program is distributed in the hope that it will be useful, but
+# without any waranty; without even the implied warranty of merchantability
+# or fitness for a particular purpose. See the MIT License for full details.
+#
+
+loadSuperClass('rpathpackage')
+
+class Smartform(RpathPackageRecipe):
+    name = 'smartform'
+    version = '0'
+
+    buildRequires = [ 'make:rpm',
+        'python-conary:devel',
+        'python-conary:lib',
+        'python-lxml-conary:python',
+        ]
+
+    def setup(r):
+        r.rpathSetup()
+        r.addMercurialSnapshot('http://scc.eng.rpath.com/products/smartform/trunk/smartform')
+
+        r.Replace('export prefix = /usr' ,
+                    'export prefix = /usr/conary', 'Make.defs')
+
+        r.Replace('shell arch', 'shell uname -m', 'Make.defs')
+
+        r.Replace('schemaDir = "/usr/share/smartform"' ,
+                    'schemaDir = "/usr/conary/share/smartform"',
+                    'py/smartform/descriptor.py')
+
+        r.Make('PYVER=%(pyver)s PYTHON=%(pybin)s PYDIR=%(sitepkgs)s')
+
+        # install the as3 libs
+        # as3 code is now in flexlibs
+        #r.Install('as3/smartform/bin/*.swc', '/opt/smartform/as3/lib/')
+
+        # Install the python module
+        r.MakeInstall('PYVER=%(pyver)s PYTHON=%(pybin)s PYDIR=%(sitepkgs)s')
+
+        # Need :data for the schema definitions
+        r.ComponentRequires({'data': set(['python'])})
+
+        r.Requires('python-conary:lib', '%(sitepkgs)s/smartform/*')
+        r.Requires('python-lxml-conary:python', '%(sitepkgs)s/smartform/*')
+
+       # add flavoring
+        if Arch.x86:
+            pass
+        elif Arch.x86_64:
+            pass
+
