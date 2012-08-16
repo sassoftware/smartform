@@ -146,7 +146,6 @@ class _BaseClass(object):
             tree = self.validate(sio, self.schemaDir,
                 self._getSchemaVersion())
         elif validate:
-            import sys
             sys.stderr.write("Warning: unable to validate schema: directory %s missing"
                 % self.schemaDir)
             tree = etree.parse(sio)
@@ -498,7 +497,9 @@ class DescriptorData(_BaseClass):
             if fieldDesc is None:
                 # Unsupported field
                 continue
+            child.attrib.pop('list', None)
             if fieldDesc.listType:
+                child.attrib['list'] = 'true'
                 field = dnodes.ListField()
                 childName = fieldDesc._descriptor.getRootElement()
                 for csub in child.iterchildren(childName):

@@ -473,7 +473,11 @@ class DescriptorTest(BaseTest):
     </vhost>
   </vhosts>
 </configuration>"""
-        ddata = descriptor.DescriptorData(fromStream=dataXml, descriptor=dsc)
+        # Take out list=true, serializing DescriptorData should put it
+        # back
+        ddata = descriptor.DescriptorData(
+            fromStream=dataXml.replace(' list="true"', ''),
+            descriptor=dsc)
         self.assertEquals(ddata.getField('port'), 10)
         processInfo = ddata.getField('processInfo')
         self.assertEquals(
