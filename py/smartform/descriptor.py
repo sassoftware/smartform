@@ -497,9 +497,11 @@ class DescriptorData(_BaseClass):
             if fieldDesc is None:
                 # Unsupported field
                 continue
-            child.attrib.pop('list', None)
-            if fieldDesc.listType:
+            if fieldDesc.multiple or fieldDesc.listType:
                 child.attrib['list'] = 'true'
+            else:
+                child.attrib.pop('list', None)
+            if fieldDesc.listType:
                 field = dnodes.ListField()
                 childName = fieldDesc._descriptor.getRootElement()
                 for csub in child.iterchildren(childName):

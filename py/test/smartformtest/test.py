@@ -208,7 +208,9 @@ class DescriptorTest(BaseTest):
             descriptor = dsc)
         sio = StringIO()
         ddata.serialize(sio)
-        self.assertXMLEquals(sio.getvalue(), xmlDescriptorData1)
+        expXml = xmlDescriptorData1.replace("<multiField>",
+           '<multiField list="true">')
+        self.assertXMLEquals(sio.getvalue(), expXml)
 
     def testExtraData(self):
         fDef = descriptor.ConfigurationDescriptor()
