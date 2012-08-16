@@ -1200,10 +1200,29 @@ class dataFieldType(GeneratedsSuper):
             self.set_prompt(obj_)
 
     def _getType(self):
-        if not self.enumeratedType:
+        if not self.enumeratedType or not self.enumeratedType.describedValue:
             return self.type_
         return [ x for x in self.enumeratedType.describedValue ]
     type = property(_getType)
+
+    def sanitizeConstraints(self):
+        if self.constraints is None:
+            return None
+        return self.constraints.sanitize()
+
+    def sanitizeHelp(self):
+        if self.help is None:
+            return
+        nonemptyHelp = [ x for x in self.help
+            if x.href or x.lang ]
+        self.help = nonemptyHelp
+
+    def sanitizeConditionals(self):
+        if self.conditional is None:
+            return
+        if self.conditional.fieldName and self.conditional.operator and self.conditional.value:
+            return
+        self.conditional = None
 
     def presentation(self):
         if self.constraints is None:
@@ -1225,7 +1244,8 @@ class dataFieldType(GeneratedsSuper):
     def helpAsDict(self):
         if self.help is None:
             return {}
-        return dict((x.lang, x.href) for x in self.help)
+        return dict((x.lang, x.href) for x in self.help
+                if x.lang or x.href)
 
     @property
     def constraintsPresentation(self):
@@ -1587,12 +1607,22 @@ class constraintsType(GeneratedsSuper):
             obj_.build(child_)
             self.length.append(obj_)
 
+    def sanitize(self):
+        for constraintName in [ 'range', 'legalValues', 'regexp', 'length' ]:
+            constraints = getattr(self, constraintName)
+            nonEmptyConstraints = [ x for x in constraints
+                if x.presentation() ]
+            setattr(self, constraintName, nonEmptyConstraints)
+
     def presentation(self):
         ret = []
-        ret.extend(x.presentation() for x in self.range)
-        ret.extend(x.presentation() for x in self.legalValues)
-        ret.extend(x.presentation() for x in self.regexp)
-        ret.extend(x.presentation() for x in self.length)
+        for constraintName in [ 'range', 'legalValues', 'regexp', 'length' ]:
+            # Weed out empty presentations
+            ret.extend(
+                dict(y, constraintName=constraintName)
+                    for y in (
+                        x.presentation() for x in getattr(self, constraintName))
+                    if y)
         return ret
 
     def fromData(self, dataList):
@@ -1613,7 +1643,9 @@ class constraintsType(GeneratedsSuper):
             return
         v = cls()
         v.fromData(data)
-        method = getattr(self, 'add_' + potential[0].name)
+        method = getattr(self, 'add_' + potential[0].name, None)
+        if method is None:
+            method = getattr(self, 'set_' + potential[0].name)
         method(v)
     # end class constraintsType
 
@@ -1709,11 +1741,14 @@ class rangeType(GeneratedsSuper):
                 self.max = ival_
 
     def presentation(self):
-        ret = dict(constraintName = 'range')
+        ret = {}
         if self.min is not None:
             ret['min'] = self.min
         if self.max is not None:
             ret['max'] = self.max
+        if not ret:
+            return ret
+        ret.update(constraintName = 'range')
         return ret
 
     def fromData(self, data):
@@ -1801,6 +1836,8 @@ class legalValuesType(GeneratedsSuper):
             self.item.append(item_)
 
     def presentation(self):
+        if not self.item:
+            return {}
         return dict(constraintName = 'legalValues', values = (self.item or []))
 
     def fromData(self, data):
@@ -1878,6 +1915,8 @@ class regexpType(GeneratedsSuper):
             self.valueOf_ += '![CDATA['+child_.nodeValue+']]'
 
     def presentation(self):
+        if not self.valueOf_:
+            return {}
         return dict(constraintName = 'regexp', value = self.valueOf_)
 
     def fromData(self, data):
@@ -1954,7 +1993,9 @@ class lengthType(GeneratedsSuper):
             self.valueOf_ += '![CDATA['+child_.nodeValue+']]'
 
     def presentation(self):
-        return dict(constraintName = 'length', value = int(self.valueOf_))
+        if self.valueOf_ == '':
+            return {}
+        return dict(value = int(self.valueOf_))
 
     def fromData(self, data):
         self.setValueOf_(str(data.get('value')))
@@ -2200,3 +2241,4 @@ if __name__ == '__main__':
     #import pdb; pdb.set_trace()
     main()
 
+# pyflakes=ignore-file

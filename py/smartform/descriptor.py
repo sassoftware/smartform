@@ -174,7 +174,8 @@ class _BaseClass(object):
             self._rootObj.set_dataFields(xmlsubs.dataFieldsTypeSub.factory())
 
     def _postprocess(self, validate=True):
-        pass
+        for df in self.getDataFields():
+            self._postprocessField(df)
 
     def _writeToStream(self, attrs):
         namespacedef = ' '.join('%s="%s"' % a for a in attrs)
@@ -312,12 +313,20 @@ class BaseDescriptor(_BaseClass):
         return self.addDataFieldRaw(df, index=kwargs.get('index'))
 
     def _postprocessField(self, df):
-        if df.enumeratedType is not None:
+        if df.enumeratedType is not None and df.enumeratedType.describedValue:
             df.set_type('enumeratedType')
-        elif df.listType is not None:
-            df.set_type('listType')
-        elif df.descriptor is not None:
-            df.set_type('compoundType')
+            df.listType = df.descriptor = None
+        else:
+            # Make sure we don't introduce contradictory types: zero out
+            df.enumeratedType = None
+            if df.listType is not None:
+                df.set_type('listType')
+                df.descriptor = None
+            elif df.descriptor is not None:
+                df.set_type('compoundType')
+        df.sanitizeConstraints()
+        df.sanitizeHelp()
+        df.sanitizeConditionals()
 
     def deleteDataField(self, name):
         if self._rootObj.dataFields is None:

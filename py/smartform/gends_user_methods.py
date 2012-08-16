@@ -91,10 +91,29 @@ fieldsAsDict = MethodSpec(name = 'fieldsAsDict',
 dataFieldMethods = MethodSpec(name = 'dataFieldMethods',
     source = '''
     def _getType(self):
-        if not self.enumeratedType:
+        if not self.enumeratedType or not self.enumeratedType.describedValue:
             return self.type_
         return [ x for x in self.enumeratedType.describedValue ]
     type = property(_getType)
+
+    def sanitizeConstraints(self):
+        if self.constraints is None:
+            return None
+        return self.constraints.sanitize()
+
+    def sanitizeHelp(self):
+        if self.help is None:
+            return
+        nonemptyHelp = [ x for x in self.help
+            if x.href or x.lang ]
+        self.help = nonemptyHelp
+
+    def sanitizeConditionals(self):
+        if self.conditional is None:
+            return
+        if self.conditional.fieldName and self.conditional.operator and self.conditional.value:
+            return
+        self.conditional = None
 
     def presentation(self):
         if self.constraints is None:
@@ -116,7 +135,8 @@ dataFieldMethods = MethodSpec(name = 'dataFieldMethods',
     def helpAsDict(self):
         if self.help is None:
             return {}
-        return dict((x.lang, x.href) for x in self.help)
+        return dict((x.lang, x.href) for x in self.help
+                if x.lang or x.href)
 
     @property
     def constraintsPresentation(self):
@@ -129,12 +149,22 @@ dataFieldMethods = MethodSpec(name = 'dataFieldMethods',
 
 constraintsTypeMethods = MethodSpec(name = 'constraintsTypeMethods',
     source = '''
+    def sanitize(self):
+        for constraintName in [ 'range', 'legalValues', 'regexp', 'length' ]:
+            constraints = getattr(self, constraintName)
+            nonEmptyConstraints = [ x for x in constraints
+                if x.presentation() ]
+            setattr(self, constraintName, nonEmptyConstraints)
+
     def presentation(self):
         ret = []
         for constraintName in [ 'range', 'legalValues', 'regexp', 'length' ]:
+            # Weed out empty presentations
             ret.extend(
-                dict(x.presentation(), constraintName=constraintName)
-                    for x in getattr(self, constraintName))
+                dict(y, constraintName=constraintName)
+                    for y in (
+                        x.presentation() for x in getattr(self, constraintName))
+                    if y)
         return ret
 
     def fromData(self, dataList):
@@ -165,11 +195,14 @@ constraintsTypeMethods = MethodSpec(name = 'constraintsTypeMethods',
 rangeTypeMethods = MethodSpec(name = 'rangeTypeMethods',
     source = '''
     def presentation(self):
-        ret = dict(constraintName = 'range')
+        ret = {}
         if self.min is not None:
             ret['min'] = self.min
         if self.max is not None:
             ret['max'] = self.max
+        if not ret:
+            return ret
+        ret.update(constraintName = 'range')
         return ret
 
     def fromData(self, data):
@@ -181,6 +214,8 @@ rangeTypeMethods = MethodSpec(name = 'rangeTypeMethods',
 legalValuesTypeMethods = MethodSpec(name = 'legalValuesTypeMethods',
     source = '''
     def presentation(self):
+        if not self.item:
+            return {}
         return dict(constraintName = 'legalValues', values = (self.item or []))
 
     def fromData(self, data):
@@ -192,6 +227,8 @@ legalValuesTypeMethods = MethodSpec(name = 'legalValuesTypeMethods',
 regexpTypeMethods = MethodSpec(name = 'regexpTypeMethods',
     source = '''
     def presentation(self):
+        if not self.valueOf_:
+            return {}
         return dict(constraintName = 'regexp', value = self.valueOf_)
 
     def fromData(self, data):
@@ -202,6 +239,8 @@ regexpTypeMethods = MethodSpec(name = 'regexpTypeMethods',
 intConstraintTypeMethods = MethodSpec(name = 'intConstraintTypeMethods',
     source = '''
     def presentation(self):
+        if self.valueOf_ == '':
+            return {}
         return dict(value = int(self.valueOf_))
 
     def fromData(self, data):
@@ -212,6 +251,8 @@ intConstraintTypeMethods = MethodSpec(name = 'intConstraintTypeMethods',
 strListConstraintTypeMethods = MethodSpec(name = 'strListConstraintTypeMethods',
     source = '''
     def presentation(self):
+        if not self.valueOf_:
+            return {}
         return dict(value = str(self.valueOf_))
 
     def fromData(self, data):

@@ -559,6 +559,120 @@ class DescriptorTest(BaseTest):
         motd = fields.get('motd')
         self.failUnlessEqual(motd.get_section(), None)
 
+    def testDescriptorWithExtraData(self):
+        xml = """\
+<descriptor xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd" version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd">
+  <metadata>
+    <displayName>postgres_configurator</displayName>
+    <descriptions>
+      <desc lang="en_US">postgres_configurator</desc>
+    </descriptions>
+  </metadata>
+  <dataFields>
+    <field>
+      <name>postgres_listen_addresses</name>
+      <descriptions>
+        <desc lang="en_US">PostgreSQL Listen Addresses</desc>
+      </descriptions>
+      <type>str</type>
+      <default>*</default>
+      <required>false</required>
+      <prompt>
+        <desc lang="en_US">PostgreSQL Listen Addresses</desc>
+      </prompt>
+      <allowFileContent>false</allowFileContent>
+      <conditional/>
+      <constraints>
+        <descriptions/>
+        <minLength>0</minLength>
+      </constraints>
+      <hidden>false</hidden>
+      <multiple>false</multiple>
+      <password>false</password>
+      <uid>4D2234B1-1EC7-41B6-93FB-30D8B421C2C6</uid>
+    </field>
+    <field>
+      <name>postgres_port</name>
+      <descriptions>
+        <desc lang="en_US">Port for PostgreSQL</desc>
+      </descriptions>
+      <type>str</type>
+      <default>5432</default>
+      <required>true</required>
+      <prompt>
+        <desc lang="en_US">Port for PostgreSQL</desc>
+      </prompt>
+      <allowFileContent>false</allowFileContent>
+      <conditional/>
+      <constraints>
+        <descriptions/>
+        <minLength>0</minLength>
+        <range/>
+      </constraints>
+      <enumeratedType/>
+      <help/>
+      <hidden>false</hidden>
+      <multiple>false</multiple>
+      <password>false</password>
+      <uid>6C368FD7-BE46-886E-B390-30D8B422C460</uid>
+    </field>
+  </dataFields>
+</descriptor>"""
+
+        descr = descriptor.ConfigurationDescriptor(fromStream=xml)
+        # Serialize, should drop the additional crap
+        retXml = descr.toxml()
+        self.assertXMLEquals(retXml, """\
+<descriptor xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd" version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd">
+  <metadata>
+    <displayName>postgres_configurator</displayName>
+    <descriptions>
+      <desc lang="en_US">postgres_configurator</desc>
+    </descriptions>
+  </metadata>
+  <dataFields>
+    <field>
+      <name>postgres_listen_addresses</name>
+      <descriptions>
+        <desc lang="en_US">PostgreSQL Listen Addresses</desc>
+      </descriptions>
+      <type>str</type>
+      <multiple>false</multiple>
+      <default>*</default>
+      <constraints>
+        <descriptions/>
+        <minLength>0</minLength>
+      </constraints>
+      <required>false</required>
+      <allowFileContent>false</allowFileContent>
+      <hidden>false</hidden>
+      <password>false</password>
+      <prompt>
+        <desc lang="en_US">PostgreSQL Listen Addresses</desc>
+      </prompt>
+    </field>
+    <field>
+      <name>postgres_port</name>
+      <descriptions>
+        <desc lang="en_US">Port for PostgreSQL</desc>
+      </descriptions>
+      <type>str</type>
+      <multiple>false</multiple>
+      <default>5432</default>
+      <constraints>
+        <descriptions/>
+        <minLength>0</minLength>
+      </constraints>
+      <required>true</required>
+      <allowFileContent>false</allowFileContent>
+      <hidden>false</hidden>
+      <password>false</password>
+      <prompt>
+        <desc lang="en_US">Port for PostgreSQL</desc>
+      </prompt>
+    </field>
+  </dataFields>
+</descriptor>""")
 
 class DescriptorConstraintTest(BaseTest):
     def testIntType(self):
