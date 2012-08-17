@@ -608,6 +608,7 @@ class DescriptorTest(BaseTest):
         <descriptions/>
         <minLength>0</minLength>
         <range/>
+        <legalValues/>
       </constraints>
       <enumeratedType/>
       <help/>
