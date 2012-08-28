@@ -830,6 +830,95 @@ class DescriptorTest(BaseTest):
   </dataFields>
 </descriptor>""")
 
+    def testListType1(self):
+        descrXml = """\
+<descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd">
+  <metadata>
+    <displayName>Apache HTTPD Configuration Properties</displayName>
+    <descriptions>
+      <desc>Apache HTTPD Configuration for PORT and VirtualHost</desc>
+    </descriptions>
+  </metadata>
+  <dataFields>
+    <field>
+      <name>vhosts</name>
+      <descriptions>
+        <desc>Virtual Hosts</desc>
+      </descriptions>
+      <type>listType</type>
+      <listType>
+        <descriptor>
+          <metadata>
+            <displayName>Virtual 2 Host Configuration</displayName>
+            <rootElement>vhost</rootElement>
+            <descriptions>
+              <desc>Virtual Host Configuration</desc>
+            </descriptions>
+          </metadata>
+          <dataFields>
+            <field>
+              <name>nameVirtualHost</name>
+              <descriptions>
+                <desc>VirtualHost for website</desc>
+              </descriptions>
+              <type>str</type>
+              <default>*</default>
+              <required>false</required>
+              <prompt>
+                <desc>Virtual Host Name for Website</desc>
+              </prompt>
+            </field>
+            <field>
+              <name>port</name>
+              <descriptions>
+                <desc>Port for Virtual Host</desc>
+              </descriptions>
+              <type>str</type>
+              <default>8080</default>
+              <required>true</required>
+              <prompt>
+                <desc>Port for Virtual Host</desc>
+              </prompt>
+            </field>
+            <field>
+              <name>serverName</name>
+              <descriptions>
+                <desc>Server Name for Virtual Host</desc>
+              </descriptions>
+              <type>str</type>
+              <default>vhost2.example.com</default>
+              <required>true</required>
+              <prompt>
+                <desc>Server Name for Virtual Host</desc>
+              </prompt>
+            </field>
+          </dataFields>
+        </descriptor>
+      </listType>
+    </field>
+  </dataFields>
+</descriptor>"""
+
+        dataXml = """\
+<configuration href="https://dhcp155.eng.rpath.com/api/v1/inventory/systems/711/configuration" id="https://dhcp155.eng.rpath.com/api/v1/inventory/systems/711/configuration">
+  <vhosts list="true">
+    <vhost>
+      <nameVirtualHost>*</nameVirtualHost>
+      <port>8080</port>
+      <serverName>vhost1.example.com</serverName>
+    </vhost>
+    <vhost>
+      <nameVirtualHost>*</nameVirtualHost>
+      <port>8080</port>
+      <serverName>vhost2.example.com</serverName>
+    </vhost>
+  </vhosts>
+</configuration>"""
+
+        descr = descriptor.ConfigurationDescriptor(fromStream=descrXml)
+        descr.setRootElement('configuration')
+        ddata = descriptor.DescriptorData(fromStream=dataXml, descriptor=descr)
+
 class DescriptorConstraintTest(BaseTest):
     def testIntType(self):
         # only a partial def for the pieces we care about
