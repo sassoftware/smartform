@@ -25,7 +25,8 @@ class _BaseClass(object):
 
     _SchemaName = 'descriptor'
 
-    def __init__(self, fromStream = None, validate = False, schemaDir = None):
+    def __init__(self, fromStream = None, validate = False, schemaDir = None,
+            fromNode=None):
         self._initFields()
         self._validate = validate
         if schemaDir:
@@ -34,6 +35,8 @@ class _BaseClass(object):
         if fromStream is not None:
             self.parseStream(fromStream, validate = validate,
                 schemaDir = self.schemaDir)
+        elif fromNode is not None:
+            self.fromNode(fromNode, validate=validate)
 
     def parseStream(self, fromStream, validate = False, schemaDir = None):
         """
@@ -72,7 +75,10 @@ class _BaseClass(object):
         if version != self.version:
             # Handle migrations here
             raise errors.InvalidSchemaVersionError(version)
-        self._rootObj = rootObj
+        self.fromNode(rootObj)
+
+    def fromNode(self, node, validate=False):
+        self._rootObj = node
         self._postinit()
         self._postprocess(validate=validate)
 
@@ -322,6 +328,7 @@ class BaseDescriptor(_BaseClass):
             if df.listType is not None:
                 df.set_type('listType')
                 df.descriptor = None
+                df._descriptor = self.__class__(fromNode=df.listType.descriptor)
             elif df.descriptor is not None:
                 df.set_type('compoundType')
         df.sanitizeConstraints()

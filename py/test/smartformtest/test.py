@@ -617,6 +617,91 @@ class DescriptorTest(BaseTest):
       <password>false</password>
       <uid>6C368FD7-BE46-886E-B390-30D8B422C460</uid>
     </field>
+    <field>
+      <name>iis_configuration</name>
+      <descriptions>
+        <desc lang="en_US">IIS Configuration Websites</desc>
+      </descriptions>
+      <type>listType</type>
+      <listType>
+        <descriptor>
+          <metadata>
+            <displayName>IIS Website Configuration</displayName>
+            <rootElement>website</rootElement>
+            <descriptions>
+              <desc lang="en_US">Website Configuration</desc>
+            </descriptions>
+          </metadata>
+          <dataFields>
+            <field>
+              <name>website_name</name>
+              <descriptions>
+                <desc lang="en_US">domain for website</desc>
+              </descriptions>
+              <type>str</type>
+              <default>www.testing.com</default>
+              <required>true</required>
+              <prompt>
+                <desc lang="en_US">Host Name for Website</desc>
+              </prompt>
+              <allowFileContent>false</allowFileContent>
+              <conditional/>
+              <constraints>
+                <descriptions/>
+                <minLength>0</minLength>
+                <range/>
+              </constraints>
+              <enumeratedType/>
+              <help/>
+              <hidden>false</hidden>
+              <multiple>false</multiple>
+              <password>false</password>
+              <uid>43C65384-E346-198D-CA5D-6E6CA9F62F1C</uid>
+            </field>
+            <field>
+              <name>port</name>
+              <descriptions>
+                <desc lang="en_US">Port for Website</desc>
+              </descriptions>
+              <type>str</type>
+              <default>8080</default>
+              <required>true</required>
+              <prompt>
+                <desc lang="en_US">Port for Website</desc>
+              </prompt>
+              <allowFileContent>false</allowFileContent>
+              <conditional/>
+              <constraints>
+                <descriptions/>
+                <minLength>0</minLength>
+                <range/>
+              </constraints>
+              <enumeratedType/>
+              <help/>
+              <hidden>false</hidden>
+              <multiple>false</multiple>
+              <password>false</password>
+              <uid>BD4E10EF-71BA-60C7-8CF0-6E6CA9FC6B73</uid>
+            </field>
+          </dataFields>
+        </descriptor>
+      </listType>
+      <allowFileContent>false</allowFileContent>
+      <conditional/>
+      <constraints>
+        <descriptions/>
+        <minLength>0</minLength>
+        <range/>
+      </constraints>
+      <enumeratedType/>
+      <help/>
+      <hidden>false</hidden>
+      <multiple>false</multiple>
+      <password>false</password>
+      <prompt/>
+      <required>false</required>
+      <uid>CB6E82BF-CECB-61B6-43AD-6E6CA9F2875A</uid>
+    </field>
   </dataFields>
 </descriptor>"""
 
@@ -671,6 +756,76 @@ class DescriptorTest(BaseTest):
       <prompt>
         <desc lang="en_US">Port for PostgreSQL</desc>
       </prompt>
+    </field>
+    <field>
+      <name>iis_configuration</name>
+      <descriptions>
+        <desc lang="en_US">IIS Configuration Websites</desc>
+      </descriptions>
+      <type>listType</type>
+      <listType>
+        <descriptor>
+          <metadata>
+            <displayName>IIS Website Configuration</displayName>
+            <rootElement>website</rootElement>
+            <descriptions>
+              <desc lang="en_US">Website Configuration</desc>
+            </descriptions>
+          </metadata>
+          <dataFields>
+            <field>
+              <name>website_name</name>
+              <descriptions>
+                <desc lang="en_US">domain for website</desc>
+              </descriptions>
+              <type>str</type>
+              <multiple>false</multiple>
+              <default>www.testing.com</default>
+              <constraints>
+                <descriptions/>
+                <minLength>0</minLength>
+              </constraints>
+              <required>true</required>
+              <allowFileContent>false</allowFileContent>
+              <hidden>false</hidden>
+              <password>false</password>
+              <prompt>
+                <desc lang="en_US">Host Name for Website</desc>
+              </prompt>
+            </field>
+            <field>
+              <name>port</name>
+              <descriptions>
+                <desc lang="en_US">Port for Website</desc>
+              </descriptions>
+              <type>str</type>
+              <multiple>false</multiple>
+              <default>8080</default>
+              <constraints>
+                <descriptions/>
+                <minLength>0</minLength>
+              </constraints>
+              <required>true</required>
+              <allowFileContent>false</allowFileContent>
+              <hidden>false</hidden>
+              <password>false</password>
+              <prompt>
+                <desc lang="en_US">Port for Website</desc>
+              </prompt>
+            </field>
+          </dataFields>
+        </descriptor>
+      </listType>
+      <allowFileContent>false</allowFileContent>
+      <constraints>
+        <descriptions/>
+        <minLength>0</minLength>
+      </constraints>
+      <required>false</required>
+      <hidden>false</hidden>
+      <multiple>false</multiple>
+      <password>false</password>
+      <prompt/>
     </field>
   </dataFields>
 </descriptor>""")
