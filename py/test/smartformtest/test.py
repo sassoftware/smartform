@@ -831,6 +831,7 @@ class DescriptorTest(BaseTest):
 </descriptor>""")
 
     def testListType1(self):
+        # RCE-858
         descrXml = """\
 <descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd">
   <metadata>
