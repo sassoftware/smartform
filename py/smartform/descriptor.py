@@ -331,6 +331,7 @@ class BaseDescriptor(_BaseClass):
                 df._descriptor = self.__class__(fromNode=df.listType.descriptor)
             elif df.descriptor is not None:
                 df.set_type('compoundType')
+                df.descriptor = self.__class__(fromNode=df.descriptor)._rootObj
         df.sanitizeConstraints()
         df.sanitizeHelp()
         df.sanitizeConditionals()

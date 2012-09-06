@@ -525,6 +525,359 @@ class DescriptorTest(BaseTest):
         self.assertEquals(e.args[0],
             ["Missing field: 'vhosts'",])
 
+    def testCompoundType2(self):
+        # RCE-951
+        xml = """\
+<?xml version="1.0"?>
+<configuration_descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd" version="1.1">
+  <metadata>
+    <displayName>Configuration Descriptor</displayName>
+    <rootElement>configuration</rootElement>
+    <descriptions>
+      <desc>Configuration Descriptor</desc>
+    </descriptions>
+  </metadata>
+  <dataFields>
+    <field>
+      <name>port</name>
+      <descriptions>
+        <desc lang="en_US">Apache Port</desc>
+      </descriptions>
+      <type>int</type>
+      <section>
+        <key>apache_configurator</key>
+      </section>
+      <multiple>false</multiple>
+      <constraints>
+        <descriptions/>
+        <minLength>0</minLength>
+      </constraints>
+      <required>true</required>
+      <allowFileContent>false</allowFileContent>
+      <hidden>false</hidden>
+      <password>false</password>
+      <prompt/>
+    </field>
+    <field>
+      <name>processInfo</name>
+      <descriptions>
+        <desc lang="en_US">Process Ownership Information</desc>
+      </descriptions>
+      <type>compoundType</type>
+      <section>
+        <key>apache_configurator</key>
+      </section>
+      <descriptor version="1.1" id="apache-configuration/process-info">
+        <metadata>
+          <displayName>Process Ownership Information</displayName>
+          <descriptions>
+            <desc lang="en_US">Process Ownership Information</desc>
+          </descriptions>
+        </metadata>
+        <dataFields>
+          <field>
+            <name>user</name>
+            <descriptions>
+              <desc lang="en_US">User</desc>
+            </descriptions>
+            <help href="None"/>
+            <type>str</type>
+            <enumeratedType/>
+            <multiple>false</multiple>
+            <default>apache</default>
+            <constraints>
+              <descriptions/>
+              <range/>
+              <minLength>0</minLength>
+            </constraints>
+            <required>true</required>
+            <allowFileContent>false</allowFileContent>
+            <hidden>false</hidden>
+            <password>false</password>
+            <conditional/>
+            <prompt/>
+          </field>
+          <field>
+            <name>group</name>
+            <descriptions>
+              <desc lang="en_US">Group</desc>
+            </descriptions>
+            <help href="None"/>
+            <type>str</type>
+            <enumeratedType/>
+            <multiple>false</multiple>
+            <default>apache</default>
+            <constraints>
+              <descriptions/>
+              <range/>
+              <minLength>0</minLength>
+            </constraints>
+            <required>true</required>
+            <allowFileContent>false</allowFileContent>
+            <hidden>false</hidden>
+            <password>false</password>
+            <conditional/>
+            <prompt/>
+          </field>
+        </dataFields>
+      </descriptor>
+      <multiple>false</multiple>
+      <constraints>
+        <descriptions/>
+        <minLength>0</minLength>
+      </constraints>
+      <required>true</required>
+      <allowFileContent>false</allowFileContent>
+      <hidden>false</hidden>
+      <password>false</password>
+      <prompt/>
+    </field>
+    <field>
+      <name>vhosts</name>
+      <descriptions>
+        <desc lang="en_US">Virtual Hosts</desc>
+      </descriptions>
+      <type>listType</type>
+      <section>
+        <key>apache_configurator</key>
+      </section>
+      <listType>
+        <descriptor version="1.1" id="apache-configuration/vhost">
+          <metadata>
+            <displayName>Virtual Host Configuration</displayName>
+            <rootElement>vhost</rootElement>
+            <descriptions>
+              <desc lang="en_US">Virtual Host Configuration</desc>
+            </descriptions>
+          </metadata>
+          <dataFields>
+            <field>
+              <name>serverName</name>
+              <descriptions>
+                <desc lang="en_US">Virtual Host Name</desc>
+              </descriptions>
+              <type>str</type>
+              <multiple>false</multiple>
+              <constraints>
+                <descriptions/>
+                <minLength>0</minLength>
+              </constraints>
+              <required>true</required>
+              <allowFileContent>false</allowFileContent>
+              <hidden>false</hidden>
+              <password>false</password>
+              <prompt/>
+            </field>
+            <field>
+              <name>documentRoot</name>
+              <descriptions>
+                <desc lang="en_US">Virtual Host Document Root</desc>
+              </descriptions>
+              <type>str</type>
+              <multiple>false</multiple>
+              <constraints>
+                <descriptions/>
+                <minLength>0</minLength>
+              </constraints>
+              <required>true</required>
+              <allowFileContent>false</allowFileContent>
+              <hidden>false</hidden>
+              <password>false</password>
+              <prompt/>
+            </field>
+          </dataFields>
+        </descriptor>
+      </listType>
+      <multiple>false</multiple>
+      <constraints>
+        <descriptions/>
+        <uniqueKey>serverName</uniqueKey>
+        <minLength>1</minLength>
+      </constraints>
+      <required>true</required>
+      <allowFileContent>false</allowFileContent>
+      <hidden>false</hidden>
+      <password>false</password>
+      <prompt/>
+    </field>
+  </dataFields>
+</configuration_descriptor>
+"""
+
+        sanitizedXml = """\
+<?xml version="1.0"?>
+<configuration_descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd" version="1.1">
+  <metadata>
+    <displayName>Configuration Descriptor</displayName>
+    <rootElement>configuration</rootElement>
+    <descriptions>
+      <desc>Configuration Descriptor</desc>
+    </descriptions>
+  </metadata>
+  <dataFields>
+    <field>
+      <name>port</name>
+      <descriptions>
+        <desc lang="en_US">Apache Port</desc>
+      </descriptions>
+      <type>int</type>
+      <section>
+        <key>apache_configurator</key>
+      </section>
+      <multiple>false</multiple>
+      <constraints>
+        <descriptions/>
+        <minLength>0</minLength>
+      </constraints>
+      <required>true</required>
+      <allowFileContent>false</allowFileContent>
+      <hidden>false</hidden>
+      <password>false</password>
+      <prompt/>
+    </field>
+    <field>
+      <name>processInfo</name>
+      <descriptions>
+        <desc lang="en_US">Process Ownership Information</desc>
+      </descriptions>
+      <type>compoundType</type>
+      <section>
+        <key>apache_configurator</key>
+      </section>
+      <descriptor version="1.1" id="apache-configuration/process-info">
+        <metadata>
+          <displayName>Process Ownership Information</displayName>
+          <descriptions>
+            <desc lang="en_US">Process Ownership Information</desc>
+          </descriptions>
+        </metadata>
+        <dataFields>
+          <field>
+            <name>user</name>
+            <descriptions>
+              <desc lang="en_US">User</desc>
+            </descriptions>
+            <help href="None"/>
+            <type>str</type>
+            <multiple>false</multiple>
+            <default>apache</default>
+            <constraints>
+              <descriptions/>
+              <minLength>0</minLength>
+            </constraints>
+            <required>true</required>
+            <allowFileContent>false</allowFileContent>
+            <hidden>false</hidden>
+            <password>false</password>
+            <prompt/>
+          </field>
+          <field>
+            <name>group</name>
+            <descriptions>
+              <desc lang="en_US">Group</desc>
+            </descriptions>
+            <help href="None"/>
+            <type>str</type>
+            <multiple>false</multiple>
+            <default>apache</default>
+            <constraints>
+              <descriptions/>
+              <minLength>0</minLength>
+            </constraints>
+            <required>true</required>
+            <allowFileContent>false</allowFileContent>
+            <hidden>false</hidden>
+            <password>false</password>
+            <prompt/>
+          </field>
+        </dataFields>
+      </descriptor>
+      <multiple>false</multiple>
+      <constraints>
+        <descriptions/>
+        <minLength>0</minLength>
+      </constraints>
+      <required>true</required>
+      <allowFileContent>false</allowFileContent>
+      <hidden>false</hidden>
+      <password>false</password>
+      <prompt/>
+    </field>
+    <field>
+      <name>vhosts</name>
+      <descriptions>
+        <desc lang="en_US">Virtual Hosts</desc>
+      </descriptions>
+      <type>listType</type>
+      <section>
+        <key>apache_configurator</key>
+      </section>
+      <listType>
+        <descriptor version="1.1" id="apache-configuration/vhost">
+          <metadata>
+            <displayName>Virtual Host Configuration</displayName>
+            <rootElement>vhost</rootElement>
+            <descriptions>
+              <desc lang="en_US">Virtual Host Configuration</desc>
+            </descriptions>
+          </metadata>
+          <dataFields>
+            <field>
+              <name>serverName</name>
+              <descriptions>
+                <desc lang="en_US">Virtual Host Name</desc>
+              </descriptions>
+              <type>str</type>
+              <multiple>false</multiple>
+              <constraints>
+                <descriptions/>
+                <minLength>0</minLength>
+              </constraints>
+              <required>true</required>
+              <allowFileContent>false</allowFileContent>
+              <hidden>false</hidden>
+              <password>false</password>
+              <prompt/>
+            </field>
+            <field>
+              <name>documentRoot</name>
+              <descriptions>
+                <desc lang="en_US">Virtual Host Document Root</desc>
+              </descriptions>
+              <type>str</type>
+              <multiple>false</multiple>
+              <constraints>
+                <descriptions/>
+                <minLength>0</minLength>
+              </constraints>
+              <required>true</required>
+              <allowFileContent>false</allowFileContent>
+              <hidden>false</hidden>
+              <password>false</password>
+              <prompt/>
+            </field>
+          </dataFields>
+        </descriptor>
+      </listType>
+      <multiple>false</multiple>
+      <constraints>
+        <descriptions/>
+        <uniqueKey>serverName</uniqueKey>
+        <minLength>1</minLength>
+      </constraints>
+      <required>true</required>
+      <allowFileContent>false</allowFileContent>
+      <hidden>false</hidden>
+      <password>false</password>
+      <prompt/>
+    </field>
+  </dataFields>
+</configuration_descriptor>
+"""
+        dsc = descriptor.SystemConfigurationDescriptor(fromStream=xml)
+        xml2 = dsc.toxml()
+        self.assertXMLEquals(xml2, sanitizedXml)
+
     def testSections1(self):
         desc1 = descriptor.ConfigurationDescriptor()
         desc1.setDisplayName('Configuration Descriptor')
