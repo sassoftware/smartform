@@ -16,14 +16,37 @@ class ProtectedUnicode(unicode):
     __repr__ = __safe_str__
 
 class ListField(list):
-    __slots__ = []
+    __slots__ = ['_nodeDescriptor']
+    def __init__(self, *args, **kwargs):
+        self._nodeDescriptor = kwargs.pop('nodeDescriptor')
+        list.__init__(self, *args, **kwargs)
+
     def checkConstraints(self, raiseException=True):
         ret = []
         for x in self:
             ret.extend(x.checkConstraints(raiseException=False))
+        minLength = self._getConstraintValue('minLength')
+        maxLength = self._getConstraintValue('maxLength')
+        curLen = len(self)
+
+        description = self._nodeDescriptor.get_descriptions().asDict().get(None)
+        if minLength is not None and curLen < minLength:
+            ret.append("'%s': fails minimum length check '%s' (actual: %d)" %
+                (description, minLength, curLen))
+        if maxLength is not None and curLen > maxLength:
+            ret.append("'%s': fails maximum length check '%s' (actual: %d)" %
+                (description, maxLength, curLen))
         if ret and raiseException:
             raise errors.ConstraintsValidationError(ret)
         return ret
+
+    def _getConstraintValue(self, constraintName):
+        vlist = [ x.get('value')
+            for x in self._nodeDescriptor.constraintsPresentation
+                if x['constraintName'] == constraintName ]
+        if not vlist:
+            return None
+        return vlist[0]
 
 class _DescriptorDataField(object):
     __slots__ = [ '_node', '_nodeDescriptor' ]

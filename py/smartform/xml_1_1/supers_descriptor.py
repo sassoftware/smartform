@@ -1796,22 +1796,36 @@ class constraintsType(GeneratedsSuper):
             obj_.build(child_)
             self.set_maxLength(obj_)
 
+
+    _ConstraintsTypes =  [ 'range', 'legalValues', 'regexp', 'length']
+    _SingleConstraintsTypes = [ 'minLength', 'maxLength', ]
+
     def sanitize(self):
-        for constraintName in [ 'range', 'legalValues', 'regexp', 'length' ]:
+        for constraintName in self._ConstraintsTypes:
             constraints = getattr(self, constraintName)
             nonEmptyConstraints = [ x for x in constraints
                 if x.presentation() ]
             setattr(self, constraintName, nonEmptyConstraints)
+        for constraintName in self._SingleConstraintsTypes:
+            # Weed out empty presentations
+            val = getattr(self, constraintName)
+            if not val or not val.presentation():
+                setattr(self, constraintName, None)
 
     def presentation(self):
         ret = []
-        for constraintName in [ 'range', 'legalValues', 'regexp', 'length' ]:
+        for constraintName in self._ConstraintsTypes:
             # Weed out empty presentations
             ret.extend(
                 dict(y, constraintName=constraintName)
                     for y in (
                         x.presentation() for x in getattr(self, constraintName))
                     if y)
+        for constraintName in self._SingleConstraintsTypes:
+            # Weed out empty presentations
+            val = getattr(self, constraintName)
+            if val and val.presentation():
+                ret.append(dict(val.presentation(), constraintName=constraintName))
         return ret
 
     def fromData(self, dataList):

@@ -520,7 +520,7 @@ class DescriptorData(_BaseClass):
             else:
                 child.attrib.pop('list', None)
             if fieldDesc.listType:
-                field = dnodes.ListField()
+                field = dnodes.ListField(nodeDescriptor=fieldDesc)
                 childName = fieldDesc._descriptor.getRootElement()
                 for csub in child.iterchildren(childName):
                     field.append(DescriptorData(fromStream=csub,
@@ -584,7 +584,7 @@ class DescriptorData(_BaseClass):
             elm.attrib['list'] = 'true'
             subdesc = fdesc._descriptor
             subName = subdesc.getRootElement()
-            field = dnodes.ListField()
+            field = dnodes.ListField(nodeDescriptor=fdesc)
             for val in value:
                 subelm = etree.SubElement(elm, subName)
                 field.append(self._addCompoundTypeField(subdesc, subelm, val))

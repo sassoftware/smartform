@@ -635,7 +635,7 @@ class DescriptorTest(BaseTest):
     <field>
       <name>vhosts</name>
       <descriptions>
-        <desc lang="en_US">Virtual Hosts</desc>
+        <desc>Virtual Hosts</desc>
       </descriptions>
       <type>listType</type>
       <section>
@@ -806,7 +806,7 @@ class DescriptorTest(BaseTest):
     <field>
       <name>vhosts</name>
       <descriptions>
-        <desc lang="en_US">Virtual Hosts</desc>
+        <desc>Virtual Hosts</desc>
       </descriptions>
       <type>listType</type>
       <section>
@@ -879,10 +879,35 @@ class DescriptorTest(BaseTest):
         self.assertXMLEquals(xml2, sanitizedXml)
 
         # RCE-955
-        xml = """<configuration id="https://qa3.eng.rpath.com/api/v1/inventory/systems/756/configuration" href="https://qa3.eng.rpath.com/api/v1/inventory/systems/756/configuration"><port>8080</port><processInfo /><vhosts /></configuration>"""
+        xml = """\
+<configuration id="https://qa3.eng.rpath.com/api/v1/inventory/systems/756/configuration" href="https://qa3.eng.rpath.com/api/v1/inventory/systems/756/configuration">
+  <port>8080</port>
+  <processInfo/>
+  <vhosts>
+    <vhost>
+      <serverName>a.com</serverName>
+      <documentRoot>/srv/a</documentRoot>
+    </vhost>
+  </vhosts>
+</configuration>
+"""
         ddata = descriptor.DescriptorData(fromStream=xml, descriptor=dsc)
         xml2 = ddata.toxml()
         self.assertXMLEquals(xml2, xml.replace('<vhosts', '<vhosts list="true"'))
+
+        # Trip the minLength check
+        xml = """\
+<configuration id="https://qa3.eng.rpath.com/api/v1/inventory/systems/756/configuration" href="https://qa3.eng.rpath.com/api/v1/inventory/systems/756/configuration">
+  <port>8080</port>
+  <processInfo/>
+  <vhosts/>
+</configuration>
+"""
+
+        err = self.failUnlessRaises(errors.ConstraintsValidationError,
+            descriptor.DescriptorData, fromStream=xml, descriptor=dsc)
+        self.failUnlessEqual(err.args[0],
+            ["'Virtual Hosts': fails minimum length check '1' (actual: 0)"])
 
     def testSections1(self):
         desc1 = descriptor.ConfigurationDescriptor()
