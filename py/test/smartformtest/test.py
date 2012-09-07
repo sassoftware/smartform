@@ -878,6 +878,10 @@ class DescriptorTest(BaseTest):
         xml2 = dsc.toxml()
         self.assertXMLEquals(xml2, sanitizedXml)
 
+        # RCE-955
+        xml = """<configuration id="https://qa3.eng.rpath.com/api/v1/inventory/systems/756/configuration" href="https://qa3.eng.rpath.com/api/v1/inventory/systems/756/configuration"><port>8080</port><processInfo /><vhosts /></configuration>"""
+        ddata = descriptor.DescriptorData(fromStream=xml, descriptor=dsc)
+
     def testSections1(self):
         desc1 = descriptor.ConfigurationDescriptor()
         desc1.setDisplayName('Configuration Descriptor')
