@@ -283,6 +283,7 @@ class BaseDescriptor(_BaseClass):
             # property, in order to get access to methods like
             # getDataField()
             df._descriptor = nodeType.dsc
+            df._descriptor.setRootElement(name)
         elif isinstance(nodeType, self.ListType):
             if not nodeType.dsc.getRootElement():
                 raise errors.MissingRootElement()
@@ -663,8 +664,10 @@ class DescriptorData(_BaseClass):
         condFieldName = field.conditional.fieldName
         if condFieldName not in fieldsMap:
             return False
-        return (fieldsMap[condFieldName].getValue() ==
-                field.conditional.value)
+        switchField = fieldsMap[condFieldName]
+        condValue = dnodes._cast(field.conditional.value,
+            switchField._nodeDescriptor.type)
+        return (switchField.getValue() == condValue)
 
 
     def _cleanseValue(self, fieldDescription, value):

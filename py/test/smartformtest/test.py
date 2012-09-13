@@ -399,6 +399,7 @@ class DescriptorTest(BaseTest):
     def testCompoundType1(self):
         dsc1 = descriptor.ConfigurationDescriptor()
         dsc1.setId("apache-configuration/process-info")
+        dsc1.setRootElement("blabbedy-blah")
         dsc1.setDisplayName('Process Ownership Information')
         dsc1.addDescription('Process Ownership Information')
         dsc1.addDataField("user", type="str", default="apache", required=True,
@@ -908,6 +909,166 @@ class DescriptorTest(BaseTest):
             descriptor.DescriptorData, fromStream=xml, descriptor=dsc)
         self.failUnlessEqual(err.args[0],
             ["'Virtual Hosts': fails minimum length check '1' (actual: 0)"])
+
+    def testCompoundType3_conditional(self):
+        # A descriptor field being conditional on a boolean field
+        xml = """\
+<descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd">
+  <metadata>
+    <displayName>FooDescriptor</displayName>
+    <rootElement>descriptor_data</rootElement>
+    <descriptions>
+      <desc>Description</desc>
+    </descriptions>
+  </metadata>
+  <dataFields>
+    <field>
+      <name>imageId</name>
+      <descriptions>
+        <desc>Image ID</desc>
+      </descriptions>
+      <type>str</type>
+      <default>7</default>
+      <required>true</required>
+      <hidden>true</hidden>
+    </field>
+    <field>
+      <name>withConfiguration</name>
+      <descriptions/>
+      <type>bool</type>
+      <default>False</default>
+      <required>true</required>
+    </field>
+    <field>
+      <name>system_configuration</name>
+      <descriptions>
+        <desc>System Configuration</desc>
+      </descriptions>
+      <type>compoundType</type>
+      <descriptor version="1.1">
+        <metadata>
+          <displayName>System Configuration</displayName>
+          <descriptions>
+            <desc>System Configuration</desc>
+          </descriptions>
+        </metadata>
+        <dataFields>
+          <field>
+            <name>user</name>
+            <descriptions>
+              <desc>User</desc>
+            </descriptions>
+            <type>str</type>
+            <required>true</required>
+          </field>
+          <field>
+            <name>group</name>
+            <descriptions>
+              <desc>Group</desc>
+            </descriptions>
+            <type>str</type>
+            <required>true</required>
+          </field>
+        </dataFields>
+      </descriptor>
+      <required>true</required>
+      <conditional>
+        <fieldName>withConfiguration</fieldName>
+        <operator>eq</operator>
+        <value>true</value>
+      </conditional>
+    </field>
+  </dataFields>
+</descriptor>"""
+        descr = descriptor.ConfigurationDescriptor(fromStream=xml)
+        xml = """\
+<descriptor_data>
+  <imageId>123</imageId>
+</descriptor_data>
+"""
+        ddata = descriptor.DescriptorData(fromStream=xml, descriptor=descr)
+        self.failUnlessEqual(
+            [ (x.getName(), x.getValue()) for x in ddata.getFields() ],
+            [ ('imageId', '123'), ('withConfiguration', False), ])
+
+        xml = """\
+<descriptor_data>
+  <imageId>123</imageId>
+  <withConfiguration>true</withConfiguration>
+</descriptor_data>
+"""
+        e = self.assertRaises(errors.ConstraintsValidationError,
+            descriptor.DescriptorData, fromStream=xml, descriptor=descr)
+        self.assertEqual(e.args[0],
+            ["Missing field: 'system_configuration'"])
+
+        xml = """\
+<descriptor_data>
+  <imageId>123</imageId>
+  <withConfiguration>true</withConfiguration>
+  <system_configuration>
+  </system_configuration>
+</descriptor_data>
+"""
+        e = self.assertRaises(errors.ConstraintsValidationError,
+            descriptor.DescriptorData, fromStream=xml, descriptor=descr)
+        self.assertEqual(e.args[0],
+            ["Missing field: 'user'", "Missing field: 'group'", ])
+
+        xml = """\
+<descriptor_data>
+  <imageId>123</imageId>
+  <withConfiguration>true</withConfiguration>
+  <system_configuration>
+    <user>forrest</user>
+    <group>greenbow</group>
+  </system_configuration>
+</descriptor_data>
+"""
+
+        ddata = descriptor.DescriptorData(fromStream=xml, descriptor=descr)
+        fields = ddata.getFields()
+        simpleFields, complexFields = fields[:-1], fields[-1:]
+        self.failUnlessEqual(
+            [ (x.getName(), x.getValue()) for x in simpleFields ],
+            [ ('imageId', '123'), ('withConfiguration', True), ])
+
+        self.failUnlessEqual(
+            [
+                [(x.getName(), x.getValue()) for x in y.getFields()]
+                for y in complexFields ],
+            [
+                [ ('user', 'forrest'), ('group', 'greenbow') ]
+            ])
+
+        # Change the embedded descriptor to add some defaults
+        complexField = descr.getDataField('system_configuration')
+        for field in complexField._descriptor.getDataFields():
+            field.set_default(['apache'])
+
+        xml = """\
+<descriptor_data>
+  <imageId>123</imageId>
+  <withConfiguration>true</withConfiguration>
+  <system_configuration>
+  </system_configuration>
+</descriptor_data>
+"""
+
+        ddata = descriptor.DescriptorData(fromStream=xml, descriptor=descr)
+        fields = ddata.getFields()
+        simpleFields, complexFields = fields[:-1], fields[-1:]
+        self.failUnlessEqual(
+            [ (x.getName(), x.getValue()) for x in simpleFields ],
+            [ ('imageId', '123'), ('withConfiguration', True), ])
+
+        self.failUnlessEqual(
+            [
+                [(x.getName(), x.getValue()) for x in y.getFields()]
+                for y in complexFields ],
+            [
+                [ ('user', 'apache'), ('group', 'apache') ]
+            ])
 
     def testSections1(self):
         desc1 = descriptor.ConfigurationDescriptor()
