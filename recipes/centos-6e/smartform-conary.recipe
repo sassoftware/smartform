@@ -10,7 +10,7 @@
 # or fitness for a particular purpose. See the MIT License for full details.
 #
 
-loadInstalled('python')
+loadInstalled('python-conary')
 class Smartform(PackageRecipe):
     name = 'smartform-conary'
     version = '0'
@@ -53,7 +53,7 @@ class Smartform(PackageRecipe):
                 contents='%r\n' % configuration)
 
             # run the tests
-            r.macros.sitepkgs = Python.sitepkgs
+            r.macros.sitepkgs = PythonConary.sitepkgs
             r.Make('test TESTOUTPUTDIR=%(destdir)s%(testoutputdir)s TESTCOVERAGEDIR=%(destdir)s%(coverdir)s COVERAGEDUMP=coverage_dump', preMake='CONARY_PATH=%(sitepkgs)s COVERAGE_PATH=%(sitepkgs)s')
             #r.Install('as3/smartform-test/bin-debug/test/output/*.xml', '%(testoutputdir)s')
 
