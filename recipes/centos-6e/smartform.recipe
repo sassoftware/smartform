@@ -13,7 +13,7 @@
 loadSuperClass('rpathpackage')
 
 class Smartform(RpathPackageRecipe):
-    name = 'smartform'
+    name = 'smartform-conary'
     version = '0'
 
     buildRequires = [ 'make:rpm',
