@@ -1,0 +1,65 @@
+#
+# Copyright (c) 2008-2009 rPath, Inc.
+#
+# This program is distributed under the terms of the MIT License as found 
+# in a file called LICENSE. If it is not present, the license
+# is always available at http://www.opensource.org/licenses/mit-license.php.
+#
+# This program is distributed in the hope that it will be useful, but
+# without any waranty; without even the implied warranty of merchantability
+# or fitness for a particular purpose. See the MIT License for full details.
+#
+
+loadInstalled('python')
+class Smartform(PackageRecipe):
+    name = 'smartform-conary'
+    version = '0'
+
+    buildRequires = [ 'flexsdk', 'xobj', 'make:runtime',
+        'procps:runtime', 'sun-jdk', 'ant:runtime', 'ant:java',
+        'xorg-server:runtime', 'util-linux:runtime', 'lxml:python',
+        'xkeyboard-config', 'xkbcomp', 'xfs', 'group-xorg-fonts',
+    ]
+
+    Flags.test = True
+
+    if Flags.test:
+        buildRequires.append('testutils')
+
+    def setup(r):
+        r.addMercurialSnapshot('http://scc.eng.rpath.com/products/smartform/trunk/smartform')
+        r.Make()
+
+        # install the as3 libs
+        # as3 code is now in flexlibs
+        #r.Install('as3/smartform/bin/*.swc', '/opt/smartform/as3/lib/')
+
+        # Install the python module
+        r.MakeInstall()
+
+        if Flags.test:
+            # create the test config object
+            configuration = {}
+            configuration['arch'] = Arch.getCurrentArch()._name
+
+            # create the test dirs
+            r.macros.testinfodir = '%(datadir)s/testinfo/%(name)s-%(version)s'
+            r.macros.testoutputdir = '%(testinfodir)s/tests'
+            r.macros.coverdir = '%(testinfodir)s/coverage'
+            r.MakeDirs(r.macros.testoutputdir, r.macros.coverdir)
+
+            # write the test config file
+            r.Create('%(testinfodir)s/configuration.txt',
+                contents='%r\n' % configuration)
+
+            # run the tests
+            r.macros.sitepkgs = Python.sitepkgs
+            r.Make('test TESTOUTPUTDIR=%(destdir)s%(testoutputdir)s TESTCOVERAGEDIR=%(destdir)s%(coverdir)s COVERAGEDUMP=coverage_dump', preMake='CONARY_PATH=%(sitepkgs)s COVERAGE_PATH=%(sitepkgs)s')
+            #r.Install('as3/smartform-test/bin-debug/test/output/*.xml', '%(testoutputdir)s')
+
+            # add test data to testinfo component
+            r.ComponentSpec('testinfo', '%(testinfodir)s/.*')
+            r.ByDefault(exceptions=[':testinfo'])
+
+        # Need :data for the schema definitions
+        r.ComponentRequires({'data': set(['python'])})
