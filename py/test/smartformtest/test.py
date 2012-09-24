@@ -2081,6 +2081,37 @@ class DescriptorConstraintTest(BaseTest):
         self.assertEquals(ddata.getField('reqFieldWithDefault'), 42)
         self.assertEquals(ddata.getField('multiField'), ['Baz', 'Foo'])
 
+    def testXmlField(self):
+        dsc = descriptor.ConfigurationDescriptor()
+        dsc.setRootElement("data")
+        dsc.setDisplayName('test')
+        dsc.addDescription("Test")
+        dsc.addDataField("blooper", descriptions="Blooper")
+
+        ddata = descriptor.DescriptorData(descriptor=dsc)
+        xml = '<xml attr="1"><a>1</a></xml>'
+        ddata.addField('blooper', xml)
+        sio = StringIO()
+        ddata.serialize(sio)
+        sio.seek(0)
+
+        ddata = descriptor.DescriptorData(descriptor=dsc, fromStream=sio)
+        self.assertEquals(ddata.getField('blooper'), xml)
+
+        # Test with default data
+        dsc = descriptor.ConfigurationDescriptor()
+        dsc.setRootElement("data")
+        dsc.setDisplayName('test')
+        dsc.addDescription("Test")
+        dsc.addDataField("blooper", descriptions="Blooper", required=True)
+
+        field = dsc.getDataField("blooper")
+        field.set_default([xml])
+
+        # Default values do not show up automatically
+        ddata = descriptor.DescriptorData(descriptor=dsc)
+        self.assertEquals(ddata.getField('blooper'), None)
+
 xmlDescriptor1 = """<?xml version="1.0" encoding="UTF-8"?>
 <descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd" id="Some-ID" version="1.1">
   <metadata>
