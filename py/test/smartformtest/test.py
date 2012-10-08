@@ -1465,6 +1465,103 @@ class DescriptorTest(BaseTest):
         descr.setRootElement('configuration')
         ddata = descriptor.DescriptorData(fromStream=dataXml, descriptor=descr)
 
+    def testListType2(self):
+        # RCE-1194
+
+        xml = """
+<descriptor>
+  <dataFields>
+    <field>
+      <default>complex_iprop-simple-default</default>
+      <descriptions>
+        <desc lang="en_US">complex_iprop-simple-description</desc>
+      </descriptions>
+      <name>complex_iprop-simple-name</name>
+      <password>false</password>
+      <prompt>
+        <desc lang="en_US">complex_iprop-simple-prompte</desc>
+      </prompt>
+      <required>true</required>
+      <type>str</type>
+    </field>
+    <field>
+      <name>complex_iprop-compound</name>
+      <descriptions>
+        <desc lang="en_US">complex_iprop-compound-description</desc>
+      </descriptions>
+      <type>compoundType</type>
+      <descriptor version="1.1" id="qatest/complex_iprop-compound">
+        <metadata>
+          <displayName>complex_iprop-compound-displayname</displayName>
+          <descriptions><desc>complex_iprop-compound-descr</desc></descriptions>
+        </metadata>
+        <dataFields>
+          <field>
+            <name>complex_iprop-compound-field1</name>
+            <descriptions><desc>complex_iprop-compound-field1-descr</desc></descriptions>
+            <type>str</type>
+            <default>complex_iprop-compound-field1-default</default>
+            <required>true</required>
+          </field>
+          <field>
+            <name>complex_iprop-compound-field2</name>
+            <descriptions><desc>complex_iprop-compound-field2-descr</desc></descriptions>
+            <type>str</type>
+            <default>complex_iprop-compound-field2-default</default>
+            <required>true</required>
+          </field>
+        </dataFields>
+      </descriptor>
+      <required>true</required>
+    </field>
+    <field>
+      <name>complex_iprop-list</name>
+      <descriptions>
+        <desc lang="en_US">complex_iprop-list-descr</desc>
+      </descriptions>
+      <type>listType</type>
+      <listType>
+        <descriptor version="1.1" id="qatest/complex_iprop-list">
+          <metadata>
+            <displayName>complex_iprop-list-displayname</displayName>
+            <rootElement>complex_iprop-listitem</rootElement>
+            <descriptions><desc>complex_iprop-list-descr</desc></descriptions>
+          </metadata>
+          <dataFields>
+            <field>
+              <name>complex_iprop-list-item</name>
+              <descriptions><desc>complex_iprop-list-item-descr</desc></descriptions>
+              <type>str</type>
+              <default>complex_iprop-list-item-descr</default>
+              <required>true</required>
+            </field>
+          </dataFields>
+        </descriptor>
+      </listType>
+      <required>true</required>
+    </field>
+  </dataFields>
+</descriptor>"""
+
+        descr = descriptor.ConfigurationDescriptor(fromStream=xml)
+        descr.setRootElement('system_configuration')
+
+        xml = """
+        <system_configuration>
+            <complex_iprop-compound>
+                <complex_iprop-compound-field1>complex_iprop-compound-field1-default</complex_iprop-compound-field1>
+                <complex_iprop-compound-field2>complex_iprop-compound-field2-default</complex_iprop-compound-field2>
+            </complex_iprop-compound>
+            <complex_iprop-list list="true">
+                <complex_iprop-listitem>
+                    <complex_iprop-list-item>complex_iprop-list-item-descr</complex_iprop-list-item>
+                </complex_iprop-listitem>
+            </complex_iprop-list>
+            <complex_iprop-simple-name>complex_iprop-simple-default</complex_iprop-simple-name>
+        </system_configuration>"""
+
+        ddata = descriptor.DescriptorData(fromStream=xml, descriptor=descr)
+
 class DescriptorConstraintTest(BaseTest):
     def testIntType(self):
         # only a partial def for the pieces we care about
