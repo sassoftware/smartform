@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+        xmlns:s="library://ns.adobe.com/flex/spark" 
+        xmlns:mx="library://ns.adobe.com/flex/mx"
+        minHeight="48"
+        >
+    <!-- host component -->
+    <fx:Metadata>
+        [HostComponent("com.rpath.raf.views.NotificationBanner")]
+    </fx:Metadata>
+    
+    <fx:Script>
+        <![CDATA[
+            
+            import mx.events.FlexEvent;
+            
+            override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
+            {
+                if (!hostComponent.isWarning) 
+                {
+                    currentState = "INFO";
+                }
+                else
+                {
+                    currentState = "WARNING";
+                }
+                
+                super.updateDisplayList(unscaledWidth, unscaledHeight);
+            }
+            
+            [Bindable]
+            [Embed(source='/assets/images/smartform_icons.swf', symbol="alert")]
+            private static var iconImageClassWarning:Class;
+            
+        ]]>
+    </fx:Script>
+    
+    
+    <s:states>
+        <s:State name="INFO"/>
+        <s:State name="WARNING"/>
+    </s:states>
+    
+    <s:Group id="main"
+             left="0" right="0" top="0" bottom="0"
+             >
+        
+        <s:Rect left="6" right="6" top="6" bottom="6" 
+                topLeftRadiusX="4" topRightRadiusX="4" 
+                bottomLeftRadiusX="4" bottomRightRadiusX="4"
+                >
+            <s:fill>
+                <s:SolidColor id="bgFill" 
+                              color.WARNING="{hostComponent.getStyle('warningBackgroundColor')}" 
+                              color.INFO="{hostComponent.getStyle('infoBackgroundColor')}"
+                              />
+            </s:fill>
+        </s:Rect>
+        
+        
+        <s:Rect left="6" top="6" bottom="6" width="60"
+                topLeftRadiusX="4" topRightRadiusX="0" 
+                bottomLeftRadiusX="4" bottomRightRadiusX="0"
+                includeIn="WARNING"
+                >
+            <s:fill>
+                <s:SolidColor id="iconFill" 
+                              color="0x000000"
+                              />
+            </s:fill>
+        </s:Rect>
+        
+        <s:Rect left="65" top="6" bottom="6" width="2"
+                includeIn="WARNING"
+                >
+            <s:fill>
+                <s:SolidColor id="iconBorder" 
+                              color="{hostComponent.getStyle('warningBorderColor')}" 
+                              />
+            </s:fill>
+        </s:Rect>
+        
+        <s:Rect left="6" right="6" top="6" bottom="6" 
+                topLeftRadiusX="4" topRightRadiusX="4" 
+                bottomLeftRadiusX="4" bottomRightRadiusX="4"
+                >
+            <s:stroke>
+                <s:SolidColorStroke id="bgBorder" 
+                                    color.WARNING="{hostComponent.getStyle('warningBorderColor')}" 
+                                    color.INFO="{hostComponent.getStyle('infoBorderColor')}"
+                                    weight.INFO="1"
+                                    weight.WARNING="2"
+                                    />
+            </s:stroke>
+        </s:Rect>
+        
+        <s:Group left="6" top="6" bottom="6" width="60"
+                 includeIn="WARNING"
+                 >
+            <mx:Image id="warningIcon" 
+                      verticalCenter="0" horizontalCenter="0"
+                      source="{iconImageClassWarning}" 
+                      height="24" width="24" 
+                      includeIn="WARNING"
+                      />
+        </s:Group>
+        
+        <s:HGroup left="12" right="12" top="12" bottom="12"
+                  verticalAlign="middle" horizontalAlign="left"
+                  >
+            <s:Spacer width="60" includeIn="WARNING" />
+            <s:RichEditableText id="statusLabel" text="{hostComponent.message}" 
+                                selectable="true"
+                                fontSize="12" 
+                                width="95%" 
+                                color.WARNING="{hostComponent.getStyle('warningColor')}" 
+                                color.INFO="{hostComponent.getStyle('infoColor')}"
+                                />
+            
+            <s:HGroup id="optionalControlsGroup" minWidth="0" horizontalAlign="right"/>
+            
+        </s:HGroup>
+        
+    </s:Group>
+    
+    
+    
+    
+</s:Skin>

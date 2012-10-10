@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+Copyright (c) 2009-2011 rPath, Inc.
+
+This program is distributed under the terms of the MIT License as found 
+in a file called LICENSE. If it is not present, the license
+is always available at http://www.opensource.org/licenses/mit-license.php.
+
+This program is distributed in the hope that it will be useful, but
+without any warranty; without even the implied warranty of merchantability
+or fitness for a particular purpose. See the MIT License for full details.
+-->
+
+
+<s:DataRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+         xmlns:s="library://ns.adobe.com/flex/spark" 
+         xmlns:mx="library://ns.adobe.com/flex/mx" 
+         xmlns:smartform="http://www.rpath.com/2009/smartform.mxml"
+         
+         xmlns:views="com.rpath.raf.views.*"
+         
+         minHeight="0"
+         
+         contentBackgroundAlpha="0"
+         
+         preinitialize="preinitializeHandler(event)"
+         initialize="initializeHandler(event)"
+         implements="com.rpath.raf.util.IValidationAware"
+         >
+    
+    <fx:Metadata>
+        [Event(name="valid", type="mx.events.FlexEvent")]
+        [Event(name="invalid", type="mx.events.FlexEvent")]
+    </fx:Metadata>
+
+    <s:layout>
+        <s:VerticalLayout />
+    </s:layout>
+    
+    <fx:Script>
+    <![CDATA[
+        import com.rpath.raf.models.EnumDescriptor;
+        import com.rpath.raf.models.EnumTypesDescriptor;
+        import com.rpath.raf.util.ErrorTipManager;
+        import com.rpath.raf.util.IValidationAware;
+        import com.rpath.raf.util.ValidationHelper;
+        
+        import mx.core.IVisualElement;
+        import mx.core.UIComponent;
+        import mx.events.FlexEvent;
+        import mx.events.ValidationResultEvent;
+        
+        [Bindable]
+        public var enumTypes:EnumTypesDescriptor;
+        
+        [Bindable("dataChange")]
+        override public function get data():Object
+        {
+            return super.data;
+        }
+        
+        override public function set data(value:Object):void
+        {
+            super.data = value;
+            enumTypes = data as EnumTypesDescriptor;
+        }
+        
+        protected function enumGroupAddHandler(event:MouseEvent):void
+        {
+            enumTypes.addItem(new EnumDescriptor());
+        }
+        
+        [Bindable]
+        public var editable:Boolean;
+        
+        [Bindable]
+        public var showLang:Boolean;
+        
+        protected function preinitializeHandler(event:FlexEvent):void
+        {
+            addEventListener("removeEnumItem", onRemoveEnumItem);
+            addEventListener("checkRemoveEnumItem", onCheckRemoveEnumItem);
+        }
+        
+
+        private function onCheckRemoveEnumItem(event:Event):void
+        {
+            if (enumTypes.length < 2)
+                event.preventDefault();
+        }
+        
+        private function onRemoveEnumItem(event:Event):void
+        {
+            var elem:* = event.target.data;
+            enumTypes.removeItemIfPresent(elem);
+        }
+        
+        
+        // VALIDATION --------------------------------------------
+        
+        
+        protected function initializeHandler(event:FlexEvent):void
+        {
+            validationHelper = new ValidationHelper([validators, enumList], this);
+        }
+
+        
+        [Bindable]
+        public function get isValid():Boolean
+        {
+            return _isValid;
+        }
+        
+        private var _isValid:Boolean = true;;
+        
+        public function set isValid(v:Boolean):void
+        {
+            _isValid = v;
+        }
+        
+        [Bindable]
+        public function get validationHelper():ValidationHelper
+        {
+            return _validationHelper;
+        }
+        
+        private var _validationHelper:ValidationHelper;
+        
+        public function set validationHelper(v:ValidationHelper):void
+        {
+            _validationHelper = v;
+        }
+
+        [Bindable]
+        public function get errorTipManager():ErrorTipManager
+        {
+            return _errorTipManager;
+        }
+        
+        private var _errorTipManager:ErrorTipManager;
+        
+        public function set errorTipManager(v:ErrorTipManager):void
+        {
+            _errorTipManager = v;
+            if (validationHelper)
+                validationHelper.errorTipManager = _errorTipManager;
+        }
+
+        /** validate forces a validation pass and pops all error flags
+         */
+        public function validate(suppressErrors:Boolean=false):void
+        {
+            if (!isValid)
+            {
+                for (var i:int; i < this.numElements; i++)
+                {
+                    var child:IVisualElement = this.getElementAt(i);
+                    if (child is IValidationAware)
+                    {
+                        (child as IValidationAware).validate();
+                    }
+                }
+            }
+        }
+
+        // TODO: add validation locally to this view that checks we have > 0 
+        // enum entries and that they're all valid rolled up...
+        // Q: Do we need a "validation aware DataGroup" to ease this kind of thing?
+        public override function validationResultHandler(event:ValidationResultEvent):void
+        {
+            // let our specific input control mark itself appropriately
+            var child:UIComponent;
+            
+            for (var i:int = 0; i < enumList.numElements; i++)
+            {
+                child = enumList.getElementAt(i) as UIComponent;
+                if (child)
+                {
+                    child.validationResultHandler(event);
+                }
+            }
+            
+            //super.validationResultHandler(event);
+        }
+        
+    ]]>
+    </fx:Script>
+    
+    <fx:Declarations>
+        <fx:Array id="validators">
+            <smartform:CollectionValidator id="nonEmptyEnumEntriesV"
+                                           source="{this.data}"
+                                           collectionIsEmptyError="At least one key/value pair is required for this type of property"
+                                           />
+        </fx:Array>   
+    </fx:Declarations>
+
+    
+    <s:DataGroup id="enumList"  dataProvider="{data}"
+                 minHeight="0"
+                 enabled="{editable &amp;&amp; enabled}"
+                 width="100%"
+                 minWidth="300"
+                 >
+        <s:layout>
+            <s:VerticalLayout />
+        </s:layout>
+        <s:itemRenderer>
+            <fx:Component>
+                <views:EnumDescItemRenderer width="100%"
+                                            enabled="{parentDocument.enabled}"
+                                            editable="{parentDocument.editable}"
+                                            showLang="{parentDocument.showLang}"
+                                            allDescs="{parentDocument.enumTypes}"
+                                            valid="enumdescitemrenderer1_validHandler(event)"
+                                            invalid="enumdescitemrenderer1_invalidHandler(event)"
+                                            >
+                    <fx:Script>
+                    <![CDATA[
+                        import mx.events.FlexEvent;
+                        
+                        protected function enumdescitemrenderer1_validHandler(event:FlexEvent):void
+                        {
+                            parentDocument.enumList.dispatchEvent(event.clone());
+                        }
+                        
+                        protected function enumdescitemrenderer1_invalidHandler(event:FlexEvent):void
+                        {
+                            parentDocument.enumList.dispatchEvent(event.clone());
+                        }
+                        
+                    ]]>
+                    </fx:Script>
+                </views:EnumDescItemRenderer>
+
+            </fx:Component>
+        </s:itemRenderer>
+    </s:DataGroup>
+    
+    <s:Button id="addButton"
+              toolTip="Add"  width="32"
+              click="enumGroupAddHandler(event)"
+              includeInLayout="{editable &amp;&amp; enabled}" 
+              visible="{addButton.includeInLayout}"
+              skinClass="com.rpath.raf.skins.IconButtonSkin"
+              icon="@Embed(source='/assets/images/add.png')"
+              />
+    
+</s:DataRenderer>

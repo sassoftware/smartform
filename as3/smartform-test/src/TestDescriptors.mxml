@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+#
+# Copyright (c) 2008-2011 rPath, Inc.
+#
+# All rights reserved
+#
+-->
+
+<fx:Object xmlns:fx="http://ns.adobe.com/mxml/2009" 
+           xmlns:s="library://ns.adobe.com/flex/spark" 
+           xmlns:mx="library://ns.adobe.com/flex/mx" 
+           >
+    <fx:Declarations>
+        
+        
+        <fx:XML id="launch_vsphere_metadata" source="/data/test/descriptors/launch_vsphere.xml" />
+        <fx:XML id="configure_ec2_metadata" source="/data/test/descriptors/configure_ec2.xml" />
+        <fx:XML id="configure_vsphere_metadata" source="/data/test/descriptors/configure_vsphere.xml" />
+        <fx:XML id="single_metadata" source="/data/test/descriptors/single.xml" />
+        <fx:XML id="double_metadata" source="/data/test/descriptors/double.xml" />
+        <fx:XML id="booltest_metadata" source="/data/test/descriptors/booltest.xml" />
+        <fx:XML id="conditional_metadata" source="/data/test/descriptors/conditional.xml" />
+        <fx:XML id="conditional_launch" source="/data/test/descriptors/conditional_launch.xml" />
+        <fx:XML id="large_metadata" source="/data/test/descriptors/large.xml" />
+        <fx:XML id="complex_metadata" source="/data/test/descriptors/complex.xml" />
+        <fx:XML id="msi_conditional" source="/data/test/descriptors/msi_conditional.xml" />
+        <fx:XML id="nasty_vmware_test" source="/data/test/descriptors/nasty_vmware_test.xml" />
+        <fx:XML id="cisco" source="/data/test/descriptors/cisco.xml" />
+        <fx:XML id="compound" source="/data/test/descriptors/compound.xml" />
+        <fx:XML id="smatform_apache" source="/data/test/descriptors/smartform-apache.xml" />
+        <fx:XML id="elliot_test" source="/data/test/descriptors/elliot_test.xml" />
+        <fx:XML id="list_type" source="/data/test/descriptors/list_type.xml" />
+        <fx:XML id="vhosts" source="/data/test/descriptors/vhosts.xml" />
+        <fx:XML id="vhosts2" source="/data/test/descriptors/vhosts2.xml" />
+        <fx:XML id="vhosts_no_values" source="/data/test/descriptors/vhosts_no_values.xml" />
+        <fx:XML id="iis_no_values" source="/data/test/descriptors/iis_no_values.xml" />
+    </fx:Declarations>
+</fx:Object>

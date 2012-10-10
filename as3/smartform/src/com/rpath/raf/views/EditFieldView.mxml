@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+Copyright (c) 2009-2011 rPath, Inc.
+
+This program is distributed under the terms of the MIT License as found 
+in a file called LICENSE. If it is not present, the license
+is always available at http://www.opensource.org/licenses/mit-license.php.
+
+This program is distributed in the hope that it will be useful, but
+without any warranty; without even the implied warranty of merchantability
+or fitness for a particular purpose. See the MIT License for full details.
+-->
+
+
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+         xmlns:s="library://ns.adobe.com/flex/spark" 
+         xmlns:mx="library://ns.adobe.com/flex/mx"
+         xmlns:smartform="http://www.rpath.com/2009/smartform.mxml"
+         
+         preinitialize="preinitializeHandler(event)"
+         creationComplete="onCreationComplete(event)"
+         >
+    
+    <s:layout>
+        <s:VerticalLayout />
+    </s:layout>
+    
+    
+    <fx:Declarations>
+        <!-- Place non-visual elements (e.g., services, value objects) here -->
+        
+        <fx:XML id="smartFormFieldDescriptor" source="/add_field_descriptor.xml" />
+        
+    </fx:Declarations>
+    
+    <fx:Script>
+    <![CDATA[
+        import com.rpath.raf.models.DataFieldsDescriptor;
+        import com.rpath.raf.models.Descriptor;
+        import com.rpath.raf.models.FieldDescriptor;
+        import com.rpath.raf.util.UIHelper;
+        import com.rpath.raf.util.ValidationHelper;
+        import com.rpath.xobj.XObjXMLEncoder;
+        
+        import mx.collections.ArrayCollection;
+        import mx.events.DynamicEvent;
+        import mx.events.FlexEvent;
+        import mx.events.PropertyChangeEvent;
+        import mx.utils.ObjectUtil;
+
+        [Bindable]
+        public var currentFormDescriptor:Descriptor;
+        
+        [Bindable]
+        public var field:FieldDescriptor;
+        
+        [Bindable]
+        public var adding:Boolean;
+        
+        [Bindable]
+        public var testData:Object;
+        
+/*         [Bindable]
+        public var enumTypeEntries:ArrayCollection = new ArrayCollection();
+ */        
+        // --------------------------------------------- VALIDATION
+        
+        [Bindable]
+        public var isValid:Boolean;
+        
+        [Bindable]
+        protected var validationHelper:ValidationHelper;
+        
+        private function initializeValidators():void
+        {
+            validationHelper = new ValidationHelper([addFieldForm],
+                this, "isValid");
+        }
+        
+        protected function preinitializeHandler(event:FlexEvent):void
+        {
+        }
+        
+        protected function saveClick(event:MouseEvent):void
+        {
+            dispatchEvent(new FlexEvent("addFieldToForm"));
+        }
+        
+        
+        [Bindable]
+        public var testFormDescriptor:XML;
+        
+        protected function testClick(event:MouseEvent):void
+        {
+            // prepare a form descriptor
+            var newMetadata:Descriptor = new Descriptor();
+            
+            newMetadata.metadata.descriptions[0].value = "Test Form";
+            newMetadata.dataFields.addItem(field);
+            
+            var myXML:XMLDocument = new XMLDocument();
+            var xmlEncoder:XObjXMLEncoder = new XObjXMLEncoder({descriptor:Descriptor}, myXML);
+            
+            xmlEncoder.encodeNullElements = false;
+            
+            var xmlNode:XML;
+            var newXML:XML;
+            
+            xmlNode = xmlEncoder.encodeObject(newMetadata);
+            newXML = new XML(xmlNode.toString());
+            
+            testFormDescriptor = newXML;
+            testData = new Object();
+        }
+        
+         protected function cancelFieldDefButton_clickHandler(event:MouseEvent):void
+        {
+            var evt:DynamicEvent = new DynamicEvent("cancelCurrentSmartFormItem",true, true);
+           dispatchEvent(evt);
+        }
+        
+        [Bindable]
+        private var errorMessage:String;
+        
+        protected function okButton_clickHandler(event:MouseEvent):void
+        {            
+            var doIt:Boolean = true;
+            
+            errorMessage = null;
+            
+            if (adding)
+            {
+                for each (var fd:FieldDescriptor in currentFormDescriptor.dataFields)
+                {
+                    if (fd.name == field.name)
+                    {
+                        doIt = false;
+                        errorMessage = "A property named '" + field.name + "' already exists";
+                        break;
+                    }
+                }
+            }
+            
+            if (doIt)
+            {
+                var evt:DynamicEvent = new DynamicEvent("stopEditingCurrentFormItem",true, true);
+                dispatchEvent(evt);
+            }
+        }
+
+        
+        protected function onCreationComplete(event:FlexEvent):void
+        {
+            initializeValidators();
+        }
+        
+        [Bindable]
+        private var nameFormItem:SmartFormItem;
+        
+    ]]>
+    </fx:Script>
+    
+    <s:Scroller width="100%" height="100%" minWidth="500">
+        <s:VGroup width="100%">
+            
+            <smartform:SmartForm id="addFieldForm"
+                                 metadata="{smartFormFieldDescriptor}"
+                                 data="{field}" 
+                                 editable="true"
+                                 createOnDemand="true"
+                                 width="100%"
+                                 defaultButton="{saveButton}"
+                                 >
+                
+                <!-- <smartform:itemsAfter>
+                    put in a bunch of enum type entries here
+                    <s:DataGroup id="enumTG"
+                                 dataProvider="{enumTypeEntries}"
+                                 includeInLayout="{field.type == 'enum'}"
+                                 visible="{enumTG.includeInLayout}"
+                                 width="100%"
+                                 >
+                        
+                    </s:DataGroup>
+                </smartform:itemsAfter> -->
+            </smartform:SmartForm>
+            
+            <!--<smartform:SmartForm id="testForm"
+                                 metadata="{testFormDescriptor}"
+                                 data="{testData}" 
+                                 editable="true"
+                                 >
+                
+            </smartform:SmartForm>-->
+
+            <s:HGroup width="100%" horizontalAlign="left" verticalAlign="middle">
+                <s:Label id="errorMsg"
+                         includeInLayout="{errorMessage != null}"
+                         visible="{errorMsg.includeInLayout}"
+                         text="{errorMessage}"
+                         styleName="errorStatus"
+                         />
+                <s:Spacer width="100%"/>
+                <s:Button id="cancel" label="Cancel" click="cancelFieldDefButton_clickHandler(event)" visible="{adding}" includeInLayout="{adding}" />
+                <s:Button id="saveButton" label="OK" toolTip="Save field properties" click="okButton_clickHandler(event)" enabled="{UIHelper.checkBooleans(isValid)}" />
+            </s:HGroup>
+
+        </s:VGroup>
+        
+
+    </s:Scroller>
+    
+    <s:HGroup width="100%" bottom="0">
+<!--        <s:Button label="Test" click="testClick(event)" />
+-->       
+<!--        <s:CheckBox id="showLangCheck" label="Show lang?" change="addFieldForm.showLang = showLangCheck.selected" />
+-->    
+    </s:HGroup>
+</s:Group>

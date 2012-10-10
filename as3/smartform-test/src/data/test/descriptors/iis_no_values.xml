@@ -1,0 +1,203 @@
+<descriptor
+	xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd"
+	version="1.1" xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<metadata>
+		<displayName></displayName>
+		<descriptions>
+			<desc lang="en_US"></desc>
+		</descriptions>
+	</metadata>
+	<dataFields>
+		<field>
+			<name>iis_sites</name>
+			<descriptions>
+				<desc lang="en_US">IIS Sites</desc>
+			</descriptions>
+			<type>listType</type>
+			<section>
+				<descriptions>
+					<desc lang="en_US">Middleware</desc>
+				</descriptions>
+				<key>middleware</key>
+			</section>
+			<listType>
+				<descriptor>
+					<metadata>
+						<displayName>IIS Sites</displayName>
+						<rootElement>iis_site</rootElement>
+						<descriptions>
+							<desc lang="en_US">Configuration</desc>
+						</descriptions>
+					</metadata>
+					<dataFields>
+						<field>
+							<name>website_name</name>
+							<descriptions>
+								<desc lang="en_US">Domain</desc>
+							</descriptions>
+							<type>str</type>
+							<default>www.mysite1.com</default>
+							<required>true</required>
+							<allowFileContent>false</allowFileContent>
+							<conditional />
+							<constraints>
+								<descriptions />
+								<minLength>0</minLength>
+								<range />
+							</constraints>
+							<enumeratedType />
+							<help />
+							<hidden>false</hidden>
+							<multiple>false</multiple>
+							<password>false</password>
+							<uid>43C65384-E346-198D-CA5D-6E6CA9F62F1C</uid>
+						</field>
+						<field>
+							<name>port</name>
+							<descriptions>
+								<desc lang="en_US">Port</desc>
+							</descriptions>
+							<type>str</type>
+							<default>8080</default>
+							<required>true</required>
+							<allowFileContent>false</allowFileContent>
+							<conditional />
+							<constraints>
+								<descriptions />
+								<minLength>0</minLength>
+								<range />
+							</constraints>
+							<enumeratedType />
+							<help />
+							<hidden>false</hidden>
+							<multiple>false</multiple>
+							<password>false</password>
+							<uid>BD4E10EF-71BA-60C7-8CF0-6E6CA9FC6B73</uid>
+						</field>
+						<field>
+							<name>username</name>
+							<descriptions>
+								<desc lang="en_US">Userame</desc>
+							</descriptions>
+							<type>str</type>
+							<default>bob</default>
+							<required>true</required>
+							<prompt>
+								<desc lang="en_US">Username</desc>
+							</prompt>
+							<allowFileContent>false</allowFileContent>
+							<conditional />
+							<constraints>
+								<descriptions />
+								<minLength>0</minLength>
+								<range />
+							</constraints>
+							<enumeratedType />
+							<help />
+							<hidden>false</hidden>
+							<multiple>false</multiple>
+							<password>false</password>
+							<uid>61B7C00E-02F6-8C4E-B376-6E6CA9FFFA01</uid>
+						</field>
+					</dataFields>
+				</descriptor>
+			</listType>
+			<allowFileContent>false</allowFileContent>
+			<conditional />
+			<constraints>
+				<descriptions />
+				<minLength>0</minLength>
+				<range />
+			</constraints>
+			<enumeratedType />
+			<help />
+			<hidden>false</hidden>
+			<multiple>false</multiple>
+			<password>false</password>
+			<prompt />
+			<required>false</required>
+			<uid>CB6E82BF-CECB-61B6-43AD-6E6CA9F2875A</uid>
+		</field>
+
+
+		<field>
+			<name>iis_application_pools</name>
+			<descriptions>
+				<desc lang="en_US">IIS Application Pools</desc>
+			</descriptions>
+			<type>listType</type>
+			<section>
+				<descriptions>
+					<desc lang="en_US">Middleware</desc>
+				</descriptions>
+				<key>middleware</key>
+			</section>
+			<listType>
+				<descriptor>
+					<metadata>
+						<displayName>IIS 7.5 DefaultAppPool Properties</displayName>
+						<descriptions>
+							<desc>IIS 7.5 DefaultAppPool Properties</desc>
+						</descriptions>
+						<rootElement>iis_pool</rootElement>
+					</metadata>
+					<dataFields>
+					    <field>
+                            <name>rpath_defaultapppool_name</name>
+                            <descriptions>
+                                <desc>Name</desc>
+                            </descriptions>
+                            <prompt>
+                                <desc></desc>
+                            </prompt>
+                            <type>str</type>
+                            <required>true</required>
+                            <default>AppPool\DefaultAppPool</default>
+                        </field>
+						<field>
+							<name>rpath_defaultapppool_username</name>
+							<descriptions>
+								<desc>Username</desc>
+							</descriptions>
+							<prompt>
+								<desc></desc>
+							</prompt>
+							<type>str</type>
+							<required>true</required>
+							<default>Administrator</default>
+						</field>
+						<field>
+							<name>rpath_defaultapppool_password</name>
+							<descriptions>
+								<desc>Password</desc>
+							</descriptions>
+							<prompt>
+								<desc></desc>
+							</prompt>
+							<type>str</type>
+							<required>true</required>
+							<password>true</password>
+							<default>Pass@word1</default>
+						</field>
+					</dataFields>
+				</descriptor>
+			</listType>
+			<allowFileContent>false</allowFileContent>
+			<conditional />
+			<constraints>
+				<descriptions />
+				<minLength>1</minLength>
+				<range />
+			</constraints>
+			<enumeratedType />
+			<help />
+			<hidden>false</hidden>
+			<multiple>true</multiple>
+			<password>false</password>
+			<prompt />
+			<required>false</required>
+			<uid>CB6E82BF-CECB-61B6-43AD-6E6CA9F2875A</uid>
+		</field>
+	</dataFields>
+</descriptor>

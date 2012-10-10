@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+#
+# Copyright (c) 2005-2009 rPath, Inc.
+#
+# All rights reserved
+#
+-->
+
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+               xmlns:s="library://ns.adobe.com/flex/spark" 
+               xmlns:mx="library://ns.adobe.com/flex/mx"
+               xmlns:validators="com.rpath.raf.validators.*"
+               xmlns:rpath="http://www.rpath.com/2009/smartform.mxml"
+               
+               creationComplete="onCreationComplete(event)"
+               minWidth="955" minHeight="600" >
+    
+    <s:layout>
+        
+        <s:VerticalLayout />
+    </s:layout>
+    
+    <fx:Declarations>
+        <!-- Place non-visual elements (e.g., services, value objects) here -->
+    </fx:Declarations>
+    
+   
+   <!-- <raf:PopupWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+                     xmlns:s="library://ns.adobe.com/flex/spark" 
+                     xmlns:mx="library://ns.adobe.com/flex/mx" 
+                     xmlns:view="com.rpath.rbuilder.views.*"
+                     xmlns:raf="com.rpath.raf.views.*"
+                     xmlns:validators="com.rpath.raf.validators.*"
+                     xmlns:views="com.rpath.raf.views.*"
+                     xmlns:tags="com.rpath.raf.tags.*"
+                     
+                     titleKey='Create_User_Panel'
+                     > 
+        
+        -->
+<fx:Script>
+    <![CDATA[
+        import mx.core.UITextField;
+        import mx.events.PropertyChangeEvent;
+        import mx.events.FlexEvent;
+        import com.rpath.raf.util.ValidationHelper;
+        import mx.validators.Validator;
+        import mx.events.ValidationResultEvent;
+        import mx.managers.PopUpManager;
+
+        
+        [Bindable]
+        public var user:Object = new Object();
+        
+        protected function onCreationComplete(event:Event):void
+        {
+            initializeValidators();
+            username.setFocus();
+
+        }
+        
+        
+        // --------------------------------------------- VALIDATION
+        
+        [Bindable]
+        public var isValid:Boolean;
+        
+        [Bindable]
+        protected var validationHelper:ValidationHelper;
+        
+        private function initializeValidators():void
+        {
+            validationHelper = new ValidationHelper(validators, this, "isValid");
+        }
+        
+        [Bindable]
+        private var rboTos:String = 
+            "I accept the <a href='event:http://rpath.com/permanent/rbo-tos.html'>" +
+            "rBuilder Online Terms of Service</a>";
+    ]]>
+</fx:Script>
+
+<fx:Declarations>
+    
+    <!-- TODO: need required and validation checks
+    
+    For example, username must be unique. We should try to make the 
+    backend call to confirm this during user input not after they hit create 
+    button
+    
+    -->
+    
+    <fx:Array id="validators">
+        <mx:EmailValidator id="emailV" source="{email}"
+                           property="text" required="true" triggerEvent="change"/>
+
+        <mx:EmailValidator id="email2V" source="{confirmEmail}"
+                           property="text" required="false" triggerEvent="change"/>
+
+        <validators:StringMatchValidator id="emailmatchValidator"
+                                         source="{confirmEmail}"
+                                         property="text"
+                                         required="true"
+                                         matches="{email.text}"
+                                         triggerEvent="change"
+                                         mismatchError="Email addresses do not match"/>
+
+        
+        <mx:StringValidator id="usernameV2" source="{username}"
+                            property="text" required="false" triggerEvent="change"
+                            maxLength="63"/>
+        
+        <mx:RegExpValidator id="usernameV" source="{username}" 
+                            property="text"
+                            required="true"
+                            expression="^[a-zA-Z0-9_]+$" triggerEvent="change"
+                            noMatchError="Your username cannot contains spaces or special characters"/>
+        
+        <mx:StringValidator id="passwordV" source="{password}"
+                            property="text" required="true" triggerEvent="change"/>
+
+        <mx:StringValidator id="password2V" source="{confirmPassword}"
+                            property="text" required="false" triggerEvent="change"/>
+        
+        <validators:StringMatchValidator id="passwordMatchValidator"
+                                         source="{confirmPassword}"
+                                         property="text"
+                                         required="true"
+                                         matches="{password.text}"
+                                         triggerEvent="change"
+                                         mismatchError="Passwords do not match"/>
+        
+        
+    </fx:Array>
+</fx:Declarations>
+        
+<s:HGroup id="contentBox">
+    
+    <mx:Form id="userForm" defaultButton="{okButton}" width="100%" enabled="{!user.isRunning}">
+        <rpath:ExtendedFormItem id="usernameField" label="Username" required="true">
+            <mx:TextInput id="username" text="{user.userName}"/>
+        </rpath:ExtendedFormItem>
+        <rpath:ExtendedFormItem label="Password" required="true">
+            <mx:TextInput id="password" text="{user.password}" displayAsPassword="true" />
+        </rpath:ExtendedFormItem>
+        <rpath:ExtendedFormItem label="Confirm password" required="true">
+            <mx:TextInput id="confirmPassword" text="{user.confirmPassword}" displayAsPassword="true"/>
+        </rpath:ExtendedFormItem>       
+        <rpath:ExtendedFormItem label="Email" required="true"
+                     toolTip="Your email address is used to confirm your account details">
+            <mx:TextInput id="email" text="{user.email}"/>
+        </rpath:ExtendedFormItem>
+        <rpath:ExtendedFormItem label="Confirm email" required="true">
+            <mx:TextInput id="confirmEmail" text="{user.confirmEmail}"/>
+        </rpath:ExtendedFormItem>
+        
+    </mx:Form>
+</s:HGroup>
+
+<s:HGroup width="100%">
+    <s:Button label="Cancel" />
+    <s:Label id="warningLabel" text="Please complete required fields" 
+             visible="{!isValid}" 
+             color="blue"
+             click="validationHelper.showErrors()"/>
+    
+    <!-- TODO: make this enable/disabled automatically -->
+    <s:Button id="okButton" enabled="{isValid}" label="OK" />
+</s:HGroup>
+
+        
+</s:Application>

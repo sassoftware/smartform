@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+
+ADOBE SYSTEMS INCORPORATED
+Copyright 2008 Adobe Systems Incorporated
+All Rights Reserved.
+
+NOTICE: Adobe permits you to use, modify, and distribute this file
+in accordance with the terms of the license agreement accompanying it.
+
+-->
+
+<!--- The default skin class for a Spark SkinnableContainer container.  
+
+@see spark.components.SkinnableContainer
+
+@langversion 3.0
+@playerversion Flash 10
+@playerversion AIR 1.5
+@productversion Flex 4
+-->
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+        xmlns:s="library://ns.adobe.com/flex/spark" 
+        xmlns:fb="http://ns.adobe.com/flashbuilder/2009" 
+        xmlns:graphics="com.rpath.rbuilder.views.graphics.*" 
+        xmlns:controls="com.rpath.raf.controls.*"
+        xmlns:raf="http://www.rpath.com/2009/raf.mxml"
+        alpha.COLLAPSED_DISABLED="0.4"
+        alpha.EXPANDED_DISABLED="0.4" xmlns:views="com.rpath.raf.views.*"
+        >
+    <fx:Metadata>
+        [HostComponent("com.rpath.raf.views.DisclosureContainer")]
+        
+    </fx:Metadata>
+    
+    <s:states>
+        <s:State name="EXPANDED" />
+        <s:State name="COLLAPSED" />
+        <s:State name="EXPANDED_DISABLED" />
+        <s:State name="COLLAPSED_DISABLED" />
+        <s:State name="disabled" />
+        <s:State name="normal" />
+    </s:states>
+    
+    <!--<graphics:RBeveledBackground top="0" left="0" bottom="0" right="0"/>-->
+    <views:SmartFormBorderGraphic top="0" left="0" bottom="0" right="0" />
+    
+    <!--begin header, disclosure button-->
+    <s:Group id="header" left="8" right="8" height="34" doubleClick="hostComponent.handleClick(event, true)" doubleClickEnabled="true"> 
+        <controls:RAFDisclosureButton id="disclosureButton"
+                                      verticalCenter="0"
+                                      expanded="{hostComponent.expanded}"
+                                      clickFunction="{hostComponent.handleClick}"
+                                      width="12" height="12"
+                                      />
+            <s:Label id="dLabel" left="18" verticalCenter="2" text="{hostComponent.disclosureLabel}" />
+            <s:Group id="extraControlGroup" right="4" verticalCenter="0"/>
+
+    </s:Group>
+    <!--end header, disclosure button-->
+    
+    <!--begin data grid and scroller-->
+    <s:Group left="8" right="8" top="40" bottom="8"
+             minWidth="0" minHeight="0" 
+             clipAndEnableScrolling="true"
+             includeIn="EXPANDED, EXPANDED_DISABLED"
+             >
+        <s:Scroller left="0" right="0" top="0" bottom="0" minWidth="0" minHeight="0" 
+                    width.EXPANDED="100%"
+                    width.EXPANDED_DISABLED="100%"
+                    verticalScrollPolicy="auto" 
+                    horizontalScrollPolicy="auto" 
+                    >
+            <s:Group id="contentGroup" left="0" right="0" top="0" bottom="0" minWidth="0" minHeight="0">
+                <s:layout>
+                    <s:BasicLayout/>
+                </s:layout>
+            </s:Group>
+        </s:Scroller>
+    </s:Group>
+</s:Skin>

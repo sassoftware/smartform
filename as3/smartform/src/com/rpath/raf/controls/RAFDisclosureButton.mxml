@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+         xmlns:effects="com.rpath.raf.effects.*"
+         xmlns:controls="com.rpath.raf.controls.*"
+		 initialize="init(event)" 
+		 >
+	<fx:Declarations>
+        <effects:ToggleExpand id="expandToggle" target="{disclosureButton}" />
+        <effects:ToggleCollapse id="contractToggle" target="{disclosureButton}" />
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+            import com.rpath.raf.assets.SFAssets;
+            
+            import mx.events.FlexEvent;
+			
+			private var _expanded:Boolean = false;
+			private var _expandedChanged:Boolean = false;
+
+			[Bindable]
+			public function get expanded():Boolean
+			{
+				return _expanded;
+			}
+
+			public function set expanded(value:Boolean):void
+			{
+				if(_expanded == value)
+					return;
+				_expanded = value;
+				_expandedChanged = true;
+				invalidateProperties();
+			}
+			
+			
+			[Bindable]
+			public var clickFunction:Function;
+			
+			protected function handleClick(event:MouseEvent):void
+			{
+				if(clickFunction != null)
+					clickFunction.call(null, event);
+			}
+			
+			override protected function commitProperties():void
+			{
+				if(_expandedChanged)
+				{
+					_expandedChanged = false;
+					computeState();
+				}
+				super.commitProperties();
+			}
+			
+			protected function init(event:FlexEvent):void
+			{
+				computeState();
+			}
+			
+			protected function computeState():void
+			{
+				currentState = expanded == true ? 'EXPANDED' : 'COLLAPSED';
+                if (expanded)
+                {
+                    expandToggle.play();
+                }
+                else
+                {
+                    contractToggle.play();
+                }
+			}
+			
+		]]>
+	</fx:Script>
+	<s:states>
+		<s:State name="EXPANDED" />
+		<s:State name="COLLAPSED" />
+	</s:states>
+	
+	<controls:SmartFormIconButton id="disclosureButton"
+					width="{this.width}" height="{this.height}"
+					icon="{SFAssets.triangleRightIcon}"
+					click="handleClick(event)"
+					/>	
+</s:Group>

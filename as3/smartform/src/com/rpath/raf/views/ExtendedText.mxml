@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+#
+# Copyright (c) 2009 rPath, Inc.
+#
+# This program is distributed under the terms of the MIT License as found 
+# in a file called LICENSE. If it is not present, the license
+# is always available at http://www.opensource.org/licenses/mit-license.php.
+#
+# This program is distributed in the hope that it will be useful, but
+# without any warranty; without even the implied warranty of merchantability
+# or fitness for a particular purpose. See the MIT License for full details.
+*/
+-->
+
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+    >
+    
+    <mx:Script>
+    <![CDATA[
+        
+    
+    [Bindable]
+    public function set text(s:String):void
+    {
+        textControl.text = s;
+        invalidateProperties();
+    }
+    
+    public function get text():String
+    {
+        return textControl.text;
+    }
+    
+    [Bindable]
+    public function set htmlText(s:String):void
+    {
+        textControl.htmlText = s;
+        invalidateProperties();
+    }
+    
+    public function get htmlText():String
+    {
+        return textControl.htmlText;
+    }
+    
+    [Bindable]
+    public function set conditional(b:Boolean):void
+    {
+        _conditional = b;
+        invalidateProperties();
+    }
+    
+    private var _conditional:Boolean;
+    
+    public function get conditional():Boolean
+    {
+        return _conditional;
+    }
+    
+    override protected function commitProperties():void
+    {
+        if (_conditional)
+        {
+            var vis:Boolean;
+            
+            vis = (text != null)  || (htmlText != null);
+            
+            this.includeInLayout = vis;
+            this.visible = vis;
+        }
+        super.commitProperties();
+    }
+    
+    ]]>
+    </mx:Script>
+    <mx:Text id="textControl" width="{this.width}"/>
+</mx:Canvas>

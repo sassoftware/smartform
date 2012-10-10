@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+Copyright (c) 2009-2011 rPath, Inc.
+
+This program is distributed under the terms of the MIT License as found 
+in a file called LICENSE. If it is not present, the license
+is always available at http://www.opensource.org/licenses/mit-license.php.
+
+This program is distributed in the hope that it will be useful, but
+without any warranty; without even the implied warranty of merchantability
+or fitness for a particular purpose. See the MIT License for full details.
+-->
+
+<s:ItemRenderer
+    xmlns:fx="http://ns.adobe.com/mxml/2009" 
+    xmlns:s="library://ns.adobe.com/flex/spark" 
+    xmlns:mx="library://ns.adobe.com/flex/mx"
+    xmlns:smartform="http://www.rpath.com/2009/smartform.mxml"
+    
+    xmlns:views="com.rpath.raf.views.*"
+    
+    autoDrawBackground="false" 
+    contentBackgroundAlpha="0"
+    
+    preinitialize="preinitializeHandler(event)"
+    initialize="initializeHandler(event)"
+    >
+    
+    
+    <fx:Metadata>
+        [Event(name="removeEnumItem", type="mx.events.FlexEvent")]
+        [Event(name="checkRemoveEnumItem", type="mx.events.FlexEvent")]
+        [Event(name="valid", type="mx.events.FlexEvent")]
+        [Event(name="invalid", type="mx.events.FlexEvent")]
+    </fx:Metadata>
+    
+    <s:layout>
+        <s:HorizontalLayout />
+    </s:layout>
+    
+    
+    <fx:Script>
+    <![CDATA[
+        import com.rpath.raf.models.DescriptionEntry;
+        import com.rpath.raf.models.EnumDescriptor;
+        import com.rpath.raf.models.EnumTypesDescriptor;
+        import com.rpath.raf.util.ValidationHelper;
+        
+        import mx.core.UIComponent;
+        import mx.events.FlexEvent;
+        import mx.events.PropertyChangeEvent;
+        import mx.events.ValidationResultEvent;
+        
+        import spark.events.TextOperationEvent;
+        
+        [Bindable]
+        public var editable:Boolean;
+        
+        [Bindable]
+        public var showLang:Boolean;
+        
+        [Bindable]
+        public var enumDescEntry:DescriptionEntry;
+        
+        [Bindable]
+        public var enumEntry:EnumDescriptor;
+        
+        [Bindable]
+        public var allDescs:EnumTypesDescriptor;
+        
+        [Bindable("dataChange")]
+        override public function get data():Object
+        {
+            return super.data;
+        }
+        
+        override public function set data(value:Object):void
+        {
+            super.data = value;
+            enumEntry = data as EnumDescriptor;
+        }
+        
+        protected function removeButtonClick(event:MouseEvent):void
+        {
+            dispatchEvent(new FlexEvent("removeEnumItem", true, true));
+        }
+        
+        protected function preinitializeHandler(event:FlexEvent):void
+        {
+            addEventListener("dataChange", onDataChange);
+            addEventListener("enabledChanged", onDataChange);
+        }
+        
+        private var _dataChanged:Boolean;
+        
+        private function onDataChange(event:Event):void
+        {
+            _dataChanged = true;
+            invalidateProperties();
+        }
+        
+        override protected function commitProperties():void
+        {
+            if (_dataChanged)
+            {
+                _dataChanged = false;
+                
+                if (enabled)
+                    removeButton.enabled = dispatchEvent(new FlexEvent("checkRemoveEnumItem", true, true));
+                else
+                    removeButton.enabled = false;
+                
+                if (!showLang)
+                {
+                    // we need to pluck the first desc entry only
+                    if (enumEntry)
+                    {
+                        if (enumEntry.descriptions.length == 0)
+                        {
+                            enumEntry.descriptions.addItem(new DescriptionEntry());
+                        }
+                        enumDescEntry = enumEntry.descriptions.getItemAt(0) as DescriptionEntry;
+                    }
+                }
+                else
+                {
+                    enumDescEntry = null;
+                }
+            }
+            super.commitProperties();
+        }
+        
+        
+        // VALIDATION --------------------------------------------
+        
+        
+        protected function initializeHandler(event:FlexEvent):void
+        {
+            validationHelper = new ValidationHelper(validators, this);
+        }
+        
+        
+        [Bindable]
+        public function get isValid():Boolean
+        {
+            return _isValid;
+        }
+        
+        private var _isValid:Boolean = true;;
+        
+        public function set isValid(v:Boolean):void
+        {
+            _isValid = v;
+        }
+        
+        [Bindable]
+        public function get validationHelper():ValidationHelper
+        {
+            return _validationHelper;
+        }
+        
+        private var _validationHelper:ValidationHelper;
+        
+        public function set validationHelper(v:ValidationHelper):void
+        {
+            _validationHelper = v;
+        }
+        
+        // TODO: add validators on the EnumValue Desc property to ensure meets constraints
+        
+        public override function validationResultHandler(event:ValidationResultEvent):void
+        {
+            // let our specific input control mark itself appropriately
+            
+            for each (var child:UIComponent in [descList, singleDesc])
+            {
+                if (child)
+                {
+                    child.validationResultHandler(event);
+                }
+            }
+            
+            //super.validationResultHandler(event);
+        }
+        
+    ]]>
+    </fx:Script>
+    
+    <fx:Declarations>
+        <fx:Array id="validators">
+            <mx:Validator id="requiredVal" 
+                          source="{enumDescEntry}" 
+                          property="value"
+                          required="true"
+                          requiredFieldError="This field is required"
+                          triggerEvent="{PropertyChangeEvent.PROPERTY_CHANGE}"
+                          listener="{descList}"
+                          />
+            
+            <mx:RegExpValidator id="regExpV" 
+                                source="{enumKey}" 
+                                property="text"
+                                flags="s"
+                                enabled="true"
+                                required="true"
+                                requiredFieldError="This field is required and must be alphanumeric with no spaces"
+                                expression="^[a-zA-Z0-9_]+$"
+                                triggerEvent="{TextOperationEvent.CHANGE}"
+                                />
+            
+            <smartform:UniqueElementValidator id="uniqueEnumKeyV"
+                                              source="{enumEntry}"
+                                              required="false"
+                                              property="key"
+                                              dataProvider="{allDescs}"
+                                              triggerEvent="{PropertyChangeEvent.PROPERTY_CHANGE}"
+                                              nonUniqueEntryError="Keys for property enumerators must be unique"
+                                              listener="{enumKey}"
+                                              />
+        </fx:Array>   
+    </fx:Declarations>
+    
+    <s:Button id="removeButton" toolTip="Remove"  width="26"
+              click="removeButtonClick(event)" 
+              skinClass="com.rpath.raf.skins.IconButtonSkin"
+              icon="@Embed(source='/assets/images/remove.png')"
+              />
+    
+    <views:ExtendedTextInput id="enumKey" text="@{(data as EnumDescriptor).key}" maxChars="20" 
+                             minWidth="60"
+                             editable="{editable}" enabled="{enabled}"
+                             prompt="key"
+                             />
+    
+    <s:BorderContainer id="descBorder"
+                       borderVisible="true" borderStyle="solid"
+                       includeInLayout="{showLang}"
+                       visible="{descBorder.includeInLayout}"
+                       minHeight="0">
+        <views:DescListItemRenderer id="descList"
+                                    data="{(data as EnumDescriptor).descriptions}" 
+                                    editable="{editable}" enabled="{enabled}"
+                                    width="100%"
+                                    prompt="value"
+                                    showLang="{showLang}"
+                                    />
+        
+    </s:BorderContainer>
+    
+    <!-- when no lang support -->
+    <views:DescItemRenderer id="singleDesc"
+                            data="{enumDescEntry}" 
+                            editable="{editable}" enabled="{enabled}"
+                            width="100%"
+                            prompt="value"
+                            showLang="{showLang}"
+                            includeInLayout="{!showLang}"
+                            visible="{singleDesc.includeInLayout}"
+                            />
+    
+    
+</s:ItemRenderer>

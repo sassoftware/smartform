@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.rpath.com/permanent/factorydef-1.0.xsd factorydef-1.0.xsd">
+	<metadata>
+		<displayName>Single Item Test</displayName>
+		<descriptions>
+			<desc>Single Item Test</desc>
+		</descriptions>
+	</metadata>
+	<dataFields>
+		<field>
+			<name>booltest1</name>
+			<descriptions>
+				<desc>Bool Field 1</desc>
+			</descriptions>
+			<prompt>
+				<desc>Should have NO default</desc>
+			</prompt>
+			<type>bool</type>
+			<required>true</required>
+		</field>
+		<field>
+			<name>booltest2</name>
+			<descriptions>
+				<desc>Bool Field 2</desc>
+			</descriptions>
+			<prompt>
+				<desc>Should default TRUE</desc>
+			</prompt>
+			<type>bool</type>
+			<default>true</default>
+			<required>true</required>
+		</field>
+		<field>
+			<name>booltest3</name>
+			<descriptions>
+				<desc>Bool Field 3</desc>
+			</descriptions>
+			<prompt>
+				<desc>Should default FALSE</desc>
+			</prompt>
+			<type>bool</type>
+			<default>false</default>
+			<required>true</required>
+		</field>
+		<field>
+			<name>booltest4</name>
+			<descriptions>
+				<desc>Bool Field 4</desc>
+			</descriptions>
+			<prompt>
+				<desc>Should default FALSE</desc>
+			</prompt>
+			<type>bool</type>
+			<default />
+			<required>true</required>
+		</field>
+
+        <field>
+            <name>booltest5</name>
+            <descriptions>
+                <desc>Bool Field 5</desc>
+            </descriptions>
+            <prompt>
+                <desc>Should have NO default</desc>
+            </prompt>
+            <type>bool</type>
+        </field>
+        <field>
+            <name>booltest6</name>
+            <descriptions>
+                <desc>Bool Field 6</desc>
+            </descriptions>
+            <prompt>
+                <desc>Should default TRUE</desc>
+            </prompt>
+            <type>bool</type>
+            <default>true</default>
+        </field>
+        <field>
+            <name>booltest7</name>
+            <descriptions>
+                <desc>Bool Field 7</desc>
+            </descriptions>
+            <prompt>
+                <desc>Should default FALSE</desc>
+            </prompt>
+            <type>bool</type>
+            <default>false</default>
+        </field>
+        <field>
+            <name>booltest8</name>
+            <descriptions>
+                <desc>Bool Field 8</desc>
+            </descriptions>
+            <prompt>
+                <desc>Should default FALSE</desc>
+            </prompt>
+            <type>bool</type>
+            <default />
+        </field>
+
+	</dataFields>
+</descriptor>

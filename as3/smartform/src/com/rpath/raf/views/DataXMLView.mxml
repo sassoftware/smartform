@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (c) 2009-2011 rPath, Inc.
+
+This program is distributed under the terms of the MIT License as found 
+in a file called LICENSE. If it is not present, the license
+is always available at http://www.opensource.org/licenses/mit-license.php.
+
+This program is distributed in the hope that it will be useful, but
+without any warranty; without even the implied warranty of merchantability
+or fitness for a particular purpose. See the MIT License for full details.
+-->
+
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+          xmlns:s="library://ns.adobe.com/flex/spark" 
+          xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:controls="com.rpath.raf.controls.*"
+          >
+    
+    
+    <fx:Metadata>
+        [Event(name="editDataXML", type="mx.events.DynamicEvent")]
+    </fx:Metadata>
+    
+    <fx:Declarations>
+        <!-- Place non-visual elements (e.g., services, value objects) here -->
+    </fx:Declarations>
+    
+    <fx:Script>
+        <![CDATA[
+            import com.rpath.raf.models.Descriptor;
+            import com.rpath.xobj.XObjUtils;
+            import com.rpath.xobj.XObjXMLDecoder;
+            import com.rpath.xobj.XObjXMLEncoder;
+            
+            import mx.events.DynamicEvent;
+            import mx.events.FlexEvent;
+            import mx.events.PropertyChangeEvent;
+            
+            import spark.events.TextOperationEvent;
+            
+            [Bindable]
+            public var dataString:String;
+            
+            [Bindable]
+            public var xmlValid:Boolean;
+            
+            [Bindable]
+            public var editable:Boolean;
+            
+            [Bindable]
+            public function get data():Object
+            {
+                return _data;
+            }
+            
+            private var _data:Object;
+            private var _dataChanged:Boolean;
+            private var _userEdited:Boolean;
+            
+            public function set data(value:Object):void
+            {
+                if (_data)
+                {
+                    removeEventListener(PropertyChangeEvent.PROPERTY_CHANGE, onPropertyChange);
+                }
+                _data = value;
+                
+                if (_data as IEventDispatcher)
+                {
+                    (_data as IEventDispatcher).addEventListener(PropertyChangeEvent.PROPERTY_CHANGE, onPropertyChange, false, 0, true);
+                }
+                
+                _dataChanged = true;
+                invalidateProperties();
+            }
+            
+            [Bindable]
+            public var typeMap:* = {};
+            
+            private var _typeMapKey:String;
+            private var _typeMapKeyChanged:Boolean;
+            
+            [Bindable]
+            public function get typeMapKey():String
+            {
+                return _typeMapKey;
+            }
+            
+            public function set typeMapKey(value:String):void
+            {
+                _typeMapKey = value;
+                _typeMapKeyChanged = true;
+            }
+            
+            
+            private function onPropertyChange(event:PropertyChangeEvent):void
+            {
+                _dataChanged = true;
+                invalidateProperties();
+            }
+            
+            public function updateDataXML():void
+            {
+                if (data != null)
+                {
+                    _dataChanged = true; // temporary fencing
+                    // convert data object to XML
+                    var xmlEncoder:XObjXMLEncoder = new XObjXMLEncoder(typeMap);
+                    
+                    // server doesn't like these
+                    xmlEncoder.encodeNullElements = false;
+                    
+                    var xml:XML;
+                    
+                    xml = xmlEncoder.encodeObject(data, "values");
+                    
+                    // pretty print a version for our descriptor XML display
+                    XML.prettyIndent = 2;
+                    XML.prettyPrinting = true;
+                    XML.ignoreWhitespace = true;
+                    
+                    dataString = xml.toXMLString();
+                    dataString = (!dataString) ? null : dataString;
+                    xmlValid = true;
+                }
+                
+                _dataChanged = false; // clear this to prevent repeated change handling
+            }
+            
+            protected function valueCommitHandler(event:FlexEvent):void
+            {
+                if (_userEdited)
+                {
+                    _userEdited = false;
+                    
+                    var xml:XML = convertToXML(mdInput.text);
+                    
+                    if (xml != null)
+                    {
+                        var evt:DynamicEvent = new DynamicEvent("editDataXML", true, true);
+                        evt.xml = xml;
+                        dispatchEvent(evt);
+                    }                
+                }
+                
+            }
+            
+            override protected function commitProperties():void
+            {
+                if (_typeMapKeyChanged)
+                {
+                    _typeMapKeyChanged = false;
+                    typeMap = {};
+                    if (data != null)
+                        typeMap[typeMapKey] = XObjUtils.getClass(data);
+                }
+                
+                if (_dataChanged)
+                {
+                    updateDataXML();
+                    // do this last in case we reenter
+                    _dataChanged = false;
+                }
+                
+                super.commitProperties();
+            }
+            
+            protected function convertToXML(str:String):XML
+            {
+                var xml:XML;
+                try
+                {
+                    xml = new XML(str);
+                    xmlValid = true;
+                } 
+                catch(e:Error) 
+                {
+                    xml = null;
+                    xmlValid = false;
+                }
+                
+                return xml;
+            }
+            
+            protected function configDescriptorText_keyFocusChangeHandler(event:FocusEvent):void
+            {
+                event.preventDefault();
+                mdInput.insertText("    ");
+            }
+            
+            protected function mdInput_changeHandler(event:TextOperationEvent):void
+            {
+                _userEdited = true;
+                invalidateProperties();
+            }
+            
+            private var fr:FileReference;
+            
+            private function saveDescriptor(event:Event):void
+            {
+                //create the FileReference instance
+                fr = new FileReference();
+                
+                // listen for the file has been saved
+                fr.addEventListener(Event.COMPLETE, doFileSave, false, 0, true);
+                
+                // listen for when then cancel out of the save dialog
+                fr.addEventListener(Event.CANCEL, doCancel, false, 0, true);
+                
+                // listen for any errors that occur while writing the file
+                fr.addEventListener(IOErrorEvent.IO_ERROR, doSaveError,false, 0, true);
+                
+                // open a native save file dialog, using the default file name
+                fr.save(dataString, "values.xml");
+            }
+            
+            // called once the file has been saved
+            private function doFileSave(event:Event):void
+            {
+                var fref:FileReference = event.target as FileReference;
+                fr = null;
+            }
+            
+            // called if the user cancels out of the file save dialog
+            private function doCancel(event:Event):void
+            {
+                fr = null;
+            }
+            
+            // called if an error occurs while saving the file
+            private function doSaveError(event:IOErrorEvent):void
+            {
+                fr = null;
+            }
+            
+        ]]>
+    </fx:Script>
+    
+    <s:TextArea id="mdInput"
+                text="{dataString}" 
+                width="100%" height="100%"
+                lineBreak="explicit"
+                fontFamily="_typewriter"
+                fontSize="12"
+                skinClass="com.rpath.raf.skins.TextAreaLineNumbersSkin"
+                keyFocusChange="configDescriptorText_keyFocusChangeHandler(event)"
+                editable="{editable}"
+                change="mdInput_changeHandler(event)"
+                valueCommit="valueCommitHandler(event)" />
+    <s:HGroup width="100%" horizontalAlign="right">
+        <s:Label text="Invalid XML" includeInLayout="{!xmlValid}" visible="{!xmlValid}" />
+        <controls:SmartFormButton id="saveButton"
+                                  toolTip="Download"
+                                  label="Download"
+                                  enabled="{dataString}"
+                                  includeInLayout="true"
+                                  visible="true"
+                                  click="saveDescriptor(event)"
+                                  />
+    </s:HGroup>
+</s:VGroup>

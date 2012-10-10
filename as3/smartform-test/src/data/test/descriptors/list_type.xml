@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.rpath.com/permanent/factorydef-1.1.xsd factorydef-1.1.xsd">
+	<metadata>
+		<displayName>List of Compound Item Test</displayName>
+		<descriptions>
+			<desc>List of Compound Item Test</desc>
+		</descriptions>
+	</metadata>
+	<dataFields>
+		<field>
+			<name>string0</name>
+			<descriptions>
+				<desc>String</desc>
+			</descriptions>
+			<prompt>
+				<desc>Any old string</desc>
+			</prompt>
+			<type>str</type>
+			<constraints>
+				<length>32</length>
+			</constraints>
+		</field>
+
+		<field>
+			<name>list</name>
+			<descriptions>
+				<desc>List Field</desc>
+			</descriptions>
+			<prompt>
+				<desc>A list type</desc>
+			</prompt>
+			<type>listType</type>
+			<listType>
+				<descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+					xsi:schemaLocation="http://www.rpath.com/permanent/factorydef-1.0.xsd factorydef-1.0.xsd">
+					<metadata>
+						<displayName>Compound Item Test</displayName>
+						<descriptions>
+							<desc>Compound Item Test</desc>
+						</descriptions>
+					</metadata>
+					<dataFields>
+						<field>
+							<name>string1</name>
+							<descriptions>
+								<desc>String1</desc>
+							</descriptions>
+							<prompt>
+								<desc>Any old string</desc>
+							</prompt>
+							<type>str</type>
+							<constraints>
+								<length>32</length>
+							</constraints>
+						</field>
+						<field>
+							<name>string2</name>
+							<descriptions>
+								<desc>String2</desc>
+							</descriptions>
+							<prompt>
+								<desc>Any old string</desc>
+							</prompt>
+							<type>str</type>
+							<constraints>
+								<length>32</length>
+							</constraints>
+						</field>
+					</dataFields>
+				</descriptor>
+			</listType>
+		</field>
+	</dataFields>
+</descriptor>

@@ -1,0 +1,1841 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+#
+# Copyright (c) 2009-2011 rPath, Inc.
+#
+# This program is distributed under the terms of the MIT License as found 
+# in a file called LICENSE. If it is not present, the license
+# is always available at http://www.opensource.org/licenses/mit-license.php.
+#
+# This program is distributed in the hope that it will be useful, but
+# without fany warranty; without even the implied warranty of merchantability
+# or fitness for a particular purpose. See the MIT License for full details.
+*/
+-->
+
+<views:ExtendedFormItem 
+    xmlns:fx="http://ns.adobe.com/mxml/2009" 
+    xmlns:s="library://ns.adobe.com/flex/spark" 
+    xmlns:mx="library://ns.adobe.com/flex/mx"
+    xmlns:views="com.rpath.raf.views.*"
+    
+    initialize="onInitialize(event)"
+    preinitialize="extendedformitem1_preinitializeHandler(event)"
+    width="100%"
+    >
+    
+    <fx:Metadata>
+        [Event(name="dirtyChanged", type="mx.events.DynamicEvent")]
+        [Event(name="editSmartFormItem", type="mx.events.DynamicEvent")]
+        [Event(name="deleteSmartFormItem", type="mx.events.DynamicEvent")]
+        [Event(name="selectSmartFormItem", type="mx.events.DynamicEvent")]
+        [Event(name="addSmartFormDataObject", type="mx.events.DynamicEvent")]
+        
+    </fx:Metadata>
+    
+    <fx:Script>
+    <![CDATA[
+        import com.rpath.raf.models.DescriptionEntry;
+        import com.rpath.raf.models.EnumDescriptor;
+        import com.rpath.raf.models.FieldDescriptor;
+        import com.rpath.raf.util.DescriptorUtil;
+        import com.rpath.raf.util.UIHelper;
+        import com.rpath.xobj.XObjMetadata;
+        
+        import mx.collections.ArrayCollection;
+        import mx.collections.ICollectionView;
+        import mx.collections.Sort;
+        import mx.collections.SortField;
+        import mx.core.UIComponent;
+        import mx.events.DynamicEvent;
+        import mx.events.FlexEvent;
+        import mx.events.ItemClickEvent;
+        import mx.events.PropertyChangeEvent;
+        import mx.events.PropertyChangeEventKind;
+        import mx.events.ToolTipEvent;
+        import mx.events.ValidationResultEvent;
+        import mx.states.State;
+        
+        import spark.events.IndexChangeEvent;
+        
+        /** SmartFormItems are used exclusively within a SmartForm and rely on the
+         * metadata structure supported by SmartForm for their behaviour.
+         */
+        
+        
+        private var _metadata:XML;
+        
+        [Bindable]
+        /** metadata holds the XML <field> structure that defines what kind of
+         * data entry control, labelling, data binding and validation a SmartFormItem
+         * instance should provide
+         */
+        public function get metadata():XML
+        {
+            return _metadata;
+        }
+        
+        /**
+         * @private
+         */
+        public function set metadata(value:XML):void
+        {
+            _metadata = value;
+            
+            if (_metadata)
+            {
+                section_key = _metadata.metadataNS::section.metadataNS::key.toString().toLowerCase();
+                section_desc = DescriptorUtil.localeDescString(_metadata.metadataNS::section.metadataNS::descriptions, metadataNS)
+            }
+        }
+        
+        
+        public function get metadataNS():Namespace
+        {
+            if (!_metadataNS)
+            {
+                _metadataNS = new Namespace();
+            }
+            
+            return _metadataNS;
+        }
+        
+        private var _metadataNS:Namespace;
+        
+        public function set metadataNS(value:Namespace):void
+        {
+            _metadataNS = value;
+        }
+        
+        /** TODO: make this the new data carrier, not unprased XML
+         */
+        [Bindable]
+        public var fieldDescriptor:FieldDescriptor;
+        
+        
+        [Bindable]
+        public var enableFormDefinitionEditing:Boolean;
+        
+        [Bindable]
+        public var enableFormDefinitionDelete:Boolean;
+        
+        [Bindable]
+        public var createOnDemand:Boolean;
+        
+        [Bindable]
+        public var mouseIsOver:Boolean;
+        
+        /** smartForm points to the form we're included in
+         */
+        
+        [Bindable]
+        public var smartForm:SmartForm;
+        
+        /** choices is an Array holding the set of enumeratedType values allowed for this 
+         * SmartFormItem
+         */
+        
+        [Bindable]
+        public var choices:ArrayCollection = new ArrayCollection();
+        
+        [Bindable]
+        protected var effectiveType:String;
+        
+        
+        /** defaultValue is drawn from metadata.default. Currently unused
+         */
+        
+        [Bindable]
+        public var defaultValue:String ="";
+        
+        [Bindable]
+        public var displayAsPassword:Boolean;
+        
+        private var _initializingControls:Boolean;
+        private var _dataChanged:Boolean;
+        
+        /* NOTE: Container declares this with a specified change event so we 
+        need to preserve that event type to avoid redundant change notifications
+        */
+        
+        [Bindable("dataChange")]
+        public override function set data(v:Object):void
+        {
+            if (super.data == v)
+                return;
+            
+            _dataChanged = true;
+            
+            // this will dispatch the required dataChange event
+            super.data = v;
+            
+            // trigger commitProperties so that we check validation flags
+            invalidateProperties();
+        }
+        
+        private var _origData:Object;
+        
+        public override function get data():Object
+        {
+            return super.data;
+        }
+        
+        public function snapshotData():void
+        {
+            _origData = data;
+        }
+        
+        
+        private var _created:Boolean;
+        
+        protected override function commitProperties():void
+        {
+            try
+            {
+                // now commit super to pick up changes to styles, etc.
+                super.commitProperties();
+            }
+            catch (e:TypeError)
+            {
+                // this is here because if label is set before createChildren 
+                // has created the private labelObj in FormItem, commit will 
+                // blow up
+            }
+            
+            if (_dataChanged)
+            {
+                _dataChanged = false;
+                
+                if (desiredState && data != null)
+                {
+                    currentState = desiredState;
+                    desiredState = null;
+                }
+                
+                // refresh our controls to display new data
+                if (!_initializingControls)
+                {
+                    initializeControls();
+                }
+                
+                // autopromote to collection if listType
+                if (data != null && (currentState == "listType" || currentState == "listTypeDisabled"))
+                {
+                    var newData:ICollectionView = makeNewCollection();
+                    data = newData;
+                }
+                
+                isDirty = checkDirty();
+            }
+            
+            /* if (_created)
+            {
+            // make sure form is marked valid/invalid at all times
+            validate(false);
+            }
+            else
+            {
+            // in initialization case, validate without events
+            validate(true);
+            } */
+            
+        }
+        
+        private function checkDirty():Boolean
+        {
+            var newData:Object = data;
+            
+            if ((_origData == "" || _origData == null)
+                && (newData == "" || newData == null))
+            {
+                return false;
+            }
+            else
+            {
+                return _origData != newData;
+            }
+            
+        }
+        
+        
+        public function initializeControls():void
+        {
+            _initializingControls = true;
+            // when the data changes, we need to refresh the current control
+            switch (effectiveType)
+            {
+                case "multilist":
+                    initListSelection(multilist);
+                    break;
+                
+                case "radiochoice":
+                    initRadioChoiceSelection();
+                    break;
+                
+                case "multicheck":
+                    initMultiCheckSelection();
+                    break;
+                
+                case "listbox":
+                    initListSelection(listbox);
+                    break;
+                
+                case "pulldownchoice":
+                    initComboBoxSelection();
+                    break;
+                
+                case "ipAddress":
+                    initIPAddress();
+                    break;
+                
+                case "radiobool":
+                    initRadioBool();
+                    break;
+            }
+            _initializingControls = false;
+        }
+        
+        [Bindable]
+        public function set editable(v:Boolean):void
+        {
+            _itemEditable = v;
+        }
+        
+        private var _itemEditable:Boolean = true;
+        
+        public function get editable():Boolean
+        {
+            // only enable fields that the metadata says should be enabled
+            if (metadata && !(metadata..metadataNS::readonly == true))
+                return _itemEditable;
+            else
+                return false;
+        }
+        
+        
+        [Bindable]
+        public var showLang:Boolean;
+        
+        /** prompt is for use with the PromptingTextArea controls
+         */
+        
+        [Bindable]
+        public var prompt:String;
+        
+        [Bindable]
+        public var allowFileContent:Boolean;
+        
+        [Bindable]
+        public var section_key:String;
+        
+        [Bindable]
+        public var section_desc:String;
+        
+        private function extractChoices(describedValues:XMLList):void
+        {
+            var newChoices:ArrayCollection = new ArrayCollection();
+            var newChoice:SmartFormChoice;
+            
+            for each (var v:* in describedValues)
+            {
+                newChoice = new SmartFormChoice();
+                newChoice.label = DescriptorUtil.localeDescString(v.metadataNS::descriptions, metadataNS);
+                newChoice.value = v.metadataNS::key.toString();
+                newChoices.addItem(newChoice);
+            }
+            
+            // now sort them for finesse (RBL-3883)
+            var sort:Sort = new Sort();
+            
+            sort.fields = [new SortField("label",true)];
+            newChoices.sort = sort;
+            newChoices.refresh();
+            
+            choices = newChoices;
+        }
+        
+        
+        public function onInitialize(event:FlexEvent):void
+        {
+        }
+        
+        private function toolTipShown(event:ToolTipEvent):void
+        {
+            // redispatch to effectively bubble the event, since toolTipShown
+            // is NOT a bubbling event by default (bummer)
+            dispatchEvent(event);
+        }
+        
+        public var desiredState:String;
+        
+        // The workhorse method. Unpacks metadata, decides what effective UI control
+        // to use and then sets our state appropriately to cause the right type of
+        // UI element to be added as a child
+        
+        protected override function createChildren():void
+        {        
+            super.createChildren();
+            
+            if (metadata == null)
+            {
+                currentState = enableFormDefinitionEditing ? "addItemPlaceholder" : "UNKNOWN";
+                return;
+            }
+            
+            // process the XML metadata, set our own props and create the appropriate items
+            label = DescriptorUtil.localeDescString(metadata.metadataNS::descriptions, metadataNS);
+            prompt = DescriptorUtil.localeDescString(metadata.metadataNS::prompt, metadataNS);
+            
+            // make the formitem itself show the same tooltip as the control 
+            toolTip = prompt;
+            
+            helpLink = DescriptorUtil.localHelpHref(metadata.metadataNS::help, metadataNS);
+            helpNode = DescriptorUtil.localHelpNode(metadata.metadataNS::help, metadataNS);
+            
+            required = metadata.metadataNS::required.toString().toLowerCase() == "true";
+            allowFileContent = metadata.metadataNS::allowFileContent.toString().toLowerCase() == "true";
+            displayAsPassword = metadata.metadataNS::password.toString().toLowerCase() == "true";
+            
+            var lengthConstraint:int = metadata..metadataNS::constraints.metadataNS::length;
+            
+            var enumerated:Boolean = metadata..metadataNS::enumeratedType.length() > 0;
+            var count:int = metadata..metadataNS::enumeratedType.metadataNS::describedValue.length();
+            
+            defaultValue = metadata.metadataNS::default;
+            
+            effectiveType = metadata.metadataNS::type;
+            
+            // is this an enumerated type?
+            if (enumerated && count > 0)
+            {
+                // HACK to fix bad server data
+                metadata.type = "enum";
+                
+                // populate the choices array
+                extractChoices(metadata..metadataNS::describedValue);
+                
+                // edge case: enumerated type with no valid choices
+                if (choices.length == 0)
+                {
+                    // skip this field entirely
+                    this.visible= false;
+                    this.includeInLayout = false;
+                    return;
+                }
+                
+                if (metadata.metadataNS::multiple.toString().toLowerCase() == "true" )
+                {
+                    if (count < smartForm.discreteControlThreshold)
+                    {
+                        // check whether the length of the labels is too large for 
+                        // checkbox style UI
+                        for each (var choice:SmartFormChoice in choices)
+                        {
+                            if (choice.label.length > smartForm.multiCheckLabelLengthThreshold)
+                            {
+                                effectiveType = "multilist";
+                                break;
+                            }
+                            else
+                            {
+                                effectiveType = "multicheck";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        effectiveType = "multilist";
+                    }
+                }
+                else
+                {
+                    // decide how many choices are allowed
+                    if (count < smartForm.discreteControlThreshold)
+                    {
+                        // check whether the length of the labels is too large for 
+                        // radiobutton style UI
+                        for each (choice in choices)
+                        {
+                            // don't make this smaller than 15
+                            if (choice.label.length > smartForm.labelLengthThreshold)
+                            {
+                                effectiveType = "pulldownchoice";
+                                break;
+                            }
+                            else
+                            {
+                                effectiveType = "radiochoice";
+                            }
+                        }
+                    }
+                    else if (count < smartForm.menuControlThreshold)
+                    {
+                        effectiveType = "pulldownchoice";
+                    }
+                    else 
+                    {
+                        effectiveType = "listbox";
+                    }
+                }
+            }
+            else if (effectiveType == "bool" && required)
+            {
+                // a required BOOL means we have to use radio button TRUE and FALSE
+                // and have NEITHER selected to start with
+                effectiveType = "radiobool";
+            }
+            else if (effectiveType == "str" && metadata..metadataNS::constraints.length)
+            {
+                if (lengthConstraint > smartForm.longTextThreshold)
+                {
+                    effectiveType = "longtext";
+                }
+            }
+            
+            initializeValidators();
+            
+            var typeString:String = editable ? effectiveType : effectiveType+"Disabled";
+            
+            // check resulting type is actually known (i.e. descriptor is valid)
+            if (states.some(
+                function checkStateExists(item:*, index:int, array:Array):Boolean
+                {
+                    return (item as State) ? (item as State).name == typeString : false;
+                }
+            ))
+            {
+                currentState = typeString;
+            }
+            else
+            {
+                currentState = "UNKNOWN";
+            }
+            
+            _dataChanged = true;
+            invalidateProperties();
+            
+            // and make sure we start off clean
+            isDirty = false;
+            
+            // stash the original data value (if any)
+            _origData = data;
+            
+            if (data == null && createOnDemand && currentState == "compoundType" )
+            {
+                desiredState = currentState;
+                currentState = "addDataPlaceholder";
+            }
+        }
+        
+        override public function onCreationComplete(event:FlexEvent):void
+        {
+            super.onCreationComplete(event);
+            if (helpNode && helpNode.length() > 0)
+            {
+                helpLink = helpNode.@href;
+                if (helpLink == "")
+                {
+                    helpKey = helpNode.toString();
+                    if (helpKey.substring(0, 1) == "@")
+                    {
+                        helpKey = helpKey.slice(1, -1);
+                    }
+                }
+            }
+            
+            _created = true;
+        }
+        
+        // ----------------------------------------------------- INITIALIZERS
+        
+        /*
+        All of these functions load the data object into the various UI control
+        types that the SmartFormItem supports
+        */
+        
+        private function initListSelection(list:spark.components.List):void
+        {
+            var newList:Vector.<Object> = new Vector.<Object>();
+            
+            for each (var v:SmartFormChoice in choices)
+            {
+                if (isChoiceInData(v.value.toString()))
+                {
+                    newList.push(v);
+                    v.selected = true;
+                }
+            }
+            
+            list.selectedItems = newList;
+        }
+        
+        
+        private function initMultiCheckSelection():void
+        {
+            
+            for (var i:int=0; i<choices.length; i++)
+            {
+                var checkbox:spark.components.CheckBox = multiCheckDG.getElementAt(i) as spark.components.CheckBox;
+                if (checkbox)
+                {
+                    var b:Boolean = isChoiceInData(choiceForLabel(checkbox.label).value);
+                    checkbox.selected = b;
+                }
+            }
+            
+        }
+        
+        private function initRadioChoiceSelection():void
+        {
+            
+            for (var i:int=0; i<choices.length; i++)
+            {
+                var b:Boolean = isChoiceInData(rb[i].value);
+                rb[i].selected = b;
+            }
+            
+        }
+        
+        
+        private function initComboBoxSelection():void
+        {
+            pulldownchoice.selectedIndex = -1;
+            pulldownchoice.selectedItem = null;
+            for each (var v:SmartFormChoice in choices)
+            {
+                if (isChoiceInData(v.value.toString()))
+                    pulldownchoice.selectedItem = v;
+            }
+        }
+        
+        
+        private function initIPAddress():void
+        {
+            if (!data)
+                return;
+        }
+        
+        private function initRadioBool():void
+        {
+            // null or "" means NEITHER TRUE NOR FALSE
+            if (data == null || data == "")
+            {
+                YESbool.selected = false;
+                NObool.selected = false;
+            }
+            else
+            {
+                var which:Boolean = UIHelper.boolValue(data);
+                YESbool.selected = which;
+                NObool.selected = !which;
+            }
+        }
+        
+        // -------------------------------------------------- INPUT HANDLERS
+        
+        /*
+        All of these functions handle input into the various control
+        types such that we can simply rely on the data object being updated
+        regardless of UI control style used.
+        */
+        
+        
+        private function handleIntField(e:Event):void
+        {
+            var newData:*;
+            
+            newData = intField.text;
+            if (newData is XML)
+                newData = newData.toString();
+            data = newData;
+            
+        }
+        
+        private function handleStrField(e:Event):void
+        {
+            var newData:*;
+            
+            newData = strField.text;
+            if (newData is XML)
+                newData = newData.toString();
+            data = newData;
+        }
+        
+        private function handleCheckbox(e:Event):void
+        {
+            data = checkbox.selected;
+        }
+        
+        public function handleMulticheck(e:Event):void
+        {
+            var newData:Array = new Array();
+            var bFoundIt:Boolean = false;
+            
+            var choice:* = choiceForLabel(e.target.label);
+            
+            // couldn't find choice? ignore it
+            if (!choice)
+                return;
+            
+            // loop through whatever data we already have assembled
+            for each (var v:* in data)
+            {
+                // is this one ours?
+                if (v == choice.value)
+                {
+                    if (e.target.selected)
+                    {
+                        bFoundIt = true;
+                        newData.push(v);
+                    }
+                }
+                else
+                {
+                    // not ours, so push it back
+                    newData.push(v);
+                }
+            }
+            
+            // if we didn't find it and we need it, add it now
+            if (!bFoundIt && e.target.selected)
+            {
+                newData.push(choice.value);
+            }
+            
+            data = newData;
+        }
+        
+        private function choiceForLabel(l:String):*
+        {
+            for each (var c:SmartFormChoice in choices)
+            {
+                if (c.label == l)
+                {
+                    return c;
+                }
+            }
+            return null;
+        }
+        
+        
+        private function isChoiceInData(o:String):Boolean
+        {
+            if (!data)
+                return false;
+            
+            if (data is Array)
+            {
+                // check if the given choice is in the data assuming data is now an array
+                for each (var v:* in data)
+                {
+                    if (v is XML)
+                        v = v.toString();
+                    if (v == o)
+                    {
+                        return true;
+                    }
+                }
+            }
+            else 
+            {
+                if (data.toString() == o)
+                    return true;
+            }
+            return false;
+        }
+        
+        
+        private function handleRadioBool(e:ItemClickEvent):void
+        {
+            data = e.item;
+        }
+        
+        private function handleRadioChoice(e:ItemClickEvent):void
+        {
+            data = e.item;
+        }
+        
+        private function handleDropdownList(e:IndexChangeEvent):void
+        {
+            var newData:*;
+            
+            newData = pulldownchoice.selectedItem;
+            data = newData ? newData.value : null;
+        }
+        
+        
+        private function handleList(e:IndexChangeEvent):void
+        {
+            var newData:*;
+            
+            newData = listbox.selectedItem;
+            data = newData ? newData.value : null;
+        }
+        
+        
+        private function handleMultiList(e:MouseEvent=null):void
+        {
+            // allow the click/change events to all happen first
+            callLater(deferredHandleMultiList, [e]);
+        }
+        
+        private function deferredHandleMultiList(e:MouseEvent=null):void
+        {
+            var newData:Array = [];
+            var newSelection:Vector.<Object> = new Vector.<Object>();
+            
+            for each (var i:SmartFormChoice in choices)
+            {
+                if (i.selected)
+                {
+                    newData.push(i.value);
+                    newSelection.push(i);
+                }
+            }
+            
+            multilist.selectedItems = newSelection;
+            
+            data = newData;
+        }
+        
+        private function handleIPAddress(e:Event):void
+        {
+            //TODO: make sure we're valid first
+            data = ipField.text;
+        }
+        
+        private function handleIPV6Address(e:Event):void
+        {
+            //TODO: make sure we're valid first
+            data = ipv6Field.text;
+        }
+        
+        private function handleLongtext(e:Event):void
+        {
+            //TODO: make sure we're valid first
+            data = longtext.text;
+        }
+        
+        private function handleCurrency(e:Event):void
+        {
+            //TODO: make sure we're valid first
+        }
+        
+        
+        private function handleFile(e:Event):void
+        {
+            //TODO: make sure we're valid first
+        }
+        
+        private function handleDesc(e:FlexEvent):void
+        {
+            // data has changed, but validators won't know it
+            dispatchEvent(new PropertyChangeEvent(PropertyChangeEvent.PROPERTY_CHANGE, false, false, PropertyChangeEventKind.UPDATE, "data", data, data, this));
+        }
+        
+        /** we need to override validationResultHandler in order to propagate
+         * the validation events from Validators down to the actual UI elements
+         * so they can change state, etc.
+         */
+        
+        public override function validationResultHandler(event:ValidationResultEvent):void
+        {
+            // let our specific input control mark itself appropriately
+            var child:UIComponent;
+            
+            // HACK: only pass down the validationResultEvent which will
+            // mark the UI element in RED IF we're not supressing
+            // TODO: cleaner way to track this state which is essentially
+            // the inialization state prior to the user entering data for the
+            // first time
+            
+            if (validationHelper.errorTipManager.suppressionCount < 1)
+            {
+                //box.validationResultHandler(event);
+                
+                for (var i:int = 0; i < box.numElements; i++)
+                {
+                    child = box.getElementAt(i) as UIComponent;
+                    if (child && child != editBtnGroup && !(child is Group) && !(child is DataGroup))
+                    {
+                        child.validationResultHandler(event);
+                        break;
+                    }
+                } 
+                 
+                super.validationResultHandler(event);
+            }
+            else
+            {
+                trace("HIT validationResult without validation ready");
+            }
+        }
+        
+        // --------------------------------------------------- DIRTY HANDLING
+        
+        [Bindable]
+        public function set isDirty(b:Boolean):void
+        {
+            _isDirty = b;
+            // rethrow the validation event so that our whole form can go invalid
+            this.dispatchEvent(new DynamicEvent("dirtyChanged"));
+        }
+        
+        private var _isDirty:Boolean = false;
+        
+        public function get isDirty():Boolean
+        {
+            return _isDirty;
+        }
+        
+        private function getDescription(value:String, defaultVal:String):String
+        {
+            return (value != "") ? value : defaultVal;
+        }
+        
+        override public function initializeValidators():void
+        {
+            // first ensure we have a validation helper to listen
+            super.initializeValidators();
+            
+            //validationHelper.itemsToValidate = validationHelper.itemsToValidate.concat(validators);
+            
+            var constraints:XMLList = metadata.metadataNS::constraints;
+            var descriptions:XMLList = constraints.metadataNS::descriptions;
+            
+            var x:XMLList;
+            
+            x = constraints..metadataNS::length;
+            if (x.length() > 0)
+            {
+                maxLengthV.enabled = true;
+                maxLengthV.maxLength = x;
+                maxLengthV.tooLongError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), maxLengthV.tooLongError);
+            }
+            else
+                maxLengthV.enabled = false;
+            
+            x = constraints..metadataNS::range;
+            if (x.length() > 0 && x.metadataNS::min.length() > 0 && x.metadataNS::max.length() > 0)
+            {
+                rangeV.enabled = true;
+                rangeV.minValue = x.metadataNS::min;
+                rangeV.maxValue = x.metadataNS::max;
+                rangeV.exceedsMaxError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), rangeV.exceedsMaxError);
+                rangeV.lowerThanMinError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), rangeV.lowerThanMinError);
+            }
+            else
+                rangeV.enabled = false;
+            
+            x = constraints..metadataNS::regexp;
+            if (x.length() > 0)
+            {
+                regExpV.enabled = true;
+                regExpV.expression = x.toString();
+                regExpV.noMatchError = getDescription(DescriptorUtil.localeDescString(descriptions, metadataNS), regExpV.noMatchError);
+            }
+            else
+                regExpV.enabled = false;
+            
+            if (required)
+            {
+                requiredV.enabled = true;
+                //requiredV.requiredFieldError = requiredV.requiredFieldError)
+            }
+            else
+                requiredV.enabled = false;
+            
+            // TODO: validate IP addresses, Dates, Times
+            
+        }
+        
+        public function showErrors():void
+        {
+            if (validationHelper)
+            {
+                validationHelper.showErrors();
+            }
+        }
+        
+        public function hideErrors():void
+        {
+            if (validationHelper)
+            {
+                validationHelper.hideErrors();
+            }
+        }
+        
+        
+        public override function setFocus():void
+        {
+            super.setFocus();
+            //magic.setFocus();
+        }
+        
+        // we need to keep this ref to prevent the fileRef getting GC'd
+        // cause the docs say that if it goes out of scope, you' won't get the
+        // completion events
+        
+        private var fileRef:FileReference;
+        
+        public function handleReadFileContent(event:Event):void
+        {
+            fileRef = new FileReference();
+            fileRef.addEventListener( Event.SELECT, onFileSelect ,false,0,true);
+            fileRef.addEventListener( Event.COMPLETE, onFileComplete ,false,0,true);
+            fileRef.browse();
+        }
+        
+        private function onFileSelect( event:Event ):void
+        {
+            fileRef.load();
+        }
+        
+        private function onFileComplete( event:Event ):void
+        {
+            var content:ByteArray = fileRef.data as ByteArray;
+            
+            data = content.toString();
+        }
+        
+        protected function descGroupAddHandler(event:MouseEvent):void
+        {
+            (data as ArrayCollection).addItem(new DescriptionEntry());
+        }
+        
+        protected function enumGroupAddHandler(event:MouseEvent):void
+        {
+            (data as ArrayCollection).addItem(new EnumDescriptor());
+        }
+        
+        protected function editFieldDefButton_clickHandler(event:MouseEvent):void
+        {
+            var evt:DynamicEvent = new DynamicEvent("editSmartFormItem",true, true);
+            evt.selectedItem = event.target;
+            evt.formItem = this;
+            evt.metadata = this.metadata;
+            evt.field = this.fieldDescriptor;
+            evt.anchor = this.editPopupAnchor;
+            dispatchEvent(evt);
+        }
+        
+        public function addItemHandler(event:MouseEvent):void
+        {
+            var evt:DynamicEvent = new DynamicEvent("addSmartFormItem",true, true);
+            evt.selectedItem = event.target;
+            evt.formItem = this;
+            evt.metadata = this.metadata;
+            evt.field = this.fieldDescriptor;
+            evt.anchor = this.editPopupAnchor;
+            dispatchEvent(evt);
+        }
+        
+        private function addDataObjectForItem(event:DynamicEvent):void
+        {
+            data = smartForm.newDataHolderForItem(this);
+        }
+        
+        public function addDataObjectHandler(event:MouseEvent):void
+        {
+            data = smartForm.newDataHolderForItem(this);
+            
+            var evt:DynamicEvent = new DynamicEvent("addSmartFormDataObject",true, true);
+            evt.selectedItem = event.target;
+            evt.formItem = this;
+            evt.metadata = this.metadata;
+            evt.field = this.fieldDescriptor;
+            evt.anchor = this.editPopupAnchor;
+            dispatchEvent(evt);
+        }
+        
+        
+        // add a new compound listType entry
+        public function listTypeAddHandler(event:MouseEvent):void
+        {
+            var coll:ArrayCollection = (data as ArrayCollection);
+            if (!coll)
+                coll = makeNewCollection();
+            coll.addItem({});
+            data = coll;
+        }
+        
+        // remove current listType entry
+        public function listTypeRemoveHandler(event:MouseEvent):void
+        {
+            var coll:ArrayCollection = (data as ArrayCollection);
+            
+            if (coll)
+            {
+                var i:int = coll.getItemIndex(listTypeBox.selectedItem);
+                if (i >= 0)
+                {
+                    coll.removeItemAt(i);
+                }
+            }
+            
+        }
+        
+        private function makeNewCollection():ArrayCollection
+        {
+            var newData:ArrayCollection = data as ArrayCollection;
+            
+            if (!newData)
+            {
+                if (newData is Array)
+                {
+                    newData = new ArrayCollection(data as Array);
+                }
+                else
+                {
+                    newData = new ArrayCollection();
+                }
+                
+                // also add the list="true" hint per RCE-689
+                var meta:XObjMetadata = XObjMetadata.getMetadata(newData);
+                if (meta)
+                {
+                    meta.isList = true;
+                    meta.arrayEntryTag = _rootElement;
+                }
+            }
+            
+            return newData;
+        }
+        
+        
+        protected function deleteFieldDefButton_clickHandler(event:MouseEvent):void
+        {
+            var evt:DynamicEvent = new DynamicEvent("deleteSmartFormItem",true, true);
+            evt.selectedItem = event.target;
+            evt.formItem = this;
+            evt.metadata = this.metadata;
+            evt.field = this.fieldDescriptor;
+            evt.anchor = this.editPopupAnchor;
+            dispatchEvent(evt);
+        }
+        
+        protected function extendedformitem1_preinitializeHandler(event:FlexEvent):void
+        {
+            // TODO Auto-generated method stub
+            this.addEventListener(FocusEvent.FOCUS_IN, onFocusInHandler);
+        }
+        
+        
+        protected function onFocusInHandler(event:FocusEvent):void
+        {
+            var evt:DynamicEvent = new DynamicEvent("selectSmartFormItem",true, true);
+            evt.selectedItem = event.target;
+            evt.formItem = this;
+            evt.metadata = this.metadata;
+            evt.field = this.fieldDescriptor;
+            evt.anchor = this.editPopupAnchor;
+            dispatchEvent(evt);
+        }
+        
+        protected function enumBox_validHandler(event:FlexEvent):void
+        {
+            dispatchEvent(event.clone());
+        }
+        
+        protected function compoundTypeForm_dataChanged(event:FlexEvent):void
+        {
+            // TODO: need to tell our parent SmartForm that compound changed the 
+            // root object
+            data = compoundTypeForm.data;
+        }
+        
+        // obj is ignored. passed only to trigger bindings
+        public function getXMLSubMetadata(obj:*):XML
+        {
+            var md:XML;
+            
+            if (!obj)
+                return null;
+            
+            try
+            {
+                var ns:Namespace = this.metadata.namespace();
+                var o:* = this.metadata.ns::descriptor;
+                
+                if (o is XML)
+                    md = (o as XML);
+                if (o is XMLList)
+                    md = new XML(o[0]);
+            }
+            catch (e:Error)
+            {
+            }
+            
+            return md;
+        }
+        
+        private var _rootElement:String;
+        
+        public function getXMLSubListMetadata(obj:*):XML
+        {
+            var md:XML;
+            
+            if (!obj)
+                return null;
+            
+            try
+            {
+                var ns:Namespace = this.metadata.namespace();
+                var o:* = this.metadata.ns::listType.ns::descriptor;
+                
+                if (o is XML)
+                    md = (o as XML);
+                if (o is XMLList)
+                    md = new XML(o[0]);
+                
+                _rootElement = md.ns::metadata.ns::rootElement;
+                // TODO: figure out how to make this the right TYPE
+                var meta:XObjMetadata = XObjMetadata.getMetadata(data);
+                if (meta)
+                    meta.arrayEntryTag = _rootElement;
+            }
+            catch (e:Error)
+            {
+            }
+            
+            return md;
+        }    
+        
+        public function updateListTypeSize():void
+        {
+            //TODO: how to get List to see size of element is now defined and
+            // show enough empty space to prompt scrolling by user?
+        }
+        
+    ]]>
+    </fx:Script>
+    
+    <!-- Validators here. Note that we turn on the ones needed dynamically -->
+    <fx:Declarations>
+        <fx:Array id="validators">
+            
+            <!-- the dotall flag (s) *must* be on for ec2 cert/key validation, should not matter for anything else -->
+            <mx:RegExpValidator id="regExpV" 
+                                source="{this}" property="data"
+                                triggerEvent="dataChange"
+                                expression=""
+                                flags="s"
+                                enabled="false"
+                                required="false"
+                                />
+            
+            <mx:StringValidator id="maxLengthV" 
+                                source="{this}" property="data"
+                                triggerEvent="dataChange"
+                                minLength="0" maxLength="0"
+                                enabled="false"
+                                required="false"
+                                />
+            
+            <mx:NumberValidator id="rangeV"
+                                source="{this}" property="data"
+                                triggerEvent="dataChange"
+                                minValue="0" maxValue="0"
+                                enabled="false"
+                                required="false"
+                                />
+            
+            <mx:Validator id="requiredV" 
+                          source="{this}" property="data"
+                          triggerEvent="dataChange"
+                          enabled="false"
+                          required="true"
+                          requiredFieldError="This field is required"
+                          />
+            
+        </fx:Array>
+        
+    </fx:Declarations>
+    
+    <views:states>
+        <s:State name="UNKNOWN" />
+        <s:State name="addItemPlaceholder" />
+        <s:State name="addDataPlaceholder" />
+        
+        <s:State name="str" />
+        <s:State name="strDisabled" />
+        <s:State name="int" />
+        <s:State name="intDisabled" />
+        <s:State name="bool" />
+        <s:State name="boolDisabled" />
+        <s:State name="date" />
+        <s:State name="dateDisabled" />
+        <s:State name="time" />
+        <s:State name="timeDisabled" />
+        <s:State name="datetime" />
+        <s:State name="datetimeDisabled" />
+        <s:State name="timeDelta" />
+        <s:State name="timeDeltaDisabled" />
+        <s:State name="ipAddress" />
+        <s:State name="ipAddressDisabled" />
+        
+        <s:State name="ipv6" />
+        <s:State name="ipv6Disabled" />
+        
+        <s:State name="currency" />
+        <s:State name="currencyDisabled" />
+        <s:State name="file" />
+        <s:State name="fileDisabled" />
+        <s:State name="radiochoice" />
+        <s:State name="radiochoiceDisabled" />
+        <s:State name="pulldownchoice" />
+        <s:State name="pulldownchoiceDisabled" />
+        <s:State name="listbox" />
+        <s:State name="listboxDisabled" />
+        <s:State name="multicheck" />
+        <s:State name="multicheckDisabled" />
+        <s:State name="multilist" />
+        <s:State name="multilistDisabled" />
+        <s:State name="longtext" />
+        <s:State name="longtextDisabled" />
+        <s:State name="radiobool" />
+        <s:State name="radioboolDisabled" />
+        
+        <s:State name="desc" />
+        <s:State name="descDisabled" />
+        
+        <s:State name="enumDesc" />
+        <s:State name="enumDescDisabled" />
+        
+        <s:State name="divider" />
+        <s:State name="dividerDisabled" />
+        
+        <s:State name="compoundType" />
+        <s:State name="compoundTypeDisabled" />
+        
+        <s:State name="listType" />
+        <s:State name="listTypeDisabled" />
+        
+    </views:states>
+    
+    <!--<mx:NumberValidator id="intValidation" source="{intField}">
+    </mx:NumberValidator>-->
+    
+    <s:HGroup id="box" 
+              width="100%" 
+              mouseOver="mouseIsOver = true"
+              mouseOut="mouseIsOver = false"
+              mouseEnabled="true"
+              mouseEnabledWhereTransparent="true"
+              >
+        
+        <s:Label id="unknownTypeDisplay" 
+                 text="{data}" backgroundColor="0xFF0000" 
+                 toolTip="{prompt}" 
+                 width="100%"
+                 includeIn="UNKNOWN"
+                 />
+        
+        <!-- str: 0 -->
+        <views:ExtendedTextInput id="strField" text="{data}" 
+                                 editable="{editable}" enabled="{enabled}"
+                                 prompt="{prompt}"
+                                 change="handleStrField(event)"
+                                 displayAsPassword="{displayAsPassword}"
+                                 width="100%"
+                                 toolTipShown="toolTipShown(event)"
+                                 includeIn="str"
+                                 
+                                 />
+        <s:TextInput text="{data.valueOf() != null ? data : 'N/A'}" 
+                     selectable="true"
+                     editable="false"
+                     displayAsPassword="{displayAsPassword}"
+                     toolTip="{prompt}" 
+                     width="100%"
+                     includeIn="strDisabled"
+                     />
+        
+        <!-- int: 2 -->
+        <views:ExtendedTextInput id="intField" text="{data}" maxChars="20" 
+                                 editable="{editable}" enabled="{enabled}"
+                                 prompt="{prompt}"
+                                 change="handleIntField(event)"
+                                 displayAsPassword="{displayAsPassword}"
+                                 toolTipShown="toolTipShown(event)"
+                                 width="100%"
+                                 includeIn="int"
+                                 />
+        <mx:Label text="{data}" 
+                  selectable="true"
+                  width="100%"
+                  toolTip="{prompt}" 
+                  includeIn="intDisabled"
+                  />
+        
+        <!-- bool: 4 -->
+        <s:CheckBox id="checkbox" selected="{UIHelper.checkBooleans(UIHelper.boolValue(data))}" enabled="{editable &amp;&amp; enabled}"
+                    width="100%"
+                    includeIn="bool,boolDisabled"
+                    toolTipShown="toolTipShown(event)"
+                    toolTip="{prompt}"  change="handleCheckbox(event)" />
+        
+        <!-- TODO: Date, Time, ITmeDelta all need to be implemented -->
+        
+        <!-- date: 5 -->
+        <mx:Label text="date"
+                  width="100%"
+                  toolTipShown="toolTipShown(event)"
+                  includeIn="date"
+                  />
+        <mx:Label text="{data}" 
+                  selectable="true"
+                  toolTip="{prompt}" 
+                  width="100%"
+                  toolTipShown="toolTipShown(event)"
+                  includeIn="dateDisabled"
+                  />
+        
+        <!-- time: 7 -->
+        <mx:Label text="time"
+                  width="100%"
+                  toolTipShown="toolTipShown(event)"
+                  includeIn="time"
+                  />
+        <mx:Label text="{data}" 
+                  selectable="true"
+                  toolTip="{prompt}" 
+                  width="100%"
+                  includeIn="timeDisabled"
+                  />
+        
+        <!-- datetime: 9 -->
+        <mx:Label text="datetime"
+                  width="100%"
+                  toolTipShown="toolTipShown(event)"
+                  includeIn="datetime"
+                  />
+        <mx:Label text="{data}" 
+                  selectable="true"
+                  toolTip="{prompt}" 
+                  width="100%"
+                  includeIn="datetimeDisabled"
+                  />
+        
+        <!-- timeDelta: 11 -->
+        <mx:Label text="timeDelta"
+                  width="100%"
+                  toolTipShown="toolTipShown(event)"
+                  includeIn="timeDelta"
+                  />
+        <mx:Label text="{data}" 
+                  selectable="true"
+                  toolTip="{prompt}" 
+                  width="100%"
+                  includeIn="timeDeltaDisabled"
+                  />
+        
+        <!-- ipAddress -->
+        <views:ExtendedTextInput id="ipField" text="{data}" 
+                                 editable="{editable}" enabled="{enabled}"
+                                 prompt="{prompt}"
+                                 change="handleIPAddress(event)"
+                                 width="100%"
+                                 toolTipShown="toolTipShown(event)"
+                                 includeIn="ipAddress"
+                                 />
+        
+        <s:TextInput text="{data.valueOf() != null ? data : 'N/A'}" 
+                     selectable="true"
+                     editable="false"
+                     toolTip="{prompt}" 
+                     width="100%"
+                     includeIn="ipAddressDisabled"
+                     />
+        
+        <!-- ipv6 Address -->
+        <views:ExtendedTextInput id="ipv6Field" text="{data}" 
+                                 editable="{editable}" enabled="{enabled}"
+                                 prompt="{prompt}"
+                                 change="handleIPV6Address(event)"
+                                 width="100%"
+                                 toolTipShown="toolTipShown(event)"
+                                 includeIn="ipv6"
+                                 />
+        
+        <s:TextInput text="{data.valueOf() != null ? data : 'N/A'}" 
+                     selectable="true"
+                     editable="false"
+                     toolTip="{prompt}" 
+                     width="100%"
+                     includeIn="ipv6Disabled"
+                     />
+        
+        <!-- currency: 15 -->
+        <views:ExtendedTextInput id="currency" text="{data}" 
+                                 editable="{editable}" 
+                                 enabled="{enabled}"
+                                 prompt="{prompt}"
+                                 change="handleCurrency(event)"
+                                 toolTipShown="toolTipShown(event)"
+                                 width="100%"
+                                 includeIn="currency"
+                                 />
+        <mx:Label text="{data}" 
+                  selectable="true"
+                  toolTip="{prompt}" 
+                  toolTipShown="toolTipShown(event)"
+                  width="100%"
+                  includeIn="currencyDisabled"
+                  />
+        
+        <!-- file: 17 -->
+        <views:ExtendedTextInput id="file" text="{data}"
+                                 editable="{editable}" 
+                                 enabled="{enabled}"
+                                 prompt="{prompt}"
+                                 change="handleFile(event)"
+                                 width="100%"
+                                 toolTipShown="toolTipShown(event)"
+                                 includeIn="file"
+                                 />
+        <mx:Label text="{data}" 
+                  selectable="true"
+                  toolTip="{prompt}" 
+                  width="100%"
+                  includeIn="fileDisabled"
+                  />
+        
+        <!-- radiochoice: 19 -->
+        <mx:HBox toolTip="{prompt}"
+                 width="100%"
+                 includeIn="radiochoice, radiochoiceDisabled"
+                 horizontalScrollPolicy="off">
+            <mx:RadioButtonGroup id="radiochoice" itemClick="handleRadioChoice(event)"/>
+            <mx:Repeater id="rep1" dataProvider="{choices}" width="100%">
+                <mx:RadioButton id="rb" label="{rep1.currentItem.label}" enabled="{editable &amp;&amp; enabled}" 
+                                value="{rep1.currentItem.value}" groupName="radiochoice" />
+            </mx:Repeater>
+        </mx:HBox>
+        
+        <!-- pulldownchoice: 20 -->
+        <s:DropDownList id="pulldownchoice" toolTip="{prompt}" enabled="{editable &amp;&amp; enabled}"
+                        dataProvider="{choices}" change="handleDropdownList(event)" 
+                        toolTipShown="toolTipShown(event)"
+                        width="100%"
+                        includeIn="pulldownchoice,pulldownchoiceDisabled"
+                        />
+        
+        
+        <!-- listbox: 21 -->
+        <s:List id="listbox"  dataProvider="{choices}" toolTip="{prompt}"
+                width="100%" 
+                minHeight="0"
+                maxHeight="100"
+                change="handleList(event)" enabled="{editable &amp;&amp; enabled}" 
+                toolTipShown="toolTipShown(event)"
+                includeIn="listbox,listboxDisabled">
+            <s:itemRenderer>
+                <fx:Component>
+                    <s:ItemRenderer width="100%">
+                        <s:states>
+                            <s:State name="normal" />
+                            <s:State name="hovered" />
+                        </s:states>
+                        <s:Label text="{data.label}"/>
+                    </s:ItemRenderer>
+                </fx:Component>
+            </s:itemRenderer>
+            
+        </s:List>
+        
+        <!-- multicheck: 22 -->
+        <s:DataGroup id="multiCheckDG" dataProvider="{choices}" toolTip="{prompt}"
+                     width="100%"
+                     minHeight="0"
+                     toolTipShown="toolTipShown(event)"
+                     includeIn="multicheck,multicheckDisabled">
+            <s:layout>
+                <s:HorizontalLayout />
+            </s:layout>
+            <s:itemRenderer>
+                <fx:Component>
+                    <s:ItemRenderer width="100%" autoDrawBackground="false" contentBackgroundAlpha="0">
+                        <s:CheckBox label="{data.label}" enabled="{parentDocument.editable &amp;&amp; parentDocument.enabled}"
+                                    change="parentDocument.handleMulticheck(event)"
+                                    errorString="{parentDocument.errorString}"/>
+                    </s:ItemRenderer>
+                </fx:Component>
+            </s:itemRenderer>
+        </s:DataGroup>
+        
+        <!-- multilist: 23 -->
+        <s:List id="multilist"  dataProvider="{choices}" toolTip="{prompt}"
+                width="100%"
+                minHeight="0"
+                enabled="{editable &amp;&amp; enabled}"
+                allowMultipleSelection="true"
+                selectionColor="0xFFFFFF"
+                click="handleMultiList(event)"
+                maxHeight="100"
+                toolTipShown="toolTipShown(event)"
+                includeIn="multilist,multilistDisabled"
+                >
+            <s:itemRenderer>
+                <fx:Component>
+                    <s:ItemRenderer width="100%" autoDrawBackground="false" contentBackgroundAlpha="0">
+                        <s:CheckBox label="{data.label}" selected="{data.selected}"
+                                    change="data.selected = !data.selected">
+                        </s:CheckBox>
+                    </s:ItemRenderer>
+                </fx:Component>
+            </s:itemRenderer>
+        </s:List>
+        
+        <!-- longtext: 24 -->
+        <views:CompoundInputItem includeIn="longtext, longtextDisabled"
+                                 minHeight="0"
+                                 width="100%"
+                                 autoDrawBackground="false"
+                                 toolTipShown="toolTipShown(event)"
+                                 inputFields="{[longtext]}">
+            <s:HGroup width="100%" includeIn="longtext">
+                <views:ExtendedTextArea id="longtext" text="{data}"  
+                                        editable="{editable}" enabled="{enabled}"
+                                        prompt="{prompt}"
+                                        displayAsPassword="{displayAsPassword}"
+                                        change="handleLongtext(event)"
+                                        toolTipShown="toolTipShown(event)"
+                                        width="100%"
+                                        minWidth="400"
+                                        maxHeight="250"
+                                        />
+                <s:Button label="Open..."
+                          toolTip="Use contents of a local file"
+                          includeInLayout="{allowFileContent}"
+                          visible="{allowFileContent}"
+                          click="handleReadFileContent(event)"/>
+            </s:HGroup>
+            <views:ExtendedTextArea text="{data}" 
+                                    selectable="true"
+                                    editable="false"
+                                    displayAsPassword="{displayAsPassword}"
+                                    prompt="{prompt}"
+                                    toolTip="{prompt}"
+                                    minWidth="400"
+                                    maxHeight="250"
+                                    includeIn="longtextDisabled"
+                                    />
+        </views:CompoundInputItem>
+        
+        <!-- radiobool: 26 -->
+        <views:CompoundInputItem includeIn="radiobool,radioboolDisabled"
+                                 toolTipShown="toolTipShown(event)"
+                                 width="100%"
+                                 minHeight="0"
+                                 autoDrawBackground="false"
+                                 inputFields="{[YESbool, NObool]}">
+            <mx:HBox width="100%">
+                <mx:RadioButtonGroup id="radiobool" itemClick="handleRadioBool(event)" />
+                
+                <mx:RadioButton id="YESbool" label="YES" value="true"
+                                toolTipShown="toolTipShown(event)"
+                                enabled="{editable &amp;&amp; enabled}" groupName="radiobool" />
+                <mx:RadioButton id="NObool" label="NO" value="false"
+                                toolTipShown="toolTipShown(event)"
+                                enabled="{editable &amp;&amp; enabled}" groupName="radiobool" />
+            </mx:HBox>
+            
+        </views:CompoundInputItem>
+        
+        <!-- desc -->
+        <views:DescListItemRenderer id="descBox"
+                                    width="100%"
+                                    minHeight="0"
+                                    toolTip="{prompt}"
+                                    data="{data}"
+                                    toolTipShown="toolTipShown(event)"
+                                    enabled="{enabled}"
+                                    editable="{editable}"
+                                    showLang="{showLang}"
+                                    includeIn="desc,descDisabled"
+                                    dataChange="handleDesc(event)"
+                                    >
+            
+        </views:DescListItemRenderer>
+        
+        <!-- enum -->
+        <views:EnumListItemRenderer 
+            id="enumBox"
+            width="100%"
+            minHeight="0"
+            data="{data}"
+            toolTip="{prompt}"
+            enabled="{editable &amp;&amp; enabled}"
+            toolTipShown="toolTipShown(event)"
+            editable="{editable}"
+            showLang="{showLang}"
+            dataChange="handleDesc(event)"
+            valid="enumBox_validHandler(event)"
+            invalid="enumBox_validHandler(event)"
+            includeIn="enumDesc,enumDescDisabled"
+            />
+        
+        <!-- compound -->
+        <views:CompoundInputItem includeIn="compoundType,compoundTypeDisabled"
+                                 toolTipShown="toolTipShown(event)"
+                                 width="100%"
+                                 minHeight="0"
+                                 autoDrawBackground="false"
+                                 inputFields="{[compoundTypeForm]}"
+                                 >
+            
+            <views:SmartFormBorderGraphic top="0" right="0" bottom="0" left="0" />
+            
+            <views:SmartForm id="compoundTypeForm"
+                             createOnDemand="true"
+                             showHeading="false"
+                             width="100%"
+                             top="2"
+                             bottom="2"
+                             dataChange="compoundTypeForm_dataChanged(event)"
+                             metadata="{getXMLSubMetadata(this.metadata)}"
+                             data="{data}"
+                             added="{validationHelper.addItemToValidate(compoundTypeForm)}"
+                             >
+            </views:SmartForm>
+        </views:CompoundInputItem>
+        
+        <!-- listType: possibly compound items -->
+        <s:Group width="100%" minHeight="0" 
+                 includeIn="listType,listTypeDisabled">
+            <s:layout>
+                <s:VerticalLayout gap="6" />
+            </s:layout>
+                <s:List id="listTypeBox"  dataProvider="{data}" toolTip="{prompt}"
+                        width="100%" 
+                        minHeight="0"
+                        enabled="{editable &amp;&amp; enabled}" 
+                        toolTipShown="toolTipShown(event)"
+                        includeInLayout="{(data is ArrayCollection) &amp;&amp; data != null &amp;&amp; (data as ArrayCollection).length > 0}"
+                        visible="{(data is ArrayCollection) &amp;&amp; data != null &amp;&amp; (data as ArrayCollection).length > 0}"
+                        >
+                <s:layout>
+                    <s:VerticalLayout gap="0" horizontalAlign="contentJustify" requestedMinRowCount="1" />
+                </s:layout>
+                <s:itemRenderer>
+                    <fx:Component>
+                        <s:ItemRenderer width="100%"
+                                        autoDrawBackground="false"
+                                        >
+                            <views:SmartFormBorderGraphic top="2" right="0" bottom="2" left="0" />
+
+                            <s:HGroup width="100%"
+                                      top="6" right="6" bottom="6" left="6"
+                                      >
+                                <views:SmartForm id="listCompoundTypeForm"
+                                                 width="100%"
+                                                 createOnDemand="true"
+                                                 showHeading="false"
+                                                 metadata="{outerDocument.getXMLSubListMetadata(outerDocument.metadata)}"
+                                                 data="{data}"
+                                                 creationComplete="{outerDocument.updateListTypeSize()}">
+                                </views:SmartForm>
+                                
+                                
+                                <s:Button id="removeButton"
+                                          toolTip="Remove"  width="24" height="24"
+                                          click="outerDocument.listTypeRemoveHandler(event)"
+                                          includeInLayout="{outerDocument.editable &amp;&amp; outerDocument.enabled}" 
+                                          visible="{removeButton.includeInLayout}"
+                                          skinClass="com.rpath.raf.skins.IconButtonSkin"
+                                          icon="@Embed(source='/assets/images/remove.png')"
+                                          />
+                            </s:HGroup>
+
+                            
+                        </s:ItemRenderer>
+                    </fx:Component>
+                </s:itemRenderer>
+            </s:List>
+            
+            <s:HGroup width="100%" verticalAlign="middle">
+                <s:Label text="{'Add to '+ label}"
+                         includeInLayout="{editable &amp;&amp; enabled}" 
+                         visible="{editable &amp;&amp; enabled}"
+                         />               
+                <s:Button id="addButton"
+                          toolTip="{'Add to '+ label}"  width="24" height="24"
+                          click="listTypeAddHandler(event)"
+                          includeInLayout="{editable &amp;&amp; enabled}" 
+                          visible="{addButton.includeInLayout}"
+                          skinClass="com.rpath.raf.skins.IconButtonSkin"
+                          icon="@Embed(source='/assets/images/add.png')"
+                          /> 
+            </s:HGroup>
+
+            
+        </s:Group>
+        
+        <s:Button id="addItemButton"
+                  toolTip="{'Add to '+ label}"  width="32" height="32"
+                  click="addItemHandler(event)"
+                  skinClass="com.rpath.raf.skins.IconButtonSkin"
+                  icon="@Embed(source='/assets/images/add.png')"
+                  includeIn="addItemPlaceholder"
+                  verticalCenter="0" horizontalCenter="0"/>
+        
+        <views:ExtendedTextInput id="addItem" text="{data}" 
+                                 editable="{editable}" enabled="{enabled}"
+                                 prompt="{prompt}"
+                                 change="handleStrField(event)"
+                                 displayAsPassword="{displayAsPassword}"
+                                 width="100%"
+                                 toolTipShown="toolTipShown(event)"
+                                 includeIn="addItemPlaceholder"
+                                 />
+        
+        <s:Button id="addDataButton"
+                  toolTip="{'Add object '+ label}"  width="32" height="32"
+                  click="addDataObjectHandler(event)"
+                  skinClass="com.rpath.raf.skins.IconButtonSkin"
+                  icon="@Embed(source='/assets/images/add.png')"
+                  includeIn="addDataPlaceholder"
+                  verticalCenter="0" horizontalCenter="0"/>
+        
+        <!-- divider -->
+        <mx:HRule width="100%"
+                  includeIn="divider,dividerDisabled"
+                  />
+        
+        <!-- Edit button if available -->
+        <s:Group id="editBtnGroup" right="0"
+                 excludeFrom="compoundTypeDisabled,compoundType,listType,listTypeDisabled"
+                 includeInLayout="{enableFormDefinitionEditing}"
+                 visible="{editBtnGroup.includeInLayout}">
+            
+            <s:Button id="editFieldDefButton" 
+                      width="16" height="16"
+                      click="editFieldDefButton_clickHandler(event)"
+                      visible="{mouseIsOver}"
+                      toolTip="Edit property definition"
+                      skinClass="com.rpath.raf.skins.IconButtonSkin"
+                      icon="@Embed(source='/assets/images/edit.png')"
+                      />
+            <s:PopUpAnchor id="editPopupAnchor" width="1" height="0" />
+        </s:Group>
+        
+        <!-- Delete field button if available -->
+        <s:Group id="deleteBtnGroup" right="0"
+                 includeInLayout="{enableFormDefinitionDelete}"
+                 visible="{enableFormDefinitionDelete}">
+            
+            <s:Button id="deleteFieldDefButton" 
+                      width="16" height="16"
+                      click="deleteFieldDefButton_clickHandler(event)"
+                      visible="{mouseIsOver}"
+                      toolTip="Remove property definition"
+                      skinClass="com.rpath.raf.skins.IconButtonSkin"
+                      icon="@Embed(source='/assets/images/remove.png')"
+                      />
+        </s:Group>
+        
+    </s:HGroup>
+    
+</views:ExtendedFormItem>

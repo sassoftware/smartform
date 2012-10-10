@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SkinnableContainer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+                      xmlns:s="library://ns.adobe.com/flex/spark" 
+                      xmlns:mx="library://ns.adobe.com/flex/mx"
+                      skinClass="com.rpath.raf.skins.DisclosureContainerSkin" 
+                      xmlns:raf="http://www.rpath.com/2009/raf.mxml"
+                      >
+    <fx:Declarations>
+        
+    </fx:Declarations>
+    
+    <fx:Script>
+        <![CDATA[
+            
+            import mx.core.UIComponent;
+            
+            import spark.components.Group;
+            import spark.components.SkinnableContainer;
+            
+            override protected function stateChanged(oldState:String, newState:String, recursive:Boolean):void
+            {
+                super.stateChanged(oldState, newState, recursive);
+                invalidateSkinState();
+            }
+            
+            protected override function getCurrentSkinState():String
+            {
+                var state:String;
+                if (expanded)
+                {
+                    state = enabled ? "EXPANDED" : "EXPANDED_DISABLED";
+                }
+                else
+                {
+                    state = enabled ? "COLLAPSED" : "COLLAPSED_DISABLED";
+                }
+                return state;
+            }
+            
+            [SkinPart(required="false")]
+            [Bindable]
+            public var extraControlGroup:Group;
+            
+            
+            private var _expanded:Boolean;
+            
+            [Bindable]
+            public function get expanded():Boolean
+            {
+                return _expanded;
+            }
+            
+            public function set expanded(value:Boolean):void
+            {
+                _expanded = value;
+//                if (_expanded)
+//                {
+//                    this.percentHeight = 100;
+//                }
+//                else 
+//                {
+//                    this.percentHeight = NaN;
+//                }
+                invalidateSkinState();
+            }
+
+            [Bindable]
+            public function get disclosureLabel():String
+            {
+                return _disclosureLabel;
+            }
+            
+            private var _disclosureLabel:String;
+            private var _disclosureLabelChanged:Boolean;
+
+            public function set disclosureLabel(value:String):void
+            {
+                _disclosureLabel = value;
+                
+                _disclosureLabelChanged = true;
+                invalidateProperties();
+            }
+
+            
+            private var _extraContent:Array = [];
+            
+            [ArrayElementType("mx.core.IVisualElement")]
+            public function get extraContent():Array {
+                return _extraContent;
+            }
+            public function set extraContent(value:Array):void {
+                _extraContent = value;
+                if (extraControlGroup) {
+                    extraControlGroup.mxmlContent = value;
+                }
+            }
+            
+            override protected function partAdded(partName:String, instance:Object):void {
+                super.partAdded(partName, instance);
+                
+                if (instance == extraControlGroup) {
+                    extraControlGroup.mxmlContent = _extraContent;
+                }
+            }
+            
+            override protected function partRemoved(partName:String, instance:Object):void {
+                super.partRemoved(partName, instance);
+                
+                if (instance == extraControlGroup) {
+                    extraControlGroup.mxmlContent = null;
+                }
+            }
+            
+            public function handleClick(event:Event, sendEvent:Boolean=false):void
+            {
+                expanded = !expanded;
+            }
+            
+            override protected function commitProperties():void
+            {
+                if (_disclosureLabelChanged)
+                {
+                    _disclosureLabelChanged = false;
+                }
+                
+                super.commitProperties();
+            }
+        ]]>
+    </fx:Script>
+    <s:states>
+        <s:State name="EXPANDED" />
+        <s:State name="COLLAPSED" />
+    </s:states>
+</s:SkinnableContainer>

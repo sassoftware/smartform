@@ -1,0 +1,173 @@
+<configuration_descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd" version="1.1"> 
+    <metadata> 
+        <displayName>Configuration Descriptor</displayName> 
+        <descriptions> 
+            <desc>Configuration Descriptor</desc> 
+        </descriptions> 
+    </metadata> 
+    <dataFields> 
+        <field> 
+            <name>vhosts</name> 
+            <descriptions> 
+                <desc lang="en_US">Virtual Hosts</desc> 
+            </descriptions> 
+            <help href="None" /> 
+            <type>listType</type> 
+            <section> 
+                <key>apache_configurator</key> 
+            </section> 
+            <enumeratedType /> 
+            <listType> 
+                <descriptor> 
+                    <metadata> 
+                        <displayName>Virtual 2 Host Configuration</displayName> 
+                        <rootElement>vhost</rootElement> 
+                        <descriptions> 
+                            <desc lang="en_US">Virtual Host Configuration</desc> 
+                        </descriptions> 
+                    </metadata> 
+                    <dataFields> 
+                        <field> 
+                            <name>nameVirtualHost</name> 
+                            <descriptions> 
+                                <desc lang="en_US">VirtualHost for website</desc> 
+                            </descriptions> 
+                            <help href="None" /> 
+                            <type>str</type> 
+                            <enumeratedType /> 
+                            <multiple>false</multiple> 
+                            <default>*</default> 
+                            <constraints> 
+                                <descriptions /> 
+                                <range /> 
+                                <minLength>0</minLength> 
+                            </constraints> 
+                            <required>false</required> 
+                            <allowFileContent>false</allowFileContent> 
+                            <hidden>false</hidden> 
+                            <password>false</password> 
+                            <conditional /> 
+                            <prompt> 
+                                <desc lang="en_US">Virtual Host Name for Website</desc> 
+                            </prompt> 
+                        </field> 
+                        <field> 
+                            <name>port</name> 
+                            <descriptions> 
+                                <desc lang="en_US">Port for Virtual Host</desc> 
+                            </descriptions> 
+                            <help href="None" /> 
+                            <type>str</type> 
+                            <enumeratedType /> 
+                            <multiple>false</multiple> 
+                            <default>8080</default> 
+                            <constraints> 
+                                <descriptions /> 
+                                <range /> 
+                                <minLength>0</minLength> 
+                            </constraints> 
+                            <required>true</required> 
+                            <allowFileContent>false</allowFileContent> 
+                            <hidden>false</hidden> 
+                            <password>false</password> 
+                            <conditional /> 
+                            <prompt> 
+                                <desc lang="en_US">Port for Virtual Host</desc> 
+                            </prompt> 
+                        </field> 
+                        <field> 
+                            <name>serverName</name> 
+                            <descriptions> 
+                                <desc lang="en_US">Server Name for Virtual Host</desc> 
+                            </descriptions> 
+                            <help href="None" /> 
+                            <type>str</type> 
+                            <enumeratedType /> 
+                            <multiple>false</multiple> 
+                            <default>vhost2.example.com</default> 
+                            <constraints> 
+                                <descriptions /> 
+                                <range /> 
+                                <minLength>0</minLength> 
+                            </constraints> 
+                            <required>true</required> 
+                            <allowFileContent>false</allowFileContent> 
+                            <hidden>false</hidden> 
+                            <password>false</password> 
+                            <conditional /> 
+                            <prompt> 
+                                <desc lang="en_US">Server Name for Virtual Host</desc> 
+                            </prompt> 
+                        </field> 
+                    </dataFields> 
+                </descriptor> 
+            </listType> 
+            <multiple>false</multiple> 
+            <constraints> 
+                <descriptions /> 
+                <range /> 
+                <minLength>0</minLength> 
+            </constraints> 
+            <required>false</required> 
+            <allowFileContent>false</allowFileContent> 
+            <hidden>false</hidden> 
+            <password>false</password> 
+            <conditional /> 
+            <prompt /> 
+        </field> 
+        <field> 
+            <name>postgres_listen_addresses</name> 
+            <descriptions> 
+                <desc lang="en_US">PostgreSQL Listen Addresses</desc> 
+            </descriptions> 
+            <help href="None" /> 
+            <type>str</type> 
+            <section> 
+                <key>postgres_configurator</key> 
+            </section> 
+            <enumeratedType /> 
+            <multiple>false</multiple> 
+            <default>*</default> 
+            <constraints> 
+                <descriptions /> 
+                <range /> 
+                <minLength>0</minLength> 
+            </constraints> 
+            <required>false</required> 
+            <allowFileContent>false</allowFileContent> 
+            <hidden>false</hidden> 
+            <password>false</password> 
+            <conditional /> 
+            <prompt> 
+                <desc lang="en_US">PostgreSQL Listen Addresses</desc> 
+            </prompt> 
+        </field> 
+        <field> 
+            <name>postgres_port</name> 
+            <descriptions> 
+                <desc lang="en_US">Port for PostgreSQL</desc> 
+            </descriptions> 
+            <help href="None" /> 
+            <type>str</type> 
+            <section> 
+                <key>postgres_configurator</key> 
+            </section> 
+            <enumeratedType /> 
+            <multiple>false</multiple> 
+            <default>5432</default> 
+            <constraints> 
+                <descriptions /> 
+                <range /> 
+                <minLength>0</minLength> 
+            </constraints> 
+            <required>true</required> 
+            <allowFileContent>false</allowFileContent> 
+            <hidden>false</hidden> 
+            <password>false</password> 
+            <conditional /> 
+            <prompt> 
+                <desc lang="en_US">Port for PostgreSQL</desc> 
+            </prompt> 
+        </field> 
+    </dataFields> 
+</configuration_descriptor>

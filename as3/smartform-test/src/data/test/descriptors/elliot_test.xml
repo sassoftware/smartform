@@ -1,0 +1,54 @@
+<configuration_descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd"
+	xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd"
+	version="1.1">
+	<metadata>
+		<displayName>Configuration Descriptor</displayName>
+		<descriptions>
+			<desc>Configuration Descriptor</desc>
+		</descriptions>
+	</metadata>
+	<dataFields>
+		<field>
+			<name>configuration_descriptor</name>
+			<descriptions>
+				<desc lang="Configuration Descriptor">en_US</desc>
+			</descriptions>
+			<type>compoundType</type>
+			<descriptor>
+				<metadata>
+					<displayName>Configuration Descriptor</displayName>
+					<descriptions>
+						<desc lang="en_US">Configuration Descriptor</desc>
+					</descriptions>
+				</metadata>
+				<dataFields>
+					<field>
+						<name>motd</name>
+						<descriptions>
+							<desc lang="en_US">Message</desc>
+						</descriptions>
+						<help href="None" />
+						<type>str</type>
+						<enumeratedType />
+						<multiple>false</multiple>
+						<default>Welcome!</default>
+						<constraints>
+							<descriptions />
+							<range />
+						</constraints>
+						<required>true</required>
+						<allowFileContent>false</allowFileContent>
+						<hidden>false</hidden>
+						<password>false</password>
+						<conditional />
+						<prompt>
+							<desc lang="en_US">message of the day</desc>
+						</prompt>
+					</field>
+				</dataFields>
+			</descriptor>
+			<required>true</required>
+		</field>
+	</dataFields>
+</configuration_descriptor>

@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+Copyright (c) 2009-2011 rPath, Inc.
+
+This program is distributed under the terms of the MIT License as found 
+in a file called LICENSE. If it is not present, the license
+is always available at http://www.opensource.org/licenses/mit-license.php.
+
+This program is distributed in the hope that it will be useful, but
+without any warranty; without even the implied warranty of merchantability
+or fitness for a particular purpose. See the MIT License for full details.
+-->
+
+
+<s:SkinnableContainer 
+    xmlns:fx="http://ns.adobe.com/mxml/2009" 
+    xmlns:s="library://ns.adobe.com/flex/spark" 
+    xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:views="com.rpath.raf.views.*" xmlns:controls="com.rpath.raf.controls.*"
+    skinClass="com.rpath.raf.skins.DescriptorXMLViewSkin"
+    >
+    
+    <fx:Metadata>
+        [Event(name="editDescriptorXML", type="mx.events.DynamicEvent")]
+        [Event(name="clearedDescriptorXML", type="mx.events.DynamicEvent")]
+        [Event(name="validatedDescriptorXML", type="mx.events.DynamicEvent")]
+        [Event(name="changedDescriptorXML", type="mx.events.DynamicEvent")]
+    </fx:Metadata>
+    
+    <fx:Declarations>
+        <!-- Place non-visual elements (e.g., services, value objects) here -->
+    </fx:Declarations>
+    
+    <fx:Script>
+        <![CDATA[
+            import mx.events.DynamicEvent;
+            import mx.events.FlexEvent;
+            
+            import spark.components.Group;
+            import spark.events.TextOperationEvent;
+            
+            [Bindable]
+            public var descriptorString:String;
+            
+            [Bindable]
+            public var editable:Boolean;
+            
+            [Bindable]
+            public var validationEnabled:Boolean;
+            
+            [Bindable]
+            public var validationVisible:Boolean;
+            
+            [Bindable]
+            public function get descriptorXML():XML
+            {
+                return _metadata;
+            }
+            
+            private var _metadata:XML;
+            private var _settingXML:Boolean;
+            
+            public function set descriptorXML(value:XML):void
+            {
+                _metadata = value;
+                _settingXML = true;
+                updateDescriptorXML();
+                _settingXML = false;
+            }
+            
+            public function updateDescriptorXML():void
+            {
+                // pretty print a version for our descriptor XML display
+                XML.prettyIndent = 2;
+                XML.prettyPrinting = true;
+                XML.ignoreWhitespace = true;
+                descriptorString = descriptorXML ? descriptorXML.toXMLString() : null;
+            }
+            
+            
+            protected function valueCommitHandler(event:FlexEvent):void
+            {
+                if (_settingXML)
+                    return;
+                
+                var evt:DynamicEvent = new DynamicEvent("editDescriptorXML", true, true);
+                
+                try 
+                {
+                    evt.xml = new XML(configDescriptorText.text);
+                }
+                catch (e:TypeError)
+                {
+                    // XML failed to parse. Need to make note of this
+                    evt.error = e.message;
+                }
+                
+                dispatchEvent(evt);
+            }
+            
+            protected function changeHandler(event:TextOperationEvent):void
+            {
+                if (_settingXML)
+                    return;
+                
+                var evt:DynamicEvent = new DynamicEvent("changedDescriptorXML", true, true);
+                
+                try 
+                {
+                    evt.xml = new XML(configDescriptorText.text);
+                }
+                catch (e:TypeError)
+                {
+                    evt.error = e.message;
+                }
+                
+                dispatchEvent(evt);
+            }
+            
+            protected function configDescriptorText_keyFocusChangeHandler(event:FocusEvent):void
+            {
+                event.preventDefault();
+                configDescriptorText.insertText("    ");
+            }
+            
+            public function clearDescriptor(event:Event):void
+            {
+                descriptorXML = new XML();
+                dispatchEvent(new DynamicEvent("clearedDescriptorXML"));
+            }
+            
+            public function validateDescriptor(event:Event):void
+            {
+                dispatchEvent(new DynamicEvent("validatedDescriptorXML"));
+            }
+            
+            private var fr:FileReference;
+            
+            public var saveFileName:String = "descriptor.iprop";
+            
+            public function saveDescriptor(event:Event):void
+            {
+                //create the FileReference instance
+                fr = new FileReference();
+                
+                // listen for the file has been saved
+                fr.addEventListener(Event.COMPLETE, doFileSave, false, 0, true);
+                
+                // listen for when then cancel out of the save dialog
+                fr.addEventListener(Event.CANCEL, doCancel, false, 0, true);
+                
+                // listen for any errors that occur while writing the file
+                fr.addEventListener(IOErrorEvent.IO_ERROR, doSaveError,false, 0, true);
+                
+                // open a native save file dialog, using the default file name
+                fr.save(descriptorString, saveFileName);
+            }
+            
+            // called once the file has been saved
+            private function doFileSave(event:Event):void
+            {
+                var fref:FileReference = event.target as FileReference;
+                fr = null;
+            }
+            
+            // called if the user cancels out of the file save dialog
+            private function doCancel(event:Event):void
+            {
+                fr = null;
+            }
+            
+            // called if an error occurs while saving the file
+            private function doSaveError(event:IOErrorEvent):void
+            {
+                fr = null;
+            }
+            
+            [SkinPart(required="false")]
+            [Bindable]
+            public var extraControlGroup:Group;
+            
+            private var _extraContent:Array = [];
+            
+            [Bindable]
+            [ArrayElementType("mx.core.IVisualElement")]
+            public function get extraContent():Array {
+                return _extraContent;
+            }
+            public function set extraContent(value:Array):void {
+                _extraContent = value;
+                
+                showExtraContent = (value && value.length > 0) ? true : false;
+                
+                if (extraControlGroup) {
+                    extraControlGroup.mxmlContent = value;
+                }
+            }
+            
+            [Bindable]
+            public var showExtraContent:Boolean;
+            
+            override protected function partAdded(partName:String, instance:Object):void {
+                super.partAdded(partName, instance);
+                
+                if (instance == extraControlGroup) {
+                    extraControlGroup.mxmlContent = _extraContent;
+                }
+            }
+            
+            override protected function partRemoved(partName:String, instance:Object):void {
+                super.partRemoved(partName, instance);
+                
+                if (instance == extraControlGroup) {
+                    extraControlGroup.mxmlContent = null;
+                }
+            }
+        ]]>
+    </fx:Script>
+    
+    <s:layout>
+        <s:VerticalLayout/>
+    </s:layout>
+    
+    <s:TextArea id="configDescriptorText"
+                text="{descriptorString}" 
+                height="100%" width="100%"
+                top="0" bottom="0" left="0" right="0"
+                lineBreak="explicit"
+                fontFamily="_typewriter"
+                fontSize="12"
+                skinClass="com.rpath.raf.skins.TextAreaLineNumbersSkin"
+                keyFocusChange="configDescriptorText_keyFocusChangeHandler(event)"
+                editable="{editable}"
+                valueCommit="valueCommitHandler(event)"
+                change="changeHandler(event)"
+                />
+    
+</s:SkinnableContainer>
