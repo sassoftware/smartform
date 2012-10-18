@@ -539,7 +539,7 @@ class BaseDescriptor(_BaseClass):
             ddata.addField(field.name, value)
 
         data = callback.end(self)
-        ddata.checkConstraints()
+        ddata._postprocess(validate=True)
         return ddata
 
     @classmethod
