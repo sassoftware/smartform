@@ -539,7 +539,8 @@ class BaseDescriptor(_BaseClass):
             ddata.addField(field.name, value)
 
         data = callback.end(self)
-        ddata._postprocess(validate=True)
+        ddata._addMissingRequiredFieldsWithDefault()
+        ddata.checkConstraints()
         return ddata
 
     @classmethod
@@ -702,6 +703,11 @@ class DescriptorData(_BaseClass):
                     checkConstraints = False)
             self._fields.append(field)
             self._fieldsMap[nodeName] = field
+        self._addMissingRequiredFieldsWithDefault()
+        if validate:
+            self.checkConstraints()
+
+    def _addMissingRequiredFieldsWithDefault(self):
         # Add required fields with a default that might be missing
         for dfield in self._descriptor.getDataFields():
             nodeName = dfield.name
@@ -724,8 +730,6 @@ class DescriptorData(_BaseClass):
                 checkConstraints = False)
             self._fields.append(field)
             self._fieldsMap[nodeName] = field
-        if validate:
-            self.checkConstraints()
 
     def getFields(self):
         return [ x for x in self._fields ]
