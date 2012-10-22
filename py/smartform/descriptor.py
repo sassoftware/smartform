@@ -554,7 +554,7 @@ class Callback(object):
     __slots__ = ['name']
 
     def start(self, descriptor, name=None):
-        self.name = None
+        self.name = name
 
     def end(self, descriptor):
         pass
