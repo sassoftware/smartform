@@ -13,7 +13,7 @@
 VERSION=1.1
 
 export prefix = /usr
-export lib = $(shell arch | sed -r '/x86_64|ppc64|s390x|sparc64/{s/.*/lib64/;q};s/.*/lib/')
+export lib = $(shell uname -m | sed -r '/x86_64|ppc64|s390x|sparc64/{s/.*/lib64/;q};s/.*/lib/')
 export bindir = $(prefix)/bin
 export sbindir = $(prefix)/sbin
 export libdir = $(prefix)/$(lib)

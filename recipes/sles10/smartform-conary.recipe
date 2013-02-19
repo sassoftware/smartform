@@ -29,8 +29,6 @@ class Smartform(RpathPackageRecipe):
         r.Replace('export prefix = /usr' ,
                     'export prefix = /usr/conary', 'Make.defs')
 
-        r.Replace('shell arch', 'shell uname -m', 'Make.defs')
-
         r.Replace('schemaDir = "/usr/share/smartform"' ,
                     'schemaDir = "/usr/conary/share/smartform"',
                     'py/smartform/descriptor.py')
