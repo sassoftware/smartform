@@ -453,6 +453,174 @@ class BaseDescriptor(_BaseClass):
             fieldName = fieldName, value = fieldValue, operator = operator)
         return node
 
+    def createDescriptorData(self, callback, name=None):
+        """
+        Create a DescriptorData object, with answers supplied by the callback
+
+        The callback should be an object implementing the following interface:
+
+        class Callback(object):
+            def start(self, descriptor, name=None):
+                pass
+            def end(self, descriptor):
+                pass
+            def getValueForField(self, field):
+                # Here some values are produced for that field
+                return '1'
+
+        If the callback prefers to process the whole descriptor by itself, it
+        can return the whole descriptor data, and fields will no longer be
+        individually queried for values.
+        """
+        data = callback.start(self, name=name)
+        if data:
+            return data
+        # Collect all nodes in a graph, to determine the order of
+        # operation
+        graph = Graph()
+        allFields = {}
+        deferredFields = {}
+        for field in self.getDataFields():
+            predecessors = []
+            deferredField = deferredFields.pop(field.name, None)
+            if field.conditional:
+                if field.conditional.operator != 'eq':
+                    continue
+                condFieldName = field.conditional.fieldName
+                if condFieldName in allFields:
+                    allFields[condFieldName][1].setdefault(
+                        field.conditional.value, {})[field.name] = field
+                else:
+                    deferredFields.setdefault(field.name, {}).setdefault(
+                        field.conditional.value, {})[field.name] = field
+                predecessors.append(condFieldName)
+            if deferredField is None:
+                depFields = {}
+            else:
+                depFields = deferredField
+            allFields[field.name] = (field, depFields)
+            graph.add(field.name, predecessors=predecessors)
+        assert deferredFields == {}
+
+        # This is where we order fields
+        ordered = graph.tsort()
+        ordered.reverse()
+
+        ddata = DescriptorData(descriptor=self)
+        while ordered:
+            fieldName = ordered.pop()
+            field, dependents = allFields[fieldName]
+            if field.descriptor:
+                # Compound type
+                assert not dependents
+                value = field._descriptor.createDescriptorData(callback,
+                    name=fieldName)
+            elif field.listType:
+                assert not dependents
+                raise NotImplementedError()
+            else:
+                value = callback.getValueForField(field)
+
+            if dependents:
+                validDependents = dependents.get(value, {})
+
+                # Skip over all dependents that we don't care about
+                while ordered:
+                    possibleDependent = ordered.pop()
+                    if possibleDependent not in validDependents:
+                        continue
+                    ordered.append(possibleDependent)
+                    break
+
+            if value is None:
+                # Don't bother to check yet, checkConstraints() will
+                # explode if a required value is missing
+                continue
+            ddata.addField(field.name, value)
+
+        data = callback.end(self)
+        ddata._addMissingRequiredFieldsWithDefault()
+        ddata.checkConstraints()
+        return ddata
+
+    @classmethod
+    def tsort(cls, graph):
+        pass
+
+class Callback(object):
+    """
+    Prototype callback interface
+    """
+    __slots__ = ['name']
+
+    def start(self, descriptor, name=None):
+        self.name = name
+
+    def end(self, descriptor):
+        pass
+
+    def getValueForField(self, field):
+        raise NotImplementedError()
+
+class GraphNode(object):
+    __slots__ = [ 'id', 'predecessors', 'successors', ]
+    def __init__(self, id):
+        self.id = id
+        self.predecessors = set()
+        self.prepareForTsort()
+
+    def prepareForTsort(self):
+        self.successors = set()
+
+class Graph(object):
+    __slots__ = [ '_natural', '_nodes', '_deferred' ]
+    def __init__(self):
+        self._natural = dict()
+        self._nodes = dict()
+        self._deferred = dict()
+
+    def add(self, id, predecessors=[]):
+        if id not in self._nodes:
+            self._natural[id] = len(self._natural)
+        # If the node was already referenced, use it
+        node = self._nodes.setdefault(id, self._deferred.get(id, GraphNode(id)))
+        for predecessor in predecessors:
+            if predecessor not in self._nodes and predecessor not in self._deferred:
+                self._deferred[predecessor] = GraphNode(predecessor)
+            node.predecessors.add(predecessor)
+
+    def tsort(self):
+        # First, compute all successors
+        for node in self._nodes.values():
+            node.prepareForTsort()
+
+        for node in self._nodes.values():
+            for pnodeId in node.predecessors:
+                self._nodes[pnodeId].successors.add(node.id)
+        stack = []
+        for node in self._nodes.values():
+            if not node.predecessors:
+                stack.append(node)
+        # Attempt to keep the order of the original list
+        stack.sort(key=lambda x: self._natural[x.id], reverse=True)
+
+        ret = []
+        while stack:
+            node = stack.pop()
+            ret.append(node.id)
+            zeros = []
+            # Go through this child's successors; if all their
+            # predecessors are already processed, add them to the stack
+            for succId in node.successors:
+                succ = self._nodes[succId]
+                succ.predecessors.remove(node.id)
+                if not succ.predecessors:
+                    zeros.append(succ)
+            # Add these nodes to the top of the stack
+            stack.extend(sorted(zeros, key=lambda x: self._natural[x.id],
+                    reverse=True))
+        return ret
+
 class DescriptorData(_BaseClass):
     "Class for representing the descriptor data"
     __slots__ = [ '_descriptor', '_rootElement', '_fields', '_fieldsMap', ]
@@ -535,6 +703,11 @@ class DescriptorData(_BaseClass):
                     checkConstraints = False)
             self._fields.append(field)
             self._fieldsMap[nodeName] = field
+        self._addMissingRequiredFieldsWithDefault()
+        if validate:
+            self.checkConstraints()
+
+    def _addMissingRequiredFieldsWithDefault(self):
         # Add required fields with a default that might be missing
         for dfield in self._descriptor.getDataFields():
             nodeName = dfield.name
@@ -557,8 +730,6 @@ class DescriptorData(_BaseClass):
                 checkConstraints = False)
             self._fields.append(field)
             self._fieldsMap[nodeName] = field
-        if validate:
-            self.checkConstraints()
 
     def getFields(self):
         return [ x for x in self._fields ]
@@ -606,8 +777,12 @@ class DescriptorData(_BaseClass):
         return field
 
     def _addCompoundTypeField(self, descriptor, parent, value):
-        for k, v in value.items():
-            self._addField(descriptor, parent, k, v)
+        if hasattr(value, 'getFields'):
+            for f in value.getFields():
+                self._addField(descriptor, parent, f.getName(), f.getValue())
+        else:
+            for k, v in value.items():
+                self._addField(descriptor, parent, k, v)
         field = DescriptorData(fromStream=parent,
             descriptor=descriptor, rootElement=parent.tag,
             validate=False)

@@ -1561,6 +1561,121 @@ class DescriptorTest(BaseTest):
         </system_configuration>"""
 
         ddata = descriptor.DescriptorData(fromStream=xml, descriptor=descr)
+        ddata.toxml()
+
+    def testCreateDescriptorData_conditional(self):
+        # test createDescriptorData with a conditional descriptor
+        xml = """\
+<descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd">
+  <metadata>
+    <displayName>FooDescriptor</displayName>
+    <rootElement>descriptor_data</rootElement>
+    <descriptions>
+      <desc>Description</desc>
+    </descriptions>
+  </metadata>
+  <dataFields>
+    <field>
+      <name>imageId</name>
+      <descriptions>
+        <desc>Image ID</desc>
+      </descriptions>
+      <type>str</type>
+      <default>7</default>
+      <required>true</required>
+      <hidden>true</hidden>
+    </field>
+    <field>
+      <name>withConfiguration</name>
+      <descriptions/>
+      <type>bool</type>
+      <default>False</default>
+      <required>true</required>
+    </field>
+    <field>
+      <name>system_configuration</name>
+      <descriptions>
+        <desc>System Configuration</desc>
+      </descriptions>
+      <type>compoundType</type>
+      <descriptor version="1.1">
+        <metadata>
+          <displayName>System Configuration</displayName>
+          <descriptions>
+            <desc>System Configuration</desc>
+          </descriptions>
+        </metadata>
+        <dataFields>
+          <field>
+            <name>user</name>
+            <descriptions>
+              <desc>User</desc>
+            </descriptions>
+            <type>str</type>
+            <required>true</required>
+          </field>
+          <field>
+            <name>group</name>
+            <descriptions>
+              <desc>Group</desc>
+            </descriptions>
+            <type>str</type>
+            <required>true</required>
+          </field>
+        </dataFields>
+      </descriptor>
+      <required>true</required>
+      <conditional>
+        <fieldName>withConfiguration</fieldName>
+        <operator>eq</operator>
+        <value>true</value>
+      </conditional>
+    </field>
+  </dataFields>
+</descriptor>"""
+        descr = descriptor.ConfigurationDescriptor(fromStream=xml)
+
+        class CB(object):
+            values = {
+                None : {
+                    'imageId' : '1',
+                    'withConfiguration' : 'true',
+                },
+                'system_configuration' : {
+                    'user' : 'apache',
+                    'group' : 'nobody',
+                }
+            }
+            def start(slf, descriptor, name=None):
+                slf.name = name
+            def end(slf, descriptor):
+                pass
+            def getValueForField(slf, field):
+                return slf.values[slf.name][field.name]
+
+        callback = CB()
+
+        ddata = descr.createDescriptorData(callback)
+        self.assertXMLEquals(ddata.toxml(), """
+<descriptor_data version="1.1">
+  <imageId>1</imageId>
+  <withConfiguration>true</withConfiguration>
+  <system_configuration>
+    <user>apache</user>
+    <group>nobody</group>
+  </system_configuration>
+</descriptor_data>
+""")
+
+        # No configuration
+        callback.values[None]['withConfiguration'] = 'false'
+        ddata = descr.createDescriptorData(callback)
+        self.assertXMLEquals(ddata.toxml(), """
+<descriptor_data version="1.1">
+  <imageId>1</imageId>
+  <withConfiguration>false</withConfiguration>
+</descriptor_data>
+""")
 
 class DescriptorConstraintTest(BaseTest):
     def testIntType(self):
