@@ -1677,6 +1677,61 @@ class DescriptorTest(BaseTest):
 </descriptor_data>
 """)
 
+    def testCreateDescriptorData_conditionals(self):
+        # test createDescriptorData with a conditional descriptor
+        xml = """\
+<descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd">
+  <metadata>
+    <displayName>FooDescriptor</displayName>
+    <rootElement>descriptor_data</rootElement>
+    <descriptions>
+      <desc>Description</desc>
+    </descriptions>
+  </metadata>
+  <dataFields/>
+</descriptor>"""
+        dsc = descriptor.ConfigurationDescriptor(fromStream=xml)
+        dsc.addDataField('field-top',
+            descriptions = [dsc.Description("field-top")],
+            type = [
+                dsc.ValueWithDescription('value%d' % i,
+                    descriptions = [dsc.Description("Value%d" % i)])
+                for i in range(2) ])
+        for i in range(2):
+            dsc.addDataField('field-level%s' % i,
+                descriptions = [dsc.Description("field-level%s" % i)],
+                type = [
+                    dsc.ValueWithDescription('value%d%d' % (i, j),
+                        descriptions = [dsc.Description("Value%d%d" % (i, j))])
+                    for j in range(2) ],
+                conditional = dsc.Conditional("field-top", "value%d" % i))
+
+        class CB(object):
+            values = {
+                None : {
+                    'field-top' : 'value1',
+                    'field-level1' : 'value11',
+                    'field-level11' : 'value110',
+                },
+            }
+            def start(slf, descriptor, name=None):
+                slf.name = name
+            def end(slf, descriptor):
+                pass
+            def getValueForField(slf, field):
+                return slf.values[slf.name][field.name]
+
+        callback = CB()
+
+        ddata = dsc.createDescriptorData(callback)
+        self.assertXMLEquals(ddata.toxml(), """
+<descriptor_data version="1.1">
+  <field-top>value1</field-top>
+  <field-level1>value11</field-level1>
+</descriptor_data>
+""")
+
+
 class DescriptorConstraintTest(BaseTest):
     def testIntType(self):
         # only a partial def for the pieces we care about
