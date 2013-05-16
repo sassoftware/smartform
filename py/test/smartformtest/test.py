@@ -2348,6 +2348,17 @@ class DescriptorConstraintTest(BaseTest):
         self.assertEquals(ddata.getField('reqFieldWithDefault'), 42)
         self.assertEquals(ddata.getField('multiField'), ['Baz', 'Foo'])
 
+    def testRequiredMissing(self):
+        dsc = descriptor.ConfigurationDescriptor()
+        dsc.setRootElement("data")
+        dsc.setDisplayName('test')
+        dsc.addDescription("Test")
+        dsc.addDataField("reqStringField", type = "str", required=True)
+        xml = "<data/>"
+        e = self.failUnlessRaises(errors.ConstraintsValidationError,
+            descriptor.DescriptorData, fromStream=xml, descriptor=dsc)
+        self.assertEquals(str(e), '''["Missing field: 'reqStringField'"]''')
+
     def testXmlField(self):
         dsc = descriptor.ConfigurationDescriptor()
         dsc.setRootElement("data")
