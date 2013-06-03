@@ -12,22 +12,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
 
-VERSION=1.1
+class Smartform(PackageRecipe):
+    name = 'smartform'
+    version = '0'
 
-export prefix = /usr
-export lib = $(shell uname -m | sed -r '/x86_64|ppc64|s390x|sparc64/{s/.*/lib64/;q};s/.*/lib/')
-export bindir = $(prefix)/bin
-export sbindir = $(prefix)/sbin
-export libdir = $(prefix)/$(lib)
-export libexecdir = $(prefix)/libexec
-export datadir = $(prefix)/share
-export mandir = $(datadir)/man
-export sitedir = $(libdir)/python$(PYVERSION)/site-packages
-export antopts="-Xmx1024m -XX:PermSize=128M -XX:MaxPermSize=256M"
+    buildRequires = [
+        'make:rpm',
+        'python-devel',
+        'python-lxml',
+        ]
 
-export COVERAGEDUMP=coverage_dump
-export TESTOUTPUTDIR=./tests
-export TESTCOVERAGEDIR=.
+    def setup(r):
+        r.addMercurialSnapshot()
+        r.Make()
+        r.MakeInstall()
+
+        # Need :data for the schema definitions
+        r.ComponentRequires({'data': set(['python'])})

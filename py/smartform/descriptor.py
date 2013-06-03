@@ -515,13 +515,13 @@ class BaseDescriptor(_BaseClass):
             graph.add(field.name, predecessors=predecessors)
         assert deferredFields == {}
 
-        # This is where we order fields
-        ordered = graph.tsort()
-        ordered.reverse()
+        trees = graph.toTrees()
+        trees.reverse()
 
         ddata = DescriptorData(descriptor=self)
-        while ordered:
-            fieldName = ordered.pop()
+        while trees:
+            node = trees.pop()
+            fieldName = node.id
             field, dependents = allFields[fieldName]
             if field.descriptor:
                 # Compound type
@@ -538,12 +538,9 @@ class BaseDescriptor(_BaseClass):
                 validDependents = dependents.get(value, {})
 
                 # Skip over all dependents that we don't care about
-                while ordered:
-                    possibleDependent = ordered.pop()
-                    if possibleDependent not in validDependents:
-                        continue
-                    ordered.append(possibleDependent)
-                    break
+                # We reverse the list since trees acts like a stack
+                trees.extend(x for x in reversed(node.links)
+                        if x.id in validDependents)
 
             if value is None:
                 # Don't bother to check yet, checkConstraints() will
@@ -552,12 +549,9 @@ class BaseDescriptor(_BaseClass):
             ddata.addField(field.name, value)
 
         data = callback.end(self)
+        ddata._addMissingRequiredFieldsWithDefault()
         ddata.checkConstraints()
         return ddata
-
-    @classmethod
-    def tsort(cls, graph):
-        pass
 
 class Callback(object):
     """
@@ -566,7 +560,7 @@ class Callback(object):
     __slots__ = ['name']
 
     def start(self, descriptor, name=None):
-        self.name = None
+        self.name = name
 
     def end(self, descriptor):
         pass
@@ -575,14 +569,10 @@ class Callback(object):
         raise NotImplementedError()
 
 class GraphNode(object):
-    __slots__ = [ 'id', 'predecessors', 'successors', ]
+    __slots__ = [ 'id', 'links', ]
     def __init__(self, id):
         self.id = id
-        self.predecessors = set()
-        self.prepareForTsort()
-
-    def prepareForTsort(self):
-        self.successors = set()
+        self.links = set()
 
 class Graph(object):
     __slots__ = [ '_natural', '_nodes', '_deferred' ]
@@ -599,39 +589,31 @@ class Graph(object):
         for predecessor in predecessors:
             if predecessor not in self._nodes and predecessor not in self._deferred:
                 self._deferred[predecessor] = GraphNode(predecessor)
-            node.predecessors.add(predecessor)
+            node.links.add(predecessor)
 
-    def tsort(self):
-        # First, compute all successors
-        for node in self._nodes.values():
-            node.prepareForTsort()
+    def get(self, id):
+        return self._nodes[id]
 
+    def toTrees(self):
+        trees = dict()
+        processed = dict()
+        # Add all level0 nodes
         for node in self._nodes.values():
-            for pnodeId in node.predecessors:
-                self._nodes[pnodeId].successors.add(node.id)
-        stack = []
-        for node in self._nodes.values():
-            if not node.predecessors:
-                stack.append(node)
-        # Attempt to keep the order of the original list
-        stack.sort(key=lambda x: self._natural[x.id], reverse=True)
-
-        ret = []
-        while stack:
-            node = stack.pop()
-            ret.append(node.id)
-            zeros = []
-            # Go through this child's successors; if all their
-            # predecessors are already processed, add them to the stack
-            for succId in node.successors:
-                succ = self._nodes[succId]
-                succ.predecessors.remove(node.id)
-                if not succ.predecessors:
-                    zeros.append(succ)
-            # Add these nodes to the top of the stack
-            stack.extend(sorted(zeros, key=lambda x: self._natural[x.id],
-                    reverse=True))
-        return ret
+            rnode = processed.setdefault(node.id, GraphNode(node.id))
+            if not node.links:
+                trees[node.id] = rnode
+            else:
+                for parentId in node.links:
+                    parent = processed.setdefault(parentId, GraphNode(parentId))
+                    parent.links.add(node.id)
+        toOrder = trees.values()
+        while toOrder:
+            node = toOrder.pop()
+            node.links = [ processed[x]
+                    for x in sorted(node.links, key=lambda x: self._natural[x]) ]
+            toOrder.extend(node.links)
+        # Order top-level trees too
+        return sorted(trees.values(), key=lambda x: self._natural[x.id])
 
 class DescriptorData(_BaseClass):
     "Class for representing the descriptor data"
@@ -715,6 +697,11 @@ class DescriptorData(_BaseClass):
                     checkConstraints = False)
             self._fields.append(field)
             self._fieldsMap[nodeName] = field
+        self._addMissingRequiredFieldsWithDefault()
+        if validate:
+            self.checkConstraints()
+
+    def _addMissingRequiredFieldsWithDefault(self):
         # Add required fields with a default that might be missing
         for dfield in self._descriptor.getDataFields():
             nodeName = dfield.name
@@ -737,8 +724,6 @@ class DescriptorData(_BaseClass):
                 checkConstraints = False)
             self._fields.append(field)
             self._fieldsMap[nodeName] = field
-        if validate:
-            self.checkConstraints()
 
     def getFields(self):
         return [ x for x in self._fields ]
