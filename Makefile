@@ -10,8 +10,6 @@
 # or fitness for a particular purpose. See the MIT License for full details.
 #
 
-# as3 code now in flexlibs
-#SUBDIRS = as3 py
 SUBDIRS = py
 
 build: default-build
