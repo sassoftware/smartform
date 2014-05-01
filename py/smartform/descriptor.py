@@ -530,7 +530,8 @@ class BaseDescriptor(_BaseClass):
                     name=fieldName)
             elif field.listType:
                 assert not dependents
-                raise NotImplementedError()
+                #raise NotImplementedError()
+                value = callback.getValueForField(field)
             else:
                 value = callback.getValueForField(field)
 
