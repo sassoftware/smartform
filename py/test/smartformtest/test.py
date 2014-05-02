@@ -74,7 +74,8 @@ class BaseTest(testcase.TestCase):
     def setUpSchemaDir(self):
         self.schemaDir = ""
         schemaFile = "descriptor-%s.xsd" % descriptor.BaseDescriptor.version
-        schemaDir = os.path.join(os.environ['SMARTFORM_PATH'], 'xsd')
+        schemaDir = os.path.abspath(os.path.join(
+            os.path.dirname(__file__), '..', '..', 'xsd'))
         if not os.path.exists(os.path.join(schemaDir, schemaFile)):
             # Not running from a checkout
             schemaDir = descriptor._BaseClass.schemaDir

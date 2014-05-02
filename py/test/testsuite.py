@@ -23,14 +23,9 @@ from testrunner import suite, testhandler
 class Suite(suite.TestSuite):
     # Boilerplate. We need these values saved in the caller module
     testsuite_module = sys.modules[__name__]
-    suiteClass = testhandler.ConaryTestSuite
-
-    execPathVarNames = [
-        'SMARTFORM_PATH',
-    ]
 
     def getCoverageDirs(self, handler, environ):
-        return [ self.pathManager.getCoveragePath('SMARTFORM_PATH') ]
+        return [ smartform ]
 
     def getCoverageExclusions(self, handler, environ):
         return [r'generatedssuper\.py',
