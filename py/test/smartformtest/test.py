@@ -1745,6 +1745,109 @@ class DescriptorTest(BaseTest):
 </descriptor_data>
 """)
 
+    def testCreateDescriptorData_listType(self):
+        dsc1 = descriptor.ConfigurationDescriptor()
+        dsc1.setId("apache-configuration/process-info")
+        dsc1.setRootElement("blabbedy-blah")
+        dsc1.setDisplayName('Process Ownership Information')
+        dsc1.addDescription('Process Ownership Information')
+        dsc1.addDataField("user", type="str", default="apache", required=True,
+            descriptions="User")
+        dsc1.addDataField("group", type="str", default="apache", required=True,
+            descriptions="Group")
+
+        vhost = descriptor.ConfigurationDescriptor()
+        vhost.setId("apache-configuration/vhost")
+        vhost.setRootElement('vhost')
+        vhost.setDisplayName('Virtual Host Configuration')
+        vhost.addDescription('Virtual Host Configuration')
+        vhost.addDataField('serverName', type="str", required=True,
+            descriptions="Virtual Host Name")
+        vhost.addDataField('documentRoot', type="str", required=True,
+            descriptions="Virtual Host Document Root")
+
+        dsc = descriptor.ConfigurationDescriptor()
+        dsc.setRootElement('configuration')
+        dsc.setId("apache-configuration")
+        dsc.setDisplayName('Apache Configuration')
+        dsc.addDescription('Apache Configuration')
+
+        dsc.addDataField('port', type="int",
+            required=True, descriptions="Apache Port")
+        dsc.addDataField('processInfo', type=dsc.CompoundType(dsc1),
+            required=True, descriptions="Process Ownership Information")
+        dsc.addDataField('vhosts', type=dsc.ListType(vhost),
+            required=True, descriptions="Virtual Hosts",
+            constraints=[dict(constraintName='uniqueKey', value="serverName"),
+                dict(constraintName="minLength", value=1)])
+
+        class CB(object):
+            values = {
+                None : {
+                    'port' : '8123',
+                },
+                'processInfo' : {
+                    'user' : 'nobody',
+                    'group' : 'nobody',
+                    },
+                'vhosts' : [
+                    dict(serverName='a.org', documentRoot='/srv/www/a'),
+                    dict(serverName='b.org', documentRoot='/srv/www/b'),
+                    ],
+            }
+            def start(slf, descriptor, name=None, listValues=None):
+                slf.name = name
+                slf.listValues = listValues
+            def end(slf, descriptor):
+                pass
+            def getValueForField(slf, field):
+                vals = slf.values[slf.name]
+                if not isinstance(vals, list):
+                    return vals[field.name]
+                idx = len(slf.listValues)
+                return vals[idx][field.name]
+            def listHasMoreValues(slf, field, values):
+                return len(values) != len(slf.values[slf.name])
+
+        callback = CB()
+
+        ddata = dsc.createDescriptorData(callback)
+        self.assertXMLEquals(ddata.toxml(), """
+<configuration version="1.1">
+  <port>8123</port>
+  <processInfo>
+    <user>nobody</user>
+    <group>nobody</group>
+  </processInfo>
+  <vhosts list="true">
+    <vhost>
+      <serverName>a.org</serverName>
+      <documentRoot>/srv/www/a</documentRoot>
+    </vhost>
+    <vhost>
+      <serverName>b.org</serverName>
+      <documentRoot>/srv/www/b</documentRoot>
+    </vhost>
+  </vhosts>
+</configuration>
+""")
+        ddata2 = descriptor.DescriptorData(descriptor = dsc,
+            fromStream=ddata.toxml())
+
+        def _dscEq(oldD, newD):
+            if hasattr(oldD, 'getName'):
+                # Simple values
+                self.assertEquals(oldD.getName(), newD.getName())
+                self.assertEquals(oldD.getValue(), newD.getValue())
+                return
+            if isinstance(oldD, list):
+                self.assertEqual(len(oldD), len(newD))
+                for oldF, newF in zip(oldD, newD):
+                    _dscEq(oldF, newF)
+                return
+            # Descriptor (compound)
+            return _dscEq(oldD.getFields(), newD.getFields())
+        _dscEq(ddata, ddata2)
 
 class DescriptorConstraintTest(BaseTest):
     def testIntType(self):

@@ -466,26 +466,35 @@ class BaseDescriptor(_BaseClass):
             fieldName = fieldName, value = fieldValue, operator = operator)
         return node
 
-    def createDescriptorData(self, callback, name=None):
+    def createDescriptorData(self, callback, name=None, listValues=None):
         """
         Create a DescriptorData object, with answers supplied by the callback
 
         The callback should be an object implementing the following interface:
 
         class Callback(object):
-            def start(self, descriptor, name=None):
-                pass
+            def start(self, descriptor, name=None, listValues=None):
+                self.listValues = listValues
             def end(self, descriptor):
                 pass
             def getValueForField(self, field):
                 # Here some values are produced for that field
                 return '1'
+            def listHasMoreValues(self, field, values):
+                # Decide whether a ListType field should get more values
+                return len(listValues) < 3
 
         If the callback prefers to process the whole descriptor by itself, it
         can return the whole descriptor data, and fields will no longer be
         individually queried for values.
         """
-        data = callback.start(self, name=name)
+        # Preserve backwards compatibility for callbacks, in case they didn't
+        # have a listValues keyword argument, introduced (and only used) by
+        # list types
+        startKw = dict(name=name)
+        if listValues is not None:
+            startKw.update(listValues=listValues)
+        data = callback.start(self, **startKw)
         if data:
             return data
         # Collect all nodes in a graph, to determine the order of
@@ -530,8 +539,12 @@ class BaseDescriptor(_BaseClass):
                     name=fieldName)
             elif field.listType:
                 assert not dependents
-                #raise NotImplementedError()
-                value = callback.getValueForField(field)
+                value = []
+                while callback.listHasMoreValues(field, value):
+                    sval = field._descriptor.createDescriptorData(callback,
+                        name=field.name, listValues=value)
+                    if sval is not None:
+                        value.append(sval)
             else:
                 value = callback.getValueForField(field)
 
