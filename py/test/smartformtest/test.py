@@ -2507,6 +2507,75 @@ class DescriptorConstraintTest(BaseTest):
         ddata = descriptor.DescriptorData(descriptor=dsc)
         self.assertEquals(ddata.getField('blooper'), None)
 
+    def testMultiline(self):
+        dsc = descriptor.ConfigurationDescriptor()
+        dsc.setDisplayName('test')
+        dsc.addDescription("Test")
+
+        # Single-line fields don't have a multiline flag
+        dsc.addDataField("single-line-field", type='str',
+            descriptions="single-line-field")
+        dsc.addDataField("multi-line-field", type='str',
+            descriptions="multi-line-field", multiline=True)
+        # Non-str don't have a multiline flag
+        dsc.addDataField("boolean-field", type='bool', default=False,
+            descriptions="boolean-field", multiline=True)
+
+        dscXML = """
+<descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd"
+xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd
+descriptor-1.1.xsd" version="1.1">
+  <metadata>
+    <displayName>test</displayName>
+    <descriptions>
+      <desc>Test</desc>
+    </descriptions>
+  </metadata>
+  <dataFields>
+    <field>
+      <name>single-line-field</name>
+      <descriptions>
+        <desc>single-line-field</desc>
+      </descriptions>
+      <type>str</type>
+    </field>
+    <field>
+      <name>multi-line-field</name>
+      <descriptions>
+        <desc>multi-line-field</desc>
+      </descriptions>
+      <type>str</type>
+      <multiline>true</multiline>
+    </field>
+    <field>
+      <name>boolean-field</name>
+      <descriptions>
+        <desc>boolean-field</desc>
+      </descriptions>
+      <type>bool</type>
+      <default>False</default>
+    </field>
+  </dataFields>
+</descriptor>
+"""
+        self.assertXMLEquals(dsc.toxml(), dscXML)
+
+        data = descriptor.DescriptorData(descriptor=dsc, fromStream="""\
+<descriptorData>
+    <multi-line-field>Some\nmulti-line\ncontent</multi-line-field>
+</descriptorData>
+""")
+        self.failUnlessEqual(data.getField('multi-line-field'),
+            "Some\nmulti-line\ncontent")
+
+        # Parse it
+        dsc = descriptor.ConfigurationDescriptor(fromStream=dscXML)
+        field = dsc.getDataField('single-line-field')
+        self.assertEquals(field.multiline, None)
+        field = dsc.getDataField('multi-line-field')
+        self.assertEquals(field.multiline, True)
+
 xmlDescriptor1 = """<?xml version="1.0" encoding="UTF-8"?>
 <descriptor xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd" id="Some-ID" version="1.1">
   <metadata>

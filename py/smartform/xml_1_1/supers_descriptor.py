@@ -854,12 +854,13 @@ class dataFieldType(GeneratedsSuper):
         MemberSpec_('hidden', 'xsd:boolean', 0),
         MemberSpec_('password', 'xsd:boolean', 0),
         MemberSpec_('readonly', 'xsd:boolean', 0),
+        MemberSpec_('multiline', 'xsd:boolean', 0),
         MemberSpec_('conditional', 'conditionalType', 0),
         MemberSpec_('prompt', 'descriptionsType', 0),
         ]
     subclass = None
     superclass = None
-    def __init__(self, name=None, descriptions=None, help=None, type_=None, section=None, enumeratedType=None, listType=None, descriptor=None, multiple=None, default=None, constraints=None, required=None, allowFileContent=None, hidden=None, password=None, readonly=None, conditional=None, prompt=None):
+    def __init__(self, name=None, descriptions=None, help=None, type_=None, section=None, enumeratedType=None, listType=None, descriptor=None, multiple=None, default=None, constraints=None, required=None, allowFileContent=None, hidden=None, password=None, readonly=None, multiline=None, conditional=None, prompt=None):
         self.name = name
         self.descriptions = descriptions
         if help is None:
@@ -882,6 +883,7 @@ class dataFieldType(GeneratedsSuper):
         self.hidden = hidden
         self.password = password
         self.readonly = readonly
+        self.multiline = multiline
         self.conditional = conditional
         self.prompt = prompt
     def factory(*args_, **kwargs_):
@@ -926,6 +928,8 @@ class dataFieldType(GeneratedsSuper):
     def set_password(self, password): self.password = password
     def get_readonly(self): return self.readonly
     def set_readonly(self, readonly): self.readonly = readonly
+    def get_multiline(self): return self.multiline
+    def set_multiline(self, multiline): self.multiline = multiline
     def get_conditional(self): return self.conditional
     def set_conditional(self, conditional): self.conditional = conditional
     def get_prompt(self): return self.prompt
@@ -985,6 +989,9 @@ class dataFieldType(GeneratedsSuper):
         if self.readonly is not None:
             showIndent(outfile, level)
             outfile.write('<%sreadonly>%s</%sreadonly>\n' % (namespace_, self.format_boolean(str_lower(str(self.readonly)), input_name='readonly'), namespace_))
+        if self.multiline is not None:
+            showIndent(outfile, level)
+            outfile.write('<%smultiline>%s</%smultiline>\n' % (namespace_, self.format_boolean(str_lower(str(self.multiline)), input_name='multiline'), namespace_))
         if self.conditional:
             self.conditional.export(outfile, level, namespace_, name_='conditional')
         if self.prompt:
@@ -1007,6 +1014,7 @@ class dataFieldType(GeneratedsSuper):
             self.hidden is not None or
             self.password is not None or
             self.readonly is not None or
+            self.multiline is not None or
             self.conditional is not None or
             self.prompt is not None
             ):
@@ -1102,6 +1110,9 @@ class dataFieldType(GeneratedsSuper):
         if self.readonly is not None:
             showIndent(outfile, level)
             outfile.write('readonly=%s,\n' % self.readonly)
+        if self.multiline is not None:
+            showIndent(outfile, level)
+            outfile.write('multiline=%s,\n' % self.multiline)
         if self.conditional is not None:
             showIndent(outfile, level)
             outfile.write('conditional=model_.conditionalType(\n')
@@ -1242,6 +1253,17 @@ class dataFieldType(GeneratedsSuper):
                 else:
                     raise ValueError('requires boolean -- %s' % child_.toxml())
                 self.readonly = ival_
+        elif child_.nodeType == Node.ELEMENT_NODE and \
+            nodeName_ == 'multiline':
+            if child_.firstChild:
+                sval_ = child_.firstChild.nodeValue
+                if sval_ in ('true', '1'):
+                    ival_ = True
+                elif sval_ in ('false', '0'):
+                    ival_ = False
+                else:
+                    raise ValueError('requires boolean -- %s' % child_.toxml())
+                self.multiline = ival_
         elif child_.nodeType == Node.ELEMENT_NODE and \
             nodeName_ == 'conditional':
             obj_ = conditionalType.factory()

@@ -325,6 +325,8 @@ class BaseDescriptor(_BaseClass):
             df.section.set_key(section['key'])
             df.section.set_descriptions(self.Descriptions(
                 section.get('descriptions', [])))
+        if df.type == "str":
+            df.multiline = kwargs.get('multiline')
         df.required = kwargs.get('required')
         df.allowFileContent = kwargs.get('allowFileContent')
         df.hidden = kwargs.get('hidden')
