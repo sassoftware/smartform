@@ -468,7 +468,8 @@ class BaseDescriptor(_BaseClass):
             fieldName = fieldName, value = fieldValue, operator = operator)
         return node
 
-    def createDescriptorData(self, callback, name=None, listValues=None):
+    def createDescriptorData(self, callback, name=None, listValues=None,
+                             retry=False):
         """
         Create a DescriptorData object, with answers supplied by the callback
 
@@ -489,6 +490,9 @@ class BaseDescriptor(_BaseClass):
         If the callback prefers to process the whole descriptor by itself, it
         can return the whole descriptor data, and fields will no longer be
         individually queried for values.
+
+        If `retry` is True, then if a field fails constraint checks, the
+        callback will be called again until the field passes the contstraints.
         """
         # Preserve backwards compatibility for callbacks, in case they didn't
         # have a listValues keyword argument, introduced (and only used) by
@@ -534,35 +538,43 @@ class BaseDescriptor(_BaseClass):
             node = trees.pop()
             fieldName = node.id
             field, dependents = allFields[fieldName]
-            if field.descriptor:
-                # Compound type
-                assert not dependents
-                value = field._descriptor.createDescriptorData(callback,
-                    name=fieldName)
-            elif field.listType:
-                assert not dependents
-                value = []
-                while callback.listHasMoreValues(field, value):
-                    sval = field._descriptor.createDescriptorData(callback,
-                        name=field.name, listValues=value)
-                    if sval is not None:
-                        value.append(sval)
-            else:
-                value = callback.getValueForField(field)
+            while True:
+                if field.descriptor:
+                    # Compound type
+                    assert not dependents
+                    value = field._descriptor.createDescriptorData(callback,
+                        name=fieldName)
+                elif field.listType:
+                    assert not dependents
+                    value = []
+                    while callback.listHasMoreValues(field, value):
+                        sval = field._descriptor.createDescriptorData(callback,
+                            name=field.name, listValues=value)
+                        if sval is not None:
+                            value.append(sval)
+                else:
+                    value = callback.getValueForField(field)
 
-            if dependents:
-                validDependents = dependents.get(value, {})
+                if dependents:
+                    validDependents = dependents.get(value, {})
 
-                # Skip over all dependents that we don't care about
-                # We reverse the list since trees acts like a stack
-                trees.extend(x for x in reversed(node.links)
-                        if x.id in validDependents)
+                    # Skip over all dependents that we don't care about
+                    # We reverse the list since trees acts like a stack
+                    trees.extend(x for x in reversed(node.links)
+                            if x.id in validDependents)
 
-            if value is None:
-                # Don't bother to check yet, checkConstraints() will
-                # explode if a required value is missing
-                continue
-            ddata.addField(field.name, value)
+                if value is None:
+                    # Don't bother to check yet, checkConstraints() will
+                    # explode if a required value is missing
+                    continue
+                try:
+                    ddata.addField(field.name, value)
+                except errors.ConstraintsValidationError as e:
+                    if not retry:
+                        raise
+                    ddata.deleteField(field.name)
+                else:
+                    break
 
         data = callback.end(self)
         ddata._addMissingRequiredFieldsWithDefault()
@@ -867,6 +879,17 @@ class DescriptorData(_BaseClass):
         bsio.seek(0)
         return bsio
 
+
+    def deleteField(self, name):
+        field = self._rootObj.find(name)
+        if field is not None:
+            field.getparent().remove(field)
+
+        field = self._fieldsMap.pop(name, None)
+        if field:
+            self._fields.remove(field)
+
+        return field
 
 class ConfigurationDescriptor(BaseDescriptor):
     "Class for representing the configuration descriptor definition"

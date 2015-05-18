@@ -1577,6 +1577,155 @@ class DescriptorTest(BaseTest):
         ddata = descriptor.DescriptorData(fromStream=xml, descriptor=descr)
         ddata.toxml()
 
+    def testDeleteField(self):
+        # test descriptor data field removal
+        xml = """\
+<descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd">
+  <metadata>
+    <displayName>FooDescriptor</displayName>
+    <rootElement>descriptor_data</rootElement>
+    <descriptions>
+      <desc>Description</desc>
+    </descriptions>
+  </metadata>
+  <dataFields>
+    <field>
+      <name>imageId</name>
+      <descriptions>
+        <desc>Image ID</desc>
+      </descriptions>
+      <type>int</type>
+      <default>7</default>
+      <required>true</required>
+      <hidden>true</hidden>
+      <constraints>
+        <range>
+          <min>1</min>
+          <max>32</max>
+        </range>
+      </constraints>
+    </field>
+  </dataFields>
+</descriptor>
+"""
+        descr = descriptor.ConfigurationDescriptor(fromStream=xml)
+
+        class CB(object):
+            values = {
+                None : {
+                    'imageId' : '7',
+                },
+            }
+            def start(slf, descriptor, name=None):
+                slf.name = name
+            def end(slf, descriptor):
+                pass
+            def getValueForField(slf, field):
+                return slf.values[slf.name][field.name]
+
+        callback = CB()
+
+        ddata = descr.createDescriptorData(callback)
+        self.assertXMLEquals(ddata.toxml(), """
+<descriptor_data version="1.1">
+  <imageId>7</imageId>
+</descriptor_data>
+""")
+
+        ddata.deleteField("imageId")
+        self.assertXMLEquals(ddata.toxml(), """
+<descriptor_data version="1.1"/>
+""")
+
+        self.assertEqual(ddata.deleteField("missing"), None)
+        self.assertXMLEquals(ddata.toxml(), """
+<descriptor_data version="1.1"/>
+""")
+
+    def testCreateDescriptorData_retry(self):
+        # test createDescriptorData with retry enabled
+        xml = """\
+<descriptor xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.rpath.com/permanent/descriptor-1.1.xsd" xsi:schemaLocation="http://www.rpath.com/permanent/descriptor-1.1.xsd descriptor-1.1.xsd">
+  <metadata>
+    <displayName>FooDescriptor</displayName>
+    <rootElement>descriptor_data</rootElement>
+    <descriptions>
+      <desc>Description</desc>
+    </descriptions>
+  </metadata>
+  <dataFields>
+    <field>
+      <name>imageId</name>
+      <descriptions>
+        <desc>Image ID</desc>
+      </descriptions>
+      <type>int</type>
+      <default>7</default>
+      <required>true</required>
+      <hidden>true</hidden>
+      <constraints>
+        <range>
+          <min>1</min>
+          <max>32</max>
+        </range>
+      </constraints>
+    </field>
+  </dataFields>
+</descriptor>
+"""
+        descr = descriptor.ConfigurationDescriptor(fromStream=xml)
+
+        # make sure we didn't introduce a regression
+        class CB(object):
+            values = {
+                None : {
+                    'imageId' : '123',
+                },
+            }
+            def start(slf, descriptor, name=None):
+                slf.name = name
+            def end(slf, descriptor):
+                pass
+            def getValueForField(slf, field):
+                return slf.values[slf.name][field.name]
+
+        callback = CB()
+
+        self.failUnlessRaises(errors.ConstraintsValidationError,
+            descr.createDescriptorData, callback)
+
+        # test that we retry until we get a valid response
+        class CBRetry(object):
+            values = {
+                None : {
+                    'imageId' : ['33', '234', '0', '-123', '1'],
+                },
+            }
+
+            def __init__(slf):
+                slf.call_count = 0
+
+            def start(slf, descriptor, name=None):
+                slf.name = name
+            def end(slf, descriptor):
+                pass
+            def getValueForField(slf, field):
+                value = slf.values[slf.name][field.name][slf.call_count]
+                slf.call_count += 1
+                return value
+
+        callback = CBRetry()
+
+        ddata = descr.createDescriptorData(callback, retry=True)
+
+        self.assertXMLEquals(ddata.toxml(), """
+<descriptor_data version="1.1">
+  <imageId>1</imageId>
+</descriptor_data>
+""")
+        self.assertEqual(callback.call_count, 5)
+
+
     def testCreateDescriptorData_conditional(self):
         # test createDescriptorData with a conditional descriptor
         xml = """\
