@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-
 SUBDIRS = py
 
 build: default-build
