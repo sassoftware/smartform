@@ -494,6 +494,48 @@ class BaseDescriptor(_BaseClass):
         If `retry` is True, then if a field fails constraint checks, the
         callback will be called again until the field passes the contstraints.
         """
+        # closure to get field data with retries
+        def _getFieldValue(_fieldName):
+            field, dependents = allFields[_fieldName]
+            while True:
+                if field.descriptor:
+                    # Compound type
+                    assert not dependents
+                    value = field._descriptor.createDescriptorData(callback,
+                        name=_fieldName)
+                elif field.listType:
+                    assert not dependents
+                    value = []
+                    while callback.listHasMoreValues(field, value):
+                        sval = field._descriptor.createDescriptorData(callback,
+                            name=field.name, listValues=value)
+                        if sval is not None:
+                            value.append(sval)
+                else:
+                    value = callback.getValueForField(field)
+
+                if dependents:
+                    validDependents = dependents.get(value, {})
+
+                    # Skip over all dependents that we don't care about
+                    # We reverse the list since trees acts like a stack
+                    trees.extend(x for x in reversed(node.links)
+                            if x.id in validDependents)
+
+                if value is None:
+                    # Don't bother to check yet, checkConstraints() will
+                    # explode if a required value is missing
+                    return
+
+                try:
+                    ddata.addField(field.name, value)
+                except errors.ConstraintsValidationError:
+                    if not retry:
+                        raise
+                    ddata.deleteField(field.name)
+                else:
+                    return
+
         # Preserve backwards compatibility for callbacks, in case they didn't
         # have a listValues keyword argument, introduced (and only used) by
         # list types
@@ -537,49 +579,13 @@ class BaseDescriptor(_BaseClass):
         while trees:
             node = trees.pop()
             fieldName = node.id
-            field, dependents = allFields[fieldName]
-            while True:
-                if field.descriptor:
-                    # Compound type
-                    assert not dependents
-                    value = field._descriptor.createDescriptorData(callback,
-                        name=fieldName)
-                elif field.listType:
-                    assert not dependents
-                    value = []
-                    while callback.listHasMoreValues(field, value):
-                        sval = field._descriptor.createDescriptorData(callback,
-                            name=field.name, listValues=value)
-                        if sval is not None:
-                            value.append(sval)
-                else:
-                    value = callback.getValueForField(field)
-
-                if dependents:
-                    validDependents = dependents.get(value, {})
-
-                    # Skip over all dependents that we don't care about
-                    # We reverse the list since trees acts like a stack
-                    trees.extend(x for x in reversed(node.links)
-                            if x.id in validDependents)
-
-                if value is None:
-                    # Don't bother to check yet, checkConstraints() will
-                    # explode if a required value is missing
-                    continue
-                try:
-                    ddata.addField(field.name, value)
-                except errors.ConstraintsValidationError as e:
-                    if not retry:
-                        raise
-                    ddata.deleteField(field.name)
-                else:
-                    break
+            _getFieldValue(fieldName)
 
         data = callback.end(self)
         ddata._addMissingRequiredFieldsWithDefault()
         ddata.checkConstraints()
         return ddata
+
 
 class Callback(object):
     """
