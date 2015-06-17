@@ -486,13 +486,17 @@ class BaseDescriptor(_BaseClass):
             def listHasMoreValues(self, field, values):
                 # Decide whether a ListType field should get more values
                 return len(listValues) < 3
+            def warnValueForField(self, message):
+                # Warn that a field value was not acceptable
+                pass
 
         If the callback prefers to process the whole descriptor by itself, it
         can return the whole descriptor data, and fields will no longer be
         individually queried for values.
 
-        If `retry` is True, then if a field fails constraint checks, the
-        callback will be called again until the field passes the contstraints.
+        If `retry` is True, then if a field fails constraint checks,
+        warnValueForField will be called, and the callback will be called again
+        until the field passes the contstraints.
         """
         # Preserve backwards compatibility for callbacks, in case they didn't
         # have a listValues keyword argument, introduced (and only used) by
@@ -572,6 +576,9 @@ class BaseDescriptor(_BaseClass):
                 except errors.ConstraintsValidationError as e:
                     if not retry:
                         raise
+                    for constraint_error in e.args[0]:
+                        callback.warnValueForField(constraint_error)
+
                     ddata.deleteField(field.name)
                 else:
                     break

@@ -1622,6 +1622,9 @@ class DescriptorTest(BaseTest):
                 pass
             def getValueForField(slf, field):
                 return slf.values[slf.name][field.name]
+            def warnValueForField(self, message):
+                raise AssertionError("Shouldn't be called, but was called with "
+                        "message '{0}'".format(message))
 
         callback = CB()
 
@@ -1688,6 +1691,9 @@ class DescriptorTest(BaseTest):
                 pass
             def getValueForField(slf, field):
                 return slf.values[slf.name][field.name]
+            def warnValueForField(self, message):
+                raise AssertionError("Shouldn't be called, but was called with "
+                        "message '{0}'".format(message))
 
         callback = CB()
 
@@ -1704,6 +1710,7 @@ class DescriptorTest(BaseTest):
 
             def __init__(slf):
                 slf.call_count = 0
+                slf.messages = []
 
             def start(slf, descriptor, name=None):
                 slf.name = name
@@ -1713,6 +1720,8 @@ class DescriptorTest(BaseTest):
                 value = slf.values[slf.name][field.name][slf.call_count]
                 slf.call_count += 1
                 return value
+            def warnValueForField(self, message):
+                self.messages.append(message)
 
         callback = CBRetry()
 
@@ -1724,6 +1733,12 @@ class DescriptorTest(BaseTest):
 </descriptor_data>
 """)
         self.assertEqual(callback.call_count, 5)
+        self.assertEqual(callback.messages, [
+            u"'Image ID': '33' fails maximum range check '32'",
+            u"'Image ID': '234' fails maximum range check '32'",
+            u"'Image ID': '0' fails minimum range check '1'",
+            u"'Image ID': '-123' fails minimum range check '1'"
+            ])
 
 
     def testCreateDescriptorData_conditional(self):
@@ -1815,6 +1830,9 @@ class DescriptorTest(BaseTest):
                 pass
             def getValueForField(slf, field):
                 return slf.values[slf.name][field.name]
+            def warnValueForField(self, message):
+                raise AssertionError("Shouldn't be called, but was called with "
+                        "message '{0}'".format(message))
 
         callback = CB()
 
@@ -1883,6 +1901,9 @@ class DescriptorTest(BaseTest):
                 pass
             def getValueForField(slf, field):
                 return slf.values[slf.name][field.name]
+            def warnValueForField(self, message):
+                raise AssertionError("Shouldn't be called, but was called with "
+                        "message '{0}'".format(message))
 
         callback = CB()
 
@@ -1957,6 +1978,9 @@ class DescriptorTest(BaseTest):
                 return vals[idx][field.name]
             def listHasMoreValues(slf, field, values):
                 return len(values) != len(slf.values[slf.name])
+            def warnValueForField(self, message):
+                raise AssertionError("Shouldn't be called, but was called with "
+                        "message '{0}'".format(message))
 
         callback = CB()
 
