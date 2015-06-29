@@ -26,6 +26,8 @@ class Smartform(TestPackageRecipe):
         'smartform',
         ]
 
+    testDir = 'py/test'
+
     def setupSource(r):
         r.addGitSnapshot()
         r.Remove('forester', recursive=True)
