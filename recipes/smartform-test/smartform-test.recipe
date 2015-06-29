@@ -16,7 +16,7 @@
 
 
 class Smartform(PackageRecipe):
-    name = 'smartform'
+    name = 'smartform-test'
     version = '0'
 
     buildRequires = [
