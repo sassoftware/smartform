@@ -15,9 +15,10 @@
 # limitations under the License.
 #
 
-
 import os
 import sys
+
+import smartform
 
 from testrunner import suite, testhandler
 class Suite(suite.TestSuite):
