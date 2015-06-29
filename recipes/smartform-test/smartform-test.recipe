@@ -14,50 +14,18 @@
 # limitations under the License.
 #
 
-
-class Smartform(PackageRecipe):
+loadSuperClass('testpackage')
+class Smartform(TestPackageRecipe):
     name = 'smartform-test'
     version = '0'
 
-    buildRequires = [
-        'make:rpm',
-        'python-devel',
-        'python-lxml',
-        ]
-
+    Flags.coverage = True
     Flags.test = True
 
-    if Flags.test:
-        buildRequires.append('testutils')
+    buildRequires = [
+        'smartform',
+        ]
 
-    def setup(r):
-        r.addMercurialSnapshot('http://scc.eng.rpath.com/products/smartform/trunk/smartform')
-        r.Make()
-        # Install the python module
-        r.MakeInstall()
-
-        if Flags.test:
-            # create the test config object
-            configuration = {}
-            configuration['arch'] = Arch.getCurrentArch()._name
-
-            # create the test dirs
-            r.macros.testinfodir = '%(datadir)s/testinfo/%(name)s-%(version)s'
-            r.macros.testoutputdir = '%(testinfodir)s/tests'
-            r.macros.coverdir = '%(testinfodir)s/coverage'
-            r.MakeDirs(r.macros.testoutputdir, r.macros.coverdir)
-
-            # write the test config file
-            r.Create('%(testinfodir)s/configuration.txt',
-                contents='%r\n' % configuration)
-
-            # run the tests
-            r.macros.sitepkgs = Python.sitepkgs
-            r.Make('test TESTOUTPUTDIR=%(destdir)s%(testoutputdir)s TESTCOVERAGEDIR=%(destdir)s%(coverdir)s COVERAGEDUMP=coverage_dump', preMake='CONARY_PATH=%(sitepkgs)s COVERAGE_PATH=%(sitepkgs)s')
-
-            # add test data to testinfo component
-            r.ComponentSpec('testinfo', '%(testinfodir)s/.*')
-            r.ByDefault(exceptions=[':testinfo'])
-
-        # Need :data for the schema definitions
-        r.ComponentRequires({'data': set(['python'])})
+    def setupSource(r):
+        r.addGitSnapshot()
+        r.Remove('forester', recursive=True)
