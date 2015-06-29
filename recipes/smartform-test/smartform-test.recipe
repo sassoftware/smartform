@@ -15,16 +15,15 @@
 #
 
 
-loadInstalled('python')
 class Smartform(PackageRecipe):
     name = 'smartform'
     version = '0'
 
-    buildRequires = [ 'flexsdk', 'xobj', 'make:runtime',
-        'procps:runtime', 'sun-jdk', 'ant:runtime', 'ant:java',
-        'xorg-server:runtime', 'util-linux:runtime', 'lxml:python',
-        'xkeyboard-config', 'xkbcomp', 'xfs', 'group-xorg-fonts',
-    ]
+    buildRequires = [
+        'make:rpm',
+        'python-devel',
+        'python-lxml',
+        ]
 
     Flags.test = True
 
@@ -34,11 +33,6 @@ class Smartform(PackageRecipe):
     def setup(r):
         r.addMercurialSnapshot('http://scc.eng.rpath.com/products/smartform/trunk/smartform')
         r.Make()
-
-        # install the as3 libs
-        # as3 code is now in flexlibs
-        #r.Install('as3/smartform/bin/*.swc', '/opt/smartform/as3/lib/')
-
         # Install the python module
         r.MakeInstall()
 
@@ -60,7 +54,6 @@ class Smartform(PackageRecipe):
             # run the tests
             r.macros.sitepkgs = Python.sitepkgs
             r.Make('test TESTOUTPUTDIR=%(destdir)s%(testoutputdir)s TESTCOVERAGEDIR=%(destdir)s%(coverdir)s COVERAGEDUMP=coverage_dump', preMake='CONARY_PATH=%(sitepkgs)s COVERAGE_PATH=%(sitepkgs)s')
-            #r.Install('as3/smartform-test/bin-debug/test/output/*.xml', '%(testoutputdir)s')
 
             # add test data to testinfo component
             r.ComponentSpec('testinfo', '%(testinfodir)s/.*')
