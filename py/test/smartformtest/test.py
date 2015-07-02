@@ -1673,6 +1673,15 @@ class DescriptorTest(BaseTest):
         </range>
       </constraints>
     </field>
+    <field>
+      <name>imageName</name>
+      <descriptions>
+        <desc>Image Name</desc>
+      </descriptions>
+      <type>str</type>
+      <required>false</required>
+      <hidden>true</hidden>
+    </field>
   </dataFields>
 </descriptor>
 """
@@ -1683,6 +1692,7 @@ class DescriptorTest(BaseTest):
             values = {
                 None : {
                     'imageId' : '123',
+                    'imageName': 'foo',
                 },
             }
             def start(slf, descriptor, name=None):
@@ -1705,11 +1715,12 @@ class DescriptorTest(BaseTest):
             values = {
                 None : {
                     'imageId' : ['33', '234', '0', '-123', '1'],
+                    'imageName': ['']
                 },
             }
 
             def __init__(slf):
-                slf.call_count = 0
+                slf.call_count = dict((key, 0) for key in slf.values[None])
                 slf.messages = []
 
             def start(slf, descriptor, name=None):
@@ -1717,8 +1728,8 @@ class DescriptorTest(BaseTest):
             def end(slf, descriptor):
                 pass
             def getValueForField(slf, field):
-                value = slf.values[slf.name][field.name][slf.call_count]
-                slf.call_count += 1
+                value = slf.values[slf.name][field.name][slf.call_count[field.name]]
+                slf.call_count[field.name] += 1
                 return value
             def warnValueForField(self, message):
                 self.messages.append(message)
@@ -1730,16 +1741,17 @@ class DescriptorTest(BaseTest):
         self.assertXMLEquals(ddata.toxml(), """
 <descriptor_data version="1.1">
   <imageId>1</imageId>
+  <imageName></imageName>
 </descriptor_data>
 """)
-        self.assertEqual(callback.call_count, 5)
+        self.assertEqual(callback.call_count["imageId"], 5)
+        self.assertEqual(callback.call_count["imageName"], 1)
         self.assertEqual(callback.messages, [
             u"'Image ID': '33' fails maximum range check '32'",
             u"'Image ID': '234' fails maximum range check '32'",
             u"'Image ID': '0' fails minimum range check '1'",
             u"'Image ID': '-123' fails minimum range check '1'"
             ])
-
 
     def testCreateDescriptorData_conditional(self):
         # test createDescriptorData with a conditional descriptor
